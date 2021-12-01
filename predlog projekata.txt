@@ -6,6 +6,14 @@
 	feed (publisher-subscriber), poruke (producer-consumer)(redis)
 	trending (oba)
 
+*Komentari 
+	- 10+ domenskih entiteta (cvorovi + potezi)
+	- pub-sub (blokirajuće liste => u dokumentaciji blokirajuće operacije pogeldati strukture)
+	- voditi računa oko previše proračuna na backend-u za cache (nikako na svaki click, moze npr na 
+	  nekoliko minuta)
+	- pub-sub ne mora samo za cet, moze i za notifikacije i slicno
+
+
 2.) Muzika
 
 	profili korisnika
