@@ -1,0 +1,15 @@
+pocetna strana sa objavama prijatelja i slicno,
+explore tab, za preporuku prijatelja i novih lokacija,
+profil (sopstvene objave) i prijatelji itd...
+tab sa porukama...
+tab za notifikacije (obavestenja)
+
+slike na pocetnoj strani mogu da se lajkuju i da se komentarisu (kada se klikne na komenatar)
+iznad slike stoji slicica ime i prezime onog ako je objavio, kao i lokacija
+klikom na lokaciju, odlazimo na stranu lokacije, gde imamo dugme "Prati" cime ce da nam stizu obavestenja
+vezana za tu lokaciju.
+
+na poctenoj strani su objave na sredini, sa neke strane ce da stoji tabelica "Hotspots"
+
+stranica profil ima sliku, kratke informacije, i objave tog korisnika, prijatelji, kad klikemo,
+otvara se lista, pracene lokacije
