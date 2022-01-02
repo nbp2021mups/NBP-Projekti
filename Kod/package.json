@@ -1,0 +1,19 @@
+{
+    "name": "nbp",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "scripts": {
+        "watch": "nodemon ./app.js localhost 9999",
+        "watchNeo4jTest": "nodemon ./neo4jTest.js localhost 9998",
+        "watchRedisTest": "nodemon ./redisTest.js localhost 9997"
+    },
+    "author": "mups",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.17.2",
+        "ioredis": "^4.28.2",
+        "neo4j-driver": "^4.4.1",
+        "nodemon": "^2.0.15"
+    }
+}
