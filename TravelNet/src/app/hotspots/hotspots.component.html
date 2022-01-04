@@ -1,0 +1,10 @@
+<div class = "container-fluid border rounded p-3 mb-2">
+    <div class = "row text-center">
+        <h4>Popularne lokacije</h4>
+    </div>
+    <div class="row flex-column">
+        <div class="col-12" *ngFor="let loc of locations">
+            <a class="text-center border-top m-0 nav-link">{{loc.locName}}</a>
+        </div>
+    </div>
+</div>
