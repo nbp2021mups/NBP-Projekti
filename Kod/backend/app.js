@@ -1,4 +1,5 @@
 const express = require("express");
+const path=require("path");
 
 const usersRoutes = require("./routes/users");
 const postsRoutes= require("./routes/posts");
@@ -6,6 +7,7 @@ const postsRoutes= require("./routes/posts");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use("/images",express.static(path.join("backend/images")));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
