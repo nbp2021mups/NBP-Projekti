@@ -1,0 +1,13 @@
+<div class="container-fluid px-0" *ngIf="!this.profilePosts">
+    <div class="col-12 mb-4" *ngFor="let post of posts; let i = index;">
+        <app-post [post]="this.posts[i]"></app-post>
+    </div>
+</div>
+
+<div class="container px-0" *ngIf="this.profilePosts">
+    <div class="row">
+        <div class="col-12 col-sm-4 mb-2 px-1" *ngFor="let post of posts; let i = index;">
+            <app-post [post]="this.posts[i]"></app-post>
+        </div>
+    </div>
+</div>

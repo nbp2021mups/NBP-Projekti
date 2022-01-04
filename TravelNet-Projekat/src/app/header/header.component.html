@@ -1,0 +1,21 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" routerLink="">TravelNet</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <div class="navbar-nav tabs">
+                <a class="nav-link" routerLink="/home"><mat-icon>home</mat-icon></a>
+                <a class="nav-link" routerLink="/explore"><mat-icon>search</mat-icon></a>
+                <a class="nav-link" routerLink="/messages"><mat-icon>message</mat-icon></a>
+                <button class="post-button nav-link" (click)="onNotificationsClicked()"><mat-icon>notifications</mat-icon></button>
+                <a class="nav-link" routerLink="/profile"><mat-icon>person</mat-icon></a>
+                <button class="post-button nav-link"><mat-icon>logout</mat-icon></button>
+            </div>
+        </div>
+
+    </div>
+</nav>
