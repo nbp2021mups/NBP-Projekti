@@ -2,7 +2,8 @@ const express = require("express");
 const path=require("path");
 
 const usersRoutes = require("./routes/users");
-const postsRoutes= require("./routes/posts");
+const postsRoutes = require("./routes/posts");
+const friendsRoutes = require("./routes/friends")
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -23,6 +24,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/users", usersRoutes);
-app.use("/posts",postsRoutes)
+app.use("/posts",postsRoutes);
+app.use("/friends",friendsRoutes);
 
 module.exports = app;
