@@ -1,6 +1,7 @@
 const express = require("express");
 
 const usersRoutes = require("./routes/users");
+const postsRoutes= require("./routes/posts");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -20,5 +21,6 @@ app.use((req, res, next) => {
 });
 
 app.use("/users", usersRoutes);
+app.use("/posts",postsRoutes)
 
 module.exports = app;
