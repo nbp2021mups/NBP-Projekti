@@ -3,25 +3,59 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
 
 const session=driver.session()
 
-//registracija 
-router.post("/register", async (req,res)=>{
+const MYME_TYPE_MAP = {
+    "image/png": "png",
+    "image/jpg": "jpg",
+    "image/jpeg": "jpg",
+  };
+  
+const storage = multer.diskStorage({
+destination: (req, file, cb) => {
+    const isValid = MYME_TYPE_MAP[file.mimetype];
+    let err;
+    if (isValid)
+        err = null;
+    else
+        err = new Error("Nevalidan mime type!");
     
-    if (req.body.ime == null || req.body.prezime == null || req.body.email == null || req.body.username==null || req.body.lozinka == null){
+    cb(err, "backend/images");
+},
+filename: (req, file, cb) => {
+    const imgName = file.originalname.toLowerCase().split(" ").join("-");
+    const ext = MYME_TYPE_MAP[file.mimetype];
+    cb(null, imgName + "-" + Date.now() + "." + ext);
+},
+});
+
+//registracija 
+router.post("/register", multer({ storage: storage }).single("image"), async (req,res)=>{
+    
+    if (req.body.ime == null || req.body.prezime == null || req.body.email == null || req.body.username==null || req.body.lozinka == null)
         return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
-      }
-      const hesiranaLozinka = await bcrypt.hash(req.body.lozinka, 12);
-      const imeKlijenta = req.body.ime.charAt(0).toUpperCase() + req.body.ime.slice(1);
-      const prezimeKlijenta = req.body.prezime.charAt(0).toUpperCase() + req.body.prezime.slice(1);
-      try{
-        let cypher='CREATE (a:User {ime: $ime, prezime: $prezime, email: $email, username: $username, lozinka: $lozinka';
+      
+    const hesiranaLozinka = await bcrypt.hash(req.body.lozinka, 12);
+    const imeKlijenta = req.body.ime.charAt(0).toUpperCase() + req.body.ime.slice(1);
+    const prezimeKlijenta = req.body.prezime.charAt(0).toUpperCase() + req.body.prezime.slice(1);
+    const url = req.protocol + "://" + req.get("host");
+    let putanjaSlike = url + "/images/";
+    if (req.file) 
+        putanjaSlike += req.file.filename;
+    else
+        putanjaSlike += "universal.jpg";
+    
+    try{
+        let cypher='CREATE (a:User {ime: $ime, prezime: $prezime, email: $email, username: $username, lozinka: $lozinka, slika: $slika';
         const params= { ime: imeKlijenta,
             prezime: prezimeKlijenta,
             email:req.body.email,
             username: req.body.username,
-            lozinka: hesiranaLozinka }
+            lozinka: hesiranaLozinka,
+            slika: putanjaSlike
+        }
 
         if (req.body.opis){
             cypher+=', opis: $opis';
@@ -31,13 +65,13 @@ router.post("/register", async (req,res)=>{
         await session.run(cypher, params);
 
         return res.send("Uspesno registrovan")
-      }
-      catch (ex){
-        if(ex.message.includes('email'))
-            return res.status(409).send("Postoji email");
-        else
-            return res.status(409).send("Postoji username");       
         }
+    catch (ex){
+    if(ex.message.includes('email'))
+        return res.status(409).send("Postoji email");
+    else
+        return res.status(409).send("Postoji username");       
+    }
 })
 
 //logovanje
@@ -73,9 +107,8 @@ router.post("/login", async (req,res) =>{
 })
 
 //promena slike, username-a, lozinke, opisa profila
-router.patch("/:id",async (req,res)=>{
+router.patch("/:id", multer({ storage: storage }).single("image"), async (req,res)=>{
     try{
-        
         let chyper='';
         const params= new Object()
         params.id=parseInt(req.params.id)        
