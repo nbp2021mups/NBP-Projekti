@@ -144,9 +144,18 @@ router.patch("/:id", multer({ storage: storage }).single("image"), async (req,re
             chyper+='u.opis = $opis'
             params.opis=req.body.opis
         }
+        if (req.file){
+            const url = req.protocol + "://" + req.get("host");
+            let putanjaSlike = url + "/images/" + req.file.filename;
+            if (chyper)
+                chyper+=', '
+            chyper+='u.slika = $slika'
+            params.slika = putanjaSlike
+            
+        }
         await session.run('MATCH (u:User) WHERE id(u)=$id SET '+ chyper, params);        
         return res.send("Uspesno azuriranje")
-    }
+    }       
     catch(ex){
         if(ex.message.includes('username'))       
             return res.status(409).send("Postoji nalog sa ovim username-om");      
