@@ -67,5 +67,34 @@ router.delete("", async (req, res) =>{
   }
 })
 
+//preporuka prijatelja korisniku ciji je id proslednjen
+router.get("/recommendation/:userId", async (req, res)=>{
+  try{
+    let cypher =
+    'MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User) '+
+    'WHERE id(u)=$id AND id(friend_of_friend)<>$id '+
+    'RETURN DISTINCT count(friend_of_friend) AS zajednickiPrijatelji, friend_of_friend.username AS username , friend_of_friend.ime AS ime, friend_of_friend.prezime AS prezime, friend_of_friend.slika AS slika '+
+    'LIMIT 10'
+    const params = { id : parseInt(req.params.userId)}
+    const result=await session.run(cypher, params);
+    const rez=result.records.map((record)=>{
+      return{
+        zajednickiPrijatelji:record.get('zajednickiPrijatelji').low,
+        username: record.get('username'),
+        ime: record.get('ime'),
+        prezime: record.get('prezime'),
+        slika : record.get('slika')
+      }
+
+    })
+
+    return res.send(rez)
+
+  }catch (ex){
+    console.log(ex)
+    return res.status(401).send("Došlo je do greške");
+  }
+})
+
 
 module.exports = router;
