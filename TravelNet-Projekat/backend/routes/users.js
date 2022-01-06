@@ -8,7 +8,7 @@ const storage = require("../storage");
 
 const session = driver.session();
 
-//registracija 
+//registracija
 router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
 
     if (req.body.ime == null || req.body.prezime == null || req.body.email == null || req.body.username == null || req.body.lozinka == null)
@@ -54,7 +54,7 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
 //logovanje
 router.post("/login", async(req, res) => {
     try {
-        const result = await session.run('MATCH (u:User {username: $username}) RETURN u.lozinka, id(u)', { username: req.body.username });
+        const result = await session.run('MATCH (u:User) WHERE u.username=$username RETURN u.lozinka, id(u)', { username: req.body.username });
         if (result.records.length == 0)
             return res.status(401).send("Greska pri logovanju"); //ne postoji nalog sa ovim username-om
 

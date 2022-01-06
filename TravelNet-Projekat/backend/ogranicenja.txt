@@ -7,3 +7,9 @@ CREATE CONSTRAINT user_prezime_not_null FOR (u:User) REQUIRE u.prezime IS NOT NU
 CREATE CONSTRAINT user_username_not_null FOR (u:User) REQUIRE u.username IS NOT NULL
 CREATE CONSTRAINT user_email_not_null FOR (u:User) REQUIRE u.email IS NOT NULL
 CREATE CONSTRAINT user_lozinka_not_null FOR (u:User) REQUIRE u.lozinka IS NOT NULL
+
+//LOCATION
+
+CREATE CONSTRAINT location_country_unique FOR (l:Location) REQUIRE l.drzava IS UNIQUE
+CREATE CONSTRAINT location_country_not_null FOR (l:Location) REQUIRE l.drzava IS NOT NULL
+CREATE CONSTRAINT location_city_not_null FOR (l:Location) REQUIRE l.grad IS NOT NULL

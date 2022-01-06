@@ -63,13 +63,14 @@ router.delete("", async(req, res) => {
     }
 })
 
-//preporuka prijatelja korisniku ciji je id proslednjen
+//preporuka prijatelja korisniku ciji je id proslednjen, sortirani po broju zajednickih prijatelja
 router.get("/recommendation/:userId", async(req, res) => {
     try {
         let cypher =
             'MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User) ' +
             'WHERE id(u)=$id AND id(friend_of_friend)<>$id ' +
             'RETURN DISTINCT count(friend_of_friend) AS zajednickiPrijatelji, friend_of_friend.username AS username , friend_of_friend.ime AS ime, friend_of_friend.prezime AS prezime, friend_of_friend.slika AS slika ' +
+            'ORDER BY zajednickiPrijatelji DESC '+
             'LIMIT 10'
         const params = { id: parseInt(req.params.userId) }
         const result = await session.run(cypher, params);

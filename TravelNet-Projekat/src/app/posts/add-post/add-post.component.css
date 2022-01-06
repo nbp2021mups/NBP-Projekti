@@ -1,7 +1,7 @@
 .slika {
   width: 60%;
   height: 30%;
-  margin-top: 2%;
+  margin: 2% 0;
 }
 
 input[type="file"] {
