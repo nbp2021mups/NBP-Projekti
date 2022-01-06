@@ -1,1 +1,123 @@
-<p>registration-page works!</p>
+
+<mat-card class="container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-group ml-10">
+
+    </div>
+      <div class="form-group ml-10">
+        <div class="slika-conteiner">
+          <img
+            [src]="imagePreview"
+            class="slika"
+            *ngIf="imagePreview !== '' && imagePreview"
+          />
+        </div>
+        <div class="justify-content-center">
+          <button
+            class="btn btn-info"
+            type="button"
+            (click)="filePicker.click()"
+          >
+            Izaberi sliku
+          </button>
+          <input
+            type="file"
+            name="image"
+            #filePicker
+            (change)="onImagePicked($event)"
+          />
+        </div>
+      </div>
+    <div class="form-row">
+      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+        <mat-label>Ime</mat-label>
+        <input
+        matInput
+        type="text"
+        id="ime"
+        name="ime"
+        formControlName="ime"
+        >
+        <mat-error *ngIf="form.get('ime').invalid">Molimo Vas da unesete Vaše ime</mat-error>
+
+      </mat-form-field>
+      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+        <mat-label>Prezime</mat-label>
+        <input
+        matInput
+        type="text"
+        id="prezime"
+        name="prezime"
+        formControlName="prezime"
+        >
+        <mat-error *ngIf="form.get('prezime').invalid">Molimo Vas da unesete Vaše prezime</mat-error>
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+        <mat-label>E-mail</mat-label>
+        <input
+        matInput
+        type="email"
+        id="email"
+        name="email"
+        formControlName="email"
+        >
+        <mat-error *ngIf="form.get('email').invalid">Molimo Vas da unesete Vašu e-mail adresu</mat-error>
+
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+    <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+      <mat-label>Korisničko ime</mat-label>
+      <input
+      matInput
+      type="text"
+      id="username"
+      name="username"
+      formControlName="username"
+      >
+      <mat-error *ngIf="form.get('username').invalid">Molimo Vas da unesete korisničko ime</mat-error>
+
+    </mat-form-field>
+    <mat-form-field class="input-group mb-3 lozinka form-group col-md-6" appearance="fill">
+      <mat-label>Lozinka</mat-label>
+      <input
+      matInput
+      [type]="hide ? 'password' : 'text'"
+      id="lozinka"
+      name="lozinka"
+      formControlName="lozinka"
+      >
+      <mat-error *ngIf="form.get('lozinka').invalid">Molimo Vas da unesete lozinku (minimalna dužina 6 karaktera)</mat-error>
+
+      <button class="" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+      <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+    </mat-form-field>
+    <mat-form-field
+      class="input-group mb-1 form-group col-md-12"
+      appearance="fill"
+
+    >
+      <mat-label>Opis</mat-label>
+      <textarea
+        matInput
+        type="string"
+        name="opis"
+        cols="40"
+        rows="5"
+        formControlName="opis"
+      ></textarea>
+    </mat-form-field>
+    </div>
+    <div class="container">
+      <div class="col-md-12 text-center">
+        <button class="btn btn-outline-primary" type="submit"
+        [disabled]="form.get('ime').invalid || form.get('prezime').invalid || form.get('email').invalid || form.get('username').invalid || form.get('lozinka').invalid">
+        Registruj se</button>
+      </div>
+    </div>
+    </form>
+  </mat-card>
+

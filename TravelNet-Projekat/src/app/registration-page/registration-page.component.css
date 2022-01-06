@@ -1,0 +1,24 @@
+.container {
+  margin-top: 5%;
+}
+
+.mat-form-field-appearance-fill .mat-form-field-flex {
+  background-color: rgb(13 104 136 / 13%);
+}
+mat-from-field {
+  width: 100;
+}
+
+input[type="file"] {
+  visibility: hidden;
+}
+
+.slika {
+  width: 250px;
+  height: 250px;
+  margin-bottom: 1%;
+}
+.slika-conteiner {
+  display: flex;
+  flex-direction: row;
+}

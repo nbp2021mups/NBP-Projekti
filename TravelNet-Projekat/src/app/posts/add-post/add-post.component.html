@@ -1,0 +1,112 @@
+
+<mat-card class="container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+    <mat-form-field appearance="fill">
+      <mat-label>Izaberite državu</mat-label>
+      <mat-select
+      aria-label="Default select example"
+      formControlName="drzava"
+      (selectionChange)="checkCountry($event)">
+        <mat-option value="dr1">dr1</mat-option>
+        <mat-option value="dr2">dr2</mat-option>
+        <mat-option value="ostalo">Ostalo</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('drzava').invalid">Molimo Vas da izaberete jednu državu</mat-error>
+    </mat-form-field>
+
+    <mat-form-field
+      class="input-group mb-3 form-group col-md-6"
+      appearance="fill"
+      *ngIf="drzava == 'ostalo'">
+      <mat-label>Unesite novu državu</mat-label>
+      <input
+        matInput
+        type="string"
+        name="novaDrzava"
+        formControlName="novaDrzava"
+      />
+      <mat-error *ngIf="form.get('novaDrzava').invalid"
+        >Molimo Vas da unesete naziv države</mat-error
+      >
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" *ngIf="drzava != 'ostalo'">
+      <mat-label>Izaberite grad</mat-label>
+      <mat-select
+       aria-label="Default select example"
+       formControlName="grad"
+       (selectionChange)="checkCity($event)">
+        <mat-option value="gr1">gr</mat-option>
+        <mat-option value="gr2">gr2</mat-option>
+        <mat-option value="ostalo">Ostalo</mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('grad').invalid">Molimo Vas da izaberete jedan grad</mat-error>
+    </mat-form-field>
+    <mat-form-field
+      class="input-group mb-3 form-group col-md-6"
+      appearance="fill"
+      *ngIf="drzava == 'ostalo' || grad == 'ostalo' "
+    >
+      <mat-label>Unesite novi grad</mat-label>
+      <input
+        matInput
+        type="string"
+        name="noviGrad"
+        formControlName="noviGrad"
+      />
+      <mat-error *ngIf="form.get('noviGrad').invalid"
+        >Molimo Vas da unesete naziv grada</mat-error
+      >
+    </mat-form-field>
+    <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+      <mat-label>Opis</mat-label>
+      <input
+      matInput
+      type="text"
+      id="opis"
+      name="opis"
+      formControlName="opis"
+      >
+      <mat-error *ngIf="form.get('opis').invalid">Molimo Vas da unesete opis objave</mat-error>
+    </mat-form-field>
+    <div class="form-group ml-10">
+      <div class="justify-content-center">
+        <button
+          class="btn btn-info"
+          type="button"
+          (click)="filePicker.click()"
+        >
+          Izaberi sliku
+        </button>
+        <input
+          type="file"
+          name="image"
+          #filePicker
+          (change)="onImagePicked($event)"
+        />
+      </div>
+      <div class="slika-conteiner">
+        <img
+          [src]="imagePreview"
+          class="slika"
+          *ngIf="imagePreview !== '' && imagePreview && form.get('slika').valid"
+        />
+      </div>
+    </div>
+
+
+    <div class="container">
+      <div class="col-md-12 text-center">
+        <button class="btn btn-outline-primary" type="submit"
+        [disabled]="form.get('opis').invalid || form.get('drzava').invalid || form.get('grad').invalid ||
+        (drzava=='ostalo' && form.get('novaDrzava').invalid && form.get('noviGrad').invalid) ||
+        (grad=='ostalo' && form.get('noviGrad').invalid) || form.get('slika').invalid">
+        Dodaj objavu</button>
+      </div>
+    </div>
+    </form>
+  </mat-card>
+
+
+

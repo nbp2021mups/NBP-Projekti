@@ -19,6 +19,12 @@ import { FriendItemComponent } from './friends/friend-item/friend-item.component
 import { LoginPageComponent } from './login-page/login-page.component';
 import { RegistrationPageComponent } from './registration-page/registration-page.component';
 
+import { FormsModule, ReactiveFormsModule} from '@angular/forms'
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { AddPostComponent } from './posts/add-post/add-post.component';
+import { MatSelectModule } from '@angular/material/select';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,14 +38,20 @@ import { RegistrationPageComponent } from './registration-page/registration-page
     FriendsListComponent,
     FriendItemComponent,
     LoginPageComponent,
-    RegistrationPageComponent 
+    RegistrationPageComponent,
+    AddPostComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     NoopAnimationsModule,
     MatIconModule,
-    MatCardModule 
+    MatCardModule ,
+    FormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatSelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]

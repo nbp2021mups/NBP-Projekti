@@ -1,0 +1,14 @@
+.slika {
+  width: 60%;
+  height: 30%;
+  margin-top: 2%;
+}
+
+input[type="file"] {
+  visibility: hidden;
+}
+
+.slika-conteiner {
+  display: flex;
+  flex-direction: row;
+}
