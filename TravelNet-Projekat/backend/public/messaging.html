@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="" />
   </head>
   <body>
-    <input type=text placeholder="Username"/>
+    <input id="username" type=text placeholder="username"/>
     <button onclick="join()">Join</button>
     </br>
-    <input type=text placeholder="content"/>
+    <input id="forUser" type=text placeholder="@username"/>
+    <input id="content" type=text placeholder="content"/>
     <button onclick="sendMessage()">Send</button>
     <script src="socket.io/socket.io.js"></script>
     <script src="sockets.js" type="module"></script>
