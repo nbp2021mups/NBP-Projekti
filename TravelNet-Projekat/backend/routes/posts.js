@@ -1,4 +1,4 @@
-const driver = require('../driver');
+const driver = require('../neo4jdriver');
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -13,7 +13,7 @@ router.post("", async(req, res) => {
         const params = { opis: req.body.opis, idU: req.body.userId }
         let cypher;
         if (req.body.drzava && req.body.grad) {
-          console.log("Cao")
+            console.log("Cao")
             params.drzava = req.body.drzava;
             params.grad = req.body.grad;
             cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.drzava=$drzava AND l.grad=$grad CREATE (u)-[r1:SHARED]->(p:Post {opis: $opis})-[r2:LOCATED_AT]->(l)'

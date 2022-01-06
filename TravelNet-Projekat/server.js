@@ -1,8 +1,9 @@
+require("dotenv").config();
 const http = require('http');
 const app = require('./backend/app');
 
-const hostname = "localhost";
-const port = 3000 || process.env.PORT;
+const hostname = process.env.SERVER_HOSTNAME;
+const port = process.env.SERVER_PORT;
 
 const server = http.createServer(app);
 

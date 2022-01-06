@@ -1,4 +1,4 @@
-const driver = require('../driver');
+const driver = require('../neo4jdriver');
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");

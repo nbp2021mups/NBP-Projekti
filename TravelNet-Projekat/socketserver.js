@@ -1,3 +1,4 @@
+require("dotenv").config();
 const path = require("path");
 const http = require('http');
 const express = require("express");
@@ -6,17 +7,13 @@ const socketIO = require("socket.io");
 const app = express();
 app.use(express.static(path.join("backend/public")));
 
-const hostname = "localhost";
-const port = 5050;
+const hostname = process.env.SOCKET_SERVER_HOSTNAME;
+const port = process.env.SOCKET_SERVER_PORT;
 
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = new socketIO.Server(server);
 
-io.on("connection", client => {
-    console.log(`Client ${client.hostname} connected`);
-    client.emit("message", { message: "Welcome!" });
-
-});
+module.exports = io;
 
 server.listen({
     host: hostname,

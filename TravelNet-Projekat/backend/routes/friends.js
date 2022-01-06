@@ -1,4 +1,4 @@
-const driver = require('../driver');
+const driver = require('../neo4jdriver');
 const express = require("express");
 const router = express.Router();
 
@@ -70,7 +70,7 @@ router.get("/recommendation/:userId", async(req, res) => {
             'MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User) ' +
             'WHERE id(u)=$id AND id(friend_of_friend)<>$id ' +
             'RETURN DISTINCT count(friend_of_friend) AS zajednickiPrijatelji, friend_of_friend.username AS username , friend_of_friend.ime AS ime, friend_of_friend.prezime AS prezime, friend_of_friend.slika AS slika ' +
-            'ORDER BY zajednickiPrijatelji DESC '+
+            'ORDER BY zajednickiPrijatelji DESC ' +
             'LIMIT 10'
         const params = { id: parseInt(req.params.userId) }
         const result = await session.run(cypher, params);

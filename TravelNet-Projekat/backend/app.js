@@ -10,7 +10,6 @@ const notificationRoutes = require("./routes/notifications");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(path.join("backend/public")));
 app.use("/images", express.static(path.join("backend/images")));
 
 app.use((req, res, next) => {
