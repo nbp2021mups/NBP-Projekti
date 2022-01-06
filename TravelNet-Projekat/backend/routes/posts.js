@@ -17,17 +17,19 @@ router.post("", async(req, res) => {
             params.drzava = req.body.drzava;
             params.grad = req.body.grad;
             cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.drzava=$drzava AND l.grad=$grad CREATE (u)-[r1:SHARED]->(p:Post {opis: $opis})-[r2:LOCATED_AT]->(l)'
-        } else {
+        } else if ((req.body.drzava && req.body.noviGrad) || (req.body.novaDrzava && req.body.noviGrad) || (req.body.novaDrzava && req.body.grad)){
             params.drzava = req.body.drzava ? req.body.drzava : req.body.novaDrzava;
             params.grad = req.body.grad ? req.body.grad : req.body.noviGrad;
             cypher = 'MATCH (u:User) WHERE id(u)=$idU CREATE (u)-[r1:SHARED]->(p:Post {opis: $opis})-[r2:LOCATED_AT]->(l:Location {drzava: $drzava, grad: $grad, opis: $opis})'
         }
+        else
+          return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
         await session.run(cypher, params);
         return res.send("Objava uspesno dodata");
     } catch (ex) {
         console.log(ex)
-        return res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Država koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
     }
 })
 
@@ -47,12 +49,12 @@ router.patch("/:postId", async(req, res) => {
 //brisanje objave svih veza sa kojima je imala
 router.delete("/:postId", async(req, res) => {
     try {
-        /*const postId = parseInt(req.params.postId)
         const cypher = 'MATCH (p:Post)-[r:LOCATED_AT]->(l:Location) WHERE id(p) = $id DETACH DELETE p RETURN id(l)'
+        const rez=await session.run(cypher, { id: parseInt(req.params.postId) });
 
-        const rez=await session.run(cypher, { id: postId });
-
-        await session.run('MATCH (l:Location) WHERE id(l)=$id DELETE l', { id: rez.records[0].get('id(l)').low });*/
+        //brisanje lokacije ako nema vise objava sa tom lokacijom
+        const cypher2= 'MATCH (l:Location) WHERE NOT ()-[:LOCATED_AT]->(l) AND id(l)=$id DELETE l'
+        await session.run(cypher2, { id: rez.records[0].get('id(l)').low });
 
         return res.send("Objava uspesno obrisana");
     } catch (ex) {
