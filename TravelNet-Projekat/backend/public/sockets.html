@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+  </head>
+  <body>
+    <div>
+      <input id="username" type=text placeholder="@my-username"/>
+      <button onclick="join()">Join</button>
+    </div>
+    </br>
+    <div>
+      <input id="view" type=text placeholder="view-type"/>
+      <button onclick="changeView()">Change</button>
+    </div>
+  </br>
+    <div>
+      <input id="for-user-send-message" type=text placeholder="@receiver-username"/>
+      <input id="chat-id-send-message" type=text placeholder="chat-id"/>
+      <input id="content-type-send-message" type=text placeholder="content-type"/>
+      <input id="content-send-message" type=text placeholder="content"/>
+      <button onclick="sendMessage()">Send Message</button>
+    </div>
+  </br>
+  <div>
+    <input id="from-user-read-messages" type=text placeholder="@sender-username"/>
+    <input id="chat-id-read-messages" type=text placeholder="chat-id"/>
+    <button onclick="readMessages()">Read Messages</button>
+  </div>
+</br>
+    <div>
+      <input id="for-user-like-post" type=text placeholder="@username"/>
+      <input id="content-like-post" type=text placeholder="post-id"/>
+      <button onclick="likePost()">Like</button>
+    </div>
+  </br>
+  <div>
+    <input id="for-user-comment-post" type=text placeholder="@username"/>
+    <input id="content-comment-post" type=text placeholder="post-id"/>
+    <button onclick="commentPost()">Comment</button>
+  </div>
+</br>
+<div>
+  <input id="for-user-send-friend-request" type=text placeholder="@username"/>
+    <input id="content-friend-request" type=text placeholder="request-content"/>
+    <button onclick="sendFriendRequest()">Send friend request</button>
+</div>
+</br>
+    <div>
+      <input id="for-user-accept-friend-request" type=text placeholder="@username"/>
+      <input id="content-accept-friend-request" type=text placeholder="accept-content"/>
+      <button onclick="acceptFriendRequest()">Accept friend request</button>
+    </div>
+    <script src="socket.io/socket.io.js"></script>
+    <script src="sockets.js" type="module"></script>
+  </body>
+</html>
