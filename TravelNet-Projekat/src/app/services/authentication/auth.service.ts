@@ -20,7 +20,7 @@ export class AuthService {
 
     constructor(private http: HttpClient, private router: Router) {}
 
-    register(fName: string, lName: string, email: string, username: string, password: string, desc: string, imagePath: string){
+    register(fName: string, lName: string, email: string, username: string, password: string, desc: string, image: string){
         return this.http.post("http://localhost:3000/users/register",
         {
             firstName : fName,
@@ -28,7 +28,7 @@ export class AuthService {
             email: email,
             username: username,
             password: password,
-            file: imagePath,
+            image: image,
             bio: desc
         },
         {responseType : 'text'});

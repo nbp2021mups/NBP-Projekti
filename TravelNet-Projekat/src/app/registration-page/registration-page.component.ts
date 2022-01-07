@@ -41,9 +41,9 @@ export class RegistrationPageComponent implements OnInit {
     const username = this.form.get('username').value;
     const password = this.form.get('lozinka').value;
     const desc = this.form.get('opis').value;
-    const imagePath = this.form.value.slika;
+    const image = this.form.value.slika;
 
-    this.authService.register(fName, lName, email, username, password, desc, imagePath).subscribe(
+    this.authService.register(fName, lName, email, username, password, desc, image).subscribe(
       {next : (resp) => {
         console.log(resp);
       },
