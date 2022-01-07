@@ -17,10 +17,11 @@ router.post("", async(req, res) => {
     }
 })
 
-router.delete("/:likeId", async(req, res) => {
+router.delete("/:userId/:postId", async(req, res) => {
     try {
-        const cypher = 'MATCH ()-[r]-() WHERE id(r)=$id DELETE r'
-        const params = { id: parseInt(req.params.likeId) }
+
+        const cypher = 'MATCH (u:User)-[r:LIKED]-(p:Post) WHERE id(u)=$userId AND id(l)=$postId DELETE r'
+        const params = { id: parseInt(req.params.likeId), locationId: parseInt(req.params.locationId) }
         await session.run(cypher, params);
         return res.send("Lajk obrisan uspesno");
     } catch (ex) {
