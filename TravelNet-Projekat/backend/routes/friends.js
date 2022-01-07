@@ -47,11 +47,12 @@ router.post("/accept", async(req, res) => {
     try {
         const cypher1 = `MATCH (u1:User), (u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
-                        MERGE (u2)-[r:IS_FRIEND{time: $time, chatId: $chatId}]->(u1)`;
+                        SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
+                        MERGE (u2)-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u1)`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
-            time: new Date().toString(),
+            since: new Date().toString(),
             chatId: getChatId()
         };
         await session.run(cypher1, params);
@@ -72,6 +73,7 @@ router.delete("", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User)-[r:IS_FRIEND]-(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
+                        SET u1.friendsNo=u1.friendsNo-1, u2.friendsNo=u2.friendsNo-1
                         DELETE r`;
         const params = {
             id1: req.body.id1,

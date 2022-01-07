@@ -8,6 +8,7 @@ router.post("", async(req, res) => {
     try {
         const cypher = `MATCH (u:User), (p:Post)
                         WHERE id(u)=$userId AND id(p)=$postId
+                        SET p.commentNo=p.commentNo+1
                         MERGE (u)-[r:COMMENTED{comment: $comment, time: $time}]->(p)`;
         const params = {
             userId: req.body.userId,
@@ -27,7 +28,7 @@ router.post("", async(req, res) => {
 router.get("/:postId", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:COMMENTED]->(p:Post)
-                        WHERE id(p)=$postId 
+                        WHERE id(p)=$postId
                         RETURN r, u
                         ORDER BY r.time DESC
                         LIMIT 20`;

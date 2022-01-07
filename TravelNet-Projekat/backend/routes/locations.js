@@ -7,7 +7,10 @@ const session = driver.session();
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
     try {
-        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS{time: $time}]->(l)';
+        const cypher = `MATCH (u:User), (l:Location)
+        WHERE id(u) = $userId AND id(l) = $locationId
+        SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
+        MERGE (u)-[r:FOLLOWS{time: $time}]->(l)`;
         await session.run(cypher, {
             userId: parseInt(req.body.userId),
             locationId: parseInt(req.body.locationId),
@@ -24,7 +27,10 @@ router.post("/follow", async(req, res) => {
 //korisnik otpracuje lokaciju
 router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     try {
-        const cypher = 'MATCH (u:User)-[r:FOLLOWS]-(l:Locations) WHERE id(u)=$userId AND id(l)=$locationId DELETE r'
+        const cypher = `MATCH (u:User)-[r:FOLLOWS]-(l:Locations)
+        WHERE id(u)=$userId AND id(l)=$locationId
+        SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
+        DELETE r`
         await session.run(cypher, { userId: parseInt(req.params.userId), locationId: parseInt(req.params.locationId) })
         return res.send("Lokacija je otpraćena")
     } catch (ex) {

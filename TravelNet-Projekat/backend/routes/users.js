@@ -8,6 +8,9 @@ const storage = require("../storage");
 
 const session = driver.session();
 
+/* friendsNo: Int				[Prijatelji]
+	followedLocationsNo: Int	[Praćene lokacije]
+	postsNo: Int */
 //registracija
 router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
 
@@ -25,7 +28,15 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
         imgPath += "universal.jpg";
 
     try {
-        let cypher = 'CREATE (a:User {firstName: $firstName, lastName: $lastName, email: $email, username: $username, password: $password, image: $image';
+        let cypher = `CREATE (a:User {firstName: $firstName,
+          lastName: $lastName,
+          email: $email,
+          username: $username,
+          password: $password,
+          image: $image,
+          friendsNo: 0,
+          followedLocationsNo: 0,
+          postsNo: 0`;
         const params = {
             firstName: userFirstName,
             lastName: userLastName,
