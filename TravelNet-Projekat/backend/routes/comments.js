@@ -6,8 +6,15 @@ const session = driver.session();
 
 router.post("", async(req, res) => {
     try {
-        const cypher = 'MATCH (u:User), (p:Post) WHERE id(u)=$userId AND id(p)=$postId MERGE (u)-[r:COMMENTED{comment: $comment}]->(p)'
-        const params = { userId: req.body.userId, postId: req.body.postId, comment: req.body.comment }
+        const cypher = `MATCH (u:User), (p:Post)
+                        WHERE id(u)=$userId AND id(p)=$postId
+                        MERGE (u)-[r:COMMENTED{comment: $comment, time: $time}]->(p)`;
+        const params = {
+            userId: req.body.userId,
+            postId: req.body.postId,
+            comment: req.body.comment,
+            time: new Date().toString()
+        };
         await session.run(cypher, params);
         return res.send("comment postavljen uspesno");
     } catch (ex) {

@@ -11,7 +11,7 @@ router.post("/follow", async(req, res) => {
         await session.run(cypher, {
             userId: parseInt(req.body.userId),
             locationId: parseInt(req.body.locationId),
-            time: new Date()
+            time: new Date().toString()
         });
         return res.send("Lokacija je zapraćena");
     } catch (ex) {

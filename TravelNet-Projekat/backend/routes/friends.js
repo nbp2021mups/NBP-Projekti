@@ -1,5 +1,6 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
+const { randomUUID } = require('crypto');
 const router = express.Router();
 
 const session = driver.session();
@@ -7,8 +8,14 @@ const session = driver.session();
 //slanje zahteva za prijateljstvo(u1 salje u2 zahtev)
 router.post("/request", async(req, res) => {
     try {
-        const cypher = 'MATCH (u1:User), (u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 MERGE (u1)-[r:SENT_REQUEST]->(u2)'
-        const params = { id1: req.body.id1, id2: req.body.id2 }
+        const cypher = `MATCH (u1:User), (u2:User)
+                        WHERE id(u1)=$id1 AND id(u2)=$id2
+                        MERGE (u1)-[r:SENT_REQUEST{time: $time}]->(u2)`;
+        const params = {
+            id1: req.body.id1,
+            id2: req.body.id2,
+            time: new Date().toString()
+        };
         await session.run(cypher, params);
         return res.send("Zahtev je poslat uspešno.");
     } catch (ex) {
@@ -20,8 +27,13 @@ router.post("/request", async(req, res) => {
 //brisanje zahteva za prijateljstvo(u1 brise zahtev ili u2 odbija zahtev)
 router.delete("/request", async(req, res) => {
     try {
-        const cypher = 'MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 DELETE r'
-        const params = { id1: req.body.id1, id2: req.body.id2 }
+        const cypher = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User)
+                        WHERE id(u1)=$id1 AND id(u2)=$id2
+                        DELETE r`;
+        const params = {
+            id1: req.body.id1,
+            id2: req.body.id2
+        };
         await session.run(cypher, params);
         return res.send("Zahtev je obrisan uspešno.");
     } catch (ex) {
@@ -33,8 +45,15 @@ router.delete("/request", async(req, res) => {
 //prihvatanje zahteva za prijateljstvo(u2 prihvata u1)
 router.post("/accept", async(req, res) => {
     try {
-        const cypher1 = 'MATCH (u1:User), (u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 MERGE (u2)-[r:IS_FRIEND]->(u1)'
-        const params = { id1: req.body.id1, id2: req.body.id2 }
+        const cypher1 = `MATCH (u1:User), (u2:User)
+                        WHERE id(u1)=$id1 AND id(u2)=$id2
+                        MERGE (u2)-[r:IS_FRIEND{time: $time, chatId: $chatId}]->(u1)`;
+        const params = {
+            id1: req.body.id1,
+            id2: req.body.id2,
+            time: new Date().toString(),
+            chatId: getChat
+        };
         await session.run(cypher1, params);
         let cypher2 =
             'MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 ' +
