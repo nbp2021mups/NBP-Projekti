@@ -1,5 +1,6 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
+const { int } = require('neo4j-driver');
 const router = express.Router();
 
 const session = driver.session();
@@ -31,8 +32,8 @@ router.delete("/:userId/:postId", async(req, res) => {
                         SET p.likesNo=p.likesNo-1
                         DELETE r`;
         const params = {
-            id: parseInt(req.params.likeId),
-            locationId: parseInt(req.params.locationId)
+            id: int(req.params.likeId),
+            locationId: int(req.params.locationId)
         };
         await session.run(cypher, params);
         return res.send("Lajk obrisan uspesno");
@@ -42,14 +43,20 @@ router.delete("/:userId/:postId", async(req, res) => {
     }
 });
 
-// Vracanje poslednjih 20 postova koje je user lajkovao
-router.get("/user/:username", async(req, res) => {
+// Vracanje opsega postova koje je korisnik lajkovao
+router.get("/user/:username/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u:User { username: $username })-[r:LIKED]->(p:Post)
                         RETURN p
                         ORDER BY r.time DESC
-                        LIMIT 20`;
-        const result = await session.run(cypher, { username: req.params.username });
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            username: req.params.username,
+            startIndex: 0 || int(req.params.startIndex),
+            count: 20 || int(req.params.count)
+        };
+        const result = await session.run(cypher, params);
         const rez = {
             posts: result.records.map(x => ({
                 id: x.get("p").identity.low,
@@ -63,15 +70,22 @@ router.get("/user/:username", async(req, res) => {
     }
 });
 
-// Vracanje poslednjih 20 korisnika koji su lajkovali objavu
-router.get("/post/:postId", async(req, res) => {
+// Vracanje opsega korisnika koji su lajkovali objavu
+router.get("/post/:postId/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:LIKED]->(p:Post)
                       WHERE id(p) = $postId
                       RETURN u
                       ORDER BY r.time DESC
-                      LIMIT 20`;
-        const result = await session.run(cypher, { postId: parseInt(req.params.postId) });
+                      SKIP $startIndex
+                      LIMIT $count`;
+        const params = {
+            postId: int(req.params.postId),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
+        console.log(params)
+        const result = await session.run(cypher, params);
         const rez = {
             users: result.records.map(x => ({
                 id: x.get("u").identity.low,

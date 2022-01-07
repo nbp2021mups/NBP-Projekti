@@ -2,6 +2,7 @@ const driver = require('../neo4jdriver');
 const express = require("express");
 const { getChatId } = require("./../redisclient");
 const router = express.Router();
+const { int } = require('neo4j-driver');
 
 const session = driver.session();
 
@@ -48,7 +49,7 @@ router.post("/accept", async(req, res) => {
         const cypher1 = `MATCH (u1:User), (u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
-                        MERGE (u2)-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u1)`;
+                        MERGE (u2)<-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u1)`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
@@ -56,7 +57,7 @@ router.post("/accept", async(req, res) => {
             chatId: getChatId()
         };
         await session.run(cypher1, params);
-        let cypher2 = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2
+        const cypher2 = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2
                     CALL apoc.refactor.setType(r, "IS_FRIEND")
                     YIELD input, output
                     RETURN input, output`;
@@ -88,7 +89,7 @@ router.delete("", async(req, res) => {
 })
 
 //preporuka prijatelja korisniku ciji je id proslednjen, sortirani po broju zajednickih prijatelja
-router.get("/recommendation/:userId", async(req, res) => {
+router.get("/recommendation/:userId/:startIndex/:count", async(req, res) => {
     try {
         let cypher = `MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User)
                     WHERE id(u)=$id AND id(friend_of_friend)<>$id
@@ -98,8 +99,13 @@ router.get("/recommendation/:userId", async(req, res) => {
                     friend_of_friend.lastName AS lastName,
                     friend_of_friend.image AS image
                     ORDER BY mutalFriends DESC
-                    LIMIT 10`;
-        const params = { id: parseInt(req.params.userId) };
+                    SKIP $startIndex
+                    LIMIT $count`;
+        const params = {
+            id: int(req.params.userId),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
         const result = await session.run(cypher, params);
         const rez = result.records.map((record) => ({
             mutalFriends: record.get('mutalFriends').low,
@@ -115,14 +121,20 @@ router.get("/recommendation/:userId", async(req, res) => {
     }
 });
 
-// Vracanje poslednjih 20 prijatelja korisnika
-router.get("/:username", async(req, res) => {
+// Vracanje opsega prijatelja korisnika
+router.get("/:username/:startIndex/:count", async(req, res) => {
     try {
-        const cypher = `MATCH (u1:User { username: $username })<-[r:IS_FRIEND]->(u2:User)
+        const cypher = `MATCH (u1:User { username: $username })-[r:IS_FRIEND]->(u2:User)
                         RETURN u2
                         ORDER BY r.since DESC
-                        LIMIT 20`;
-        const result = await session.run(cypher, { username: req.params.username });
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            username: req.params.username,
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
+        const result = await session.run(cypher, params);
         const rez = {
             friends: result.records.map(x => ({
                 id: x.get("u2").identity.low,
