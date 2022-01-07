@@ -45,40 +45,7 @@ router.patch("/:postId", async(req, res) => {
         return res.status(401).send("Došlo je do greške");
     }
 })
-router.post("/comment", async(req, res) => {
-    try {
-        const cypher = 'MATCH (u:User), (p:Post) WHERE id(u)=$id1 AND id(p)=$id2 MERGE (u)-[r:COMMENT{comment: $komentar}]->(p)'
-        const params = { id1: req.body.id1, id2: req.body.id2,komentar: req.body.komentar }
-        await session.run(cypher, params);
-        return res.send("Komentar postavljen uspesno");
-    } catch (ex) {
-        console.log(ex)
-        return res.status(401).send("Došlo je do greške");
-    }
-})
-router.post("/like", async(req, res) => {
-    try {
-        const cypher = 'MATCH (u:User), (p:Post) WHERE id(u) = $id1 AND id(p) = $id2 MERGE (u)-[r:LIKE]->(p)'
-        const params = { id1: req.body.id1, id2: req.body.id2 }
-        await session.run(cypher,params);
-        return res.send("Lajk!");
-    } catch (ex) {
-        console.log(ex)
-        return res.status(401).send("Došlo je do greške");
-    }
-})
-router.delete("/unlike", async(req, res) => {
-    try {
-        
-        const cypher = 'MATCH (u:User)-[r:LIKE]->(p:Post) WHERE id(u) = $id1 AND id(p) = $id2 DELETE r'
-        const params = { id1: req.body.id1, id2: req.body.id2 }
-        await session.run(cypher,params);
-        return res.send("Lajk obrisan uspesno");
-    } catch (ex) {
-        console.log(ex)
-        return res.status(401).send("Došlo je do greške");
-    }
-})
+
 
 //brisanje objave svih veza sa kojima je imala
 router.delete("/:postId", async(req, res) => {

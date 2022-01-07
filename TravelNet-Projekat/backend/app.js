@@ -6,6 +6,9 @@ const postsRoutes = require("./routes/posts");
 const friendsRoutes = require("./routes/friends");
 const messageRoutes = require("./routes/messages");
 const notificationRoutes = require("./routes/notifications");
+const commentsRoutes = require("./routes/comments");
+const likesRoutes = require("./routes/likes");
+const locationsRoutes = require("./routes/locations");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -30,5 +33,8 @@ app.use("/posts", postsRoutes);
 app.use("/friends", friendsRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/messages", messageRoutes);
+app.use("/comments", commentsRoutes);
+app.use("/likes", likesRoutes);
+app.use("/locations", locationsRoutes);
 
 module.exports = app;
