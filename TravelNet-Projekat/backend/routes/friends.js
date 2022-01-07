@@ -47,11 +47,11 @@ router.post("/accept", async(req, res) => {
     try {
         const cypher1 = `MATCH (u1:User), (u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
-                        MERGE (u2)-[r:IS_FRIEND{time: $time, chatId: $chatId}]->(u1)`;
+                        MERGE (u2)-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u1)`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
-            time: new Date().toString(),
+            since: new Date().toString(),
             chatId: getChatId()
         };
         await session.run(cypher1, params);
