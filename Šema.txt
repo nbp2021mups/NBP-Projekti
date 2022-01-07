@@ -1,94 +1,102 @@
 // Nodes
 
-User: {						[Korisnik]
-	id: Int,				[Identifikator]
-	username: String, 		[Korisničko ime]
-	email: String,			[Email adresa]
-	password: String,		[Lozinka]
-	firstName: String,		[Ime]
-	lastName: String,		[Prezime]
-	photo: String,			[Fotografija]
-	bio: String,			[Opis]
-	joined: Date			[Korisnik od]
+User: {							[Korisnik]
+	id: Int,					[Identifikator]
+	username: String, 			[Korisničko ime]
+	email: String,				[Email adresa]
+	password: String,			[Lozinka]
+	firstName: String,			[Ime]
+	lastName: String,			[Prezime]
+	photo: String,				[Fotografija]
+	bio: String,				[Opis]
+	joined: Date,				[Korisnik od]
+	friendsNo: Int				[Prijatelji]
+	followedLocationsNo: Int	[Praćene lokacije]
+	postsNo: Int				[Objave]
 }
 
-Location: {					[Lokacija]
-	id: Int,				[Identifikator]
-	city: String,			[Grad]
-	country: String			[Država]
+Location: {						[Lokacija]
+	id: Int,					[Identifikator]
+	city: String,				[Grad]
+	country: String,			[Država]
+	followersNo: Int,			[Pratioci]
+	postsNo: Int,				[Objave]
+	rating: Float				[Ocena]
 }
 
-Post: {						[Objava]
-	id: Int,				[Identifikator]
-	photo: String,			[Fotografija]
-	description: String		[Opis]
+Post: {							[Objava]
+	id: Int,					[Identifikator]
+	photo: String,				[Fotografija]
+	description: String,		[Opis]
+	likeNo: Int,				[Broj lajkova]
+	commentNo: Int				[Broj komenatara]
 }
 //
 
 // Relations
 
 User -> Post
-SHARED: {					[Objavljeno]
-	id: Int,				[Identifikator]
-	time: Date				[U]
+SHARED: {						[Objavljeno]
+	id: Int,					[Identifikator]
+	time: Date					[U]
 }
 
 User -> Post
-LIKED: {					[Lajkovano]
-	id: Int,				[Identifikator]
-	time: Date				[U]
+LIKED: {						[Lajkovano]
+	id: Int,					[Identifikator]
+	time: Date					[U]
 }
 
 User -> Post
-COMMENTED: {				[Komentarisano]
-	id: Int,				[Identifikator]
-	time: Date,				[U]
-	content: String			[Sadržaj]
+COMMENTED: {					[Komentarisano]
+	id: Int,					[Identifikator]
+	time: Date,					[U]
+	content: String				[Sadržaj]
 }
 
 Post -> Location
-LOCATED_AT : {				[Na]
-	id: Int					[Identifikator]
+LOCATED_AT : {					[Na]
+	id: Int						[Identifikator]
 }
 
 User -> Location
-FOLLOWS: {					[Prati]
-	id: Int,				[Identifikator]
-	time: Date				[Od]
-	notifications: Bool		[Omogućena obaveštenja]
+FOLLOWS: {						[Prati]
+	id: Int,					[Identifikator]
+	time: Date					[Od]
+	notifications: Bool			[Omogućena obaveštenja]
 }
 
 User -> User
 SENT_REQUEST: {
-	id: Int					[Identifikator],
-	time: Date				[Vreme]
+	id: Int						[Identifikator],
+	time: Date					[Vreme]
 }
 
 User <-> User
-IS_FRIEND: {				[Prijatelj]
-	id: Int,				[Identifikator]
-	chatId: Int,			[Identifikator konverzacije]
-	since: Date				[Prijatelji od]
+IS_FRIEND: {					[Prijatelj]
+	id: Int,					[Identifikator]
+	chatId: Int,				[Identifikator konverzacije]
+	since: Date					[Prijatelji od]
 }
 //
 
 
 
 // Ovo će najverovatnije da ide u redis, ali ovo su atributi
-Message: {					[Poruka]
-	id: Int, 
-	from: String,			[Od]
-	to: String,				[Za]
-	contentType: String,	[Vrsta sadržaja]
-	content: String,		[Sadržaj]
-	timeSent: String,		[Poslato]
-	timeDelivered: String	[Viđeno]
+Message: {						[Poruka]
+	id: Int, 					[Identifikator]
+	from: String,				[Od]
+	to: String,					[Za]
+	contentType: String,		[Vrsta sadržaja]
+	content: String,			[Sadržaj]
+	timeSent: String,			[Poslato]
+	timeDelivered: String		[Viđeno]
 }
 
-Chat: {
-	id: Int,
-	user1Id: String,
-	user2Id: String,
-	messages ??
+Chat: {							[Ćaskanje]
+	id: Int,					[Identifikator]
+	user1Id: String,			[Identifikator korisnika 1]
+	user2Id: String,			[Identifikator korisnika 2]
+	messages ??					[Poruke]
 }
 //
