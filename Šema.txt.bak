@@ -2,14 +2,14 @@
 
 User: {
 	id: Int,
-	username: String,
-	email: String,
-	password: String,
-	first_name: String,
-	last_name: String,
-	photo: String,
-	bio: String,
-	joined: Date
+	username: String, 	[Korisničko ime]
+	email: String,		[Email adresa]
+	password: String,	[Lozinka]
+	first_name: String,	[Ime]
+	last_name: String,	[Prezime]
+	photo: String,		[Fotografija]
+	bio: String,		[Opis]
+	joined: Date		[Korisnik od]
 }
 
 Location: {
