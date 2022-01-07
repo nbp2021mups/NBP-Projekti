@@ -1,6 +1,7 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
 const router = express.Router();
+const { int } = require('neo4j-driver');
 
 const session = driver.session();
 
@@ -24,15 +25,20 @@ router.post("", async(req, res) => {
     }
 });
 
-// Vracanje poslednjih 20 komenata objave
-router.get("/:postId", async(req, res) => {
+// Vracanje opsega komenatara objave
+router.get("/:postId/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:COMMENTED]->(p:Post)
                         WHERE id(p)=$postId
                         RETURN r, u
                         ORDER BY r.time DESC
-                        LIMIT 20`;
-        const params = { postId: parseInt(req.params.postId) };
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            postId: int(req.params.postId),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
         const result = await session.run(cypher, params);
         return res.send({
             comments: result.records.map(c => ({

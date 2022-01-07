@@ -1,6 +1,7 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
 const router = express.Router();
+const { int } = require('neo4j-driver');
 
 const session = driver.session();
 
@@ -12,8 +13,8 @@ router.post("/follow", async(req, res) => {
         SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
         MERGE (u)-[r:FOLLOWS{time: $time}]->(l)`;
         await session.run(cypher, {
-            userId: parseInt(req.body.userId),
-            locationId: parseInt(req.body.locationId),
+            userId: int(req.body.userId),
+            locationId: int(req.body.locationId),
             time: new Date().toString()
         });
         return res.send("Lokacija je zapraćena");
@@ -27,11 +28,11 @@ router.post("/follow", async(req, res) => {
 //korisnik otpracuje lokaciju
 router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     try {
-        const cypher = `MATCH (u:User)-[r:FOLLOWS]-(l:Locations)
+        const cypher = `MATCH (u:User)-[r:FOLLOWS]->(l:Location)
         WHERE id(u)=$userId AND id(l)=$locationId
         SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
         DELETE r`
-        await session.run(cypher, { userId: parseInt(req.params.userId), locationId: parseInt(req.params.locationId) })
+        await session.run(cypher, { userId: int(req.params.userId), locationId: int(req.params.locationId) })
         return res.send("Lokacija je otpraćena")
     } catch (ex) {
         console.log(ex)
@@ -40,14 +41,20 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
 
 });
 
-// Vracanje poslednjih 20 lokacija koje korisnik prati
-router.get("/follows/:username", async(req, res) => {
+// Vracanje opsega lokacija koje korisnik prati
+router.get("/follows/:username/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u:User { username: $username })-[r:FOLLOWS]->(l:Location)
                         RETURN l, r
                         ORDER BY r.time DESC
-                        LIMIT 20`;
-        const result = await session.run(cypher, { username: req.params.username });
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            username: req.params.username,
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
+        const result = await session.run(cypher, params);
         const rez = {
             locations: result.records.map(x => ({
                 id: x.get("l").identity.low,
@@ -62,14 +69,20 @@ router.get("/follows/:username", async(req, res) => {
     }
 });
 
-// Vracanje poslednjih 20 lokacija koje je korisnik tagovao u postovima (posetio)
-router.get("/postedOn/:username", async(req, res) => {
+// Vracanje opsega lokacija koje je korisnik tagovao u postovima (posetio)
+router.get("/postedOn/:username/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u:User { username: $username })-[r1:SHARED]->(p:Post)-[r2:LOCATED_AT]->(l:Location)
                         RETURN l
                         ORDER BY r1.time DESC
-                        LIMIT 20`;
-        const result = await session.run(cypher, { username: req.params.username });
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            username: req.params.username,
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count)
+        };
+        const result = await session.run(cypher, params);
         const rez = {
             locations: result.records.map(x => ({
                 id: x.get("l").identity.low,
