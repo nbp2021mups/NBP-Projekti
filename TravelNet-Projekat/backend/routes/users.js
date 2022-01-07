@@ -11,33 +11,33 @@ const session = driver.session();
 //registracija
 router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
 
-    if (req.body.ime == null || req.body.prezime == null || req.body.email == null || req.body.username == null || req.body.lozinka == null)
+    if (req.body.firstName == null || req.body.lastName == null || req.body.email == null || req.body.username == null || req.body.password == null)
         return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
 
-    const hesiranaLozinka = await bcrypt.hash(req.body.lozinka, 12);
-    const imeKlijenta = req.body.ime.charAt(0).toUpperCase() + req.body.ime.slice(1);
-    const prezimeKlijenta = req.body.prezime.charAt(0).toUpperCase() + req.body.prezime.slice(1);
+    const hashPassword = await bcrypt.hash(req.body.password, 12);
+    const userFirstName = req.body.firstName.charAt(0).toUpperCase() + req.body.firstName.slice(1);
+    const userLastName = req.body.lastName.charAt(0).toUpperCase() + req.body.lastName.slice(1);
     const url = req.protocol + "://" + req.get("host");
-    let putanjaSlike = url + "/images/";
+    let imgPath = url + "/images/";
     if (req.file)
-        putanjaSlike += req.file.filename;
+        imgPath += req.file.filename;
     else
-        putanjaSlike += "universal.jpg";
+        imgPath += "universal.jpg";
 
     try {
-        let cypher = 'CREATE (a:User {ime: $ime, prezime: $prezime, email: $email, username: $username, lozinka: $lozinka, slika: $slika';
+        let cypher = 'CREATE (a:User {firstName: $firstName, lastName: $lastName, email: $email, username: $username, password: $password, image: $image';
         const params = {
-            ime: imeKlijenta,
-            prezime: prezimeKlijenta,
+            firstName: userFirstName,
+            lastName: userLastName,
             email: req.body.email,
             username: req.body.username,
-            lozinka: hesiranaLozinka,
-            slika: putanjaSlike
+            password: hashPassword,
+            image: imgPath
         }
 
-        if (req.body.opis) {
-            cypher += ', opis: $opis';
-            params.opis = req.body.opis;
+        if (req.body.bio!='') {
+            cypher += ', bio: $bio';
+            params.bio = req.body.bio;
         }
         cypher += '})';
         await session.run(cypher, params);
@@ -45,22 +45,22 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
         return res.send("Uspesno registrovan")
     } catch (ex) {
         if (ex.message.includes('email'))
-            return res.status(409).send("Postoji email");
+            return res.status(409).send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
         else
-            return res.status(409).send("Postoji username");
+            return res.status(409).send("Postoji nalog sa ovim username-om, probajte ponovo");
     }
 })
 
 //logovanje
 router.post("/login", async(req, res) => {
     try {
-        const result = await session.run('MATCH (u:User) WHERE u.username=$username RETURN u.lozinka, id(u)', { username: req.body.username });
+        const result = await session.run('MATCH (u:User) WHERE u.username=$username RETURN u.password, id(u)', { username: req.body.username });
         if (result.records.length == 0)
-            return res.status(401).send("Greska pri logovanju"); //ne postoji nalog sa ovim username-om
+            return res.status(401).send("Greška pri logovanju, pokušajte ponovo."); //ne postoji nalog sa ovim username-om
 
         const userPassword = result.records[0].get(0);
         const userId = result.records[0].get(1).low;
-        const isCorrect = await bcrypt.compare(req.body.lozinka, userPassword);
+        const isCorrect = await bcrypt.compare(req.body.password, userPassword);
 
         if (isCorrect) {
             const token = jwt.sign({
@@ -69,12 +69,12 @@ router.post("/login", async(req, res) => {
                 },
                 "token", { expiresIn: "1h" }
             );
-            return res.send({ id: userId, token: token, trajanjeTokena: 60 });
+            return res.send({ id: userId, token: token, expiration: 60 });
         } else
-            return res.status(401).send("Greska pri logovanju")
+            return res.status(401).send("Greška pri logovanju, pokušajte ponovo.")
 
     } catch {
-        return res.status(401).send("Greska pri logovanju");
+        return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
     }
 
 })
@@ -86,9 +86,9 @@ router.patch("/:id", multer({ storage: storage }).single("image"), async(req, re
         const params = new Object()
         params.id = parseInt(req.params.id)
 
-        if (req.body.slika) {
-            params.username = req.body.slika
-            chyper = 'u.slika = $slika'
+        if (req.body.image) {
+            params.username = req.body.image
+            chyper = 'u.image = $image'
         }
         if (req.body.username) {
             if (chyper)
@@ -97,40 +97,40 @@ router.patch("/:id", multer({ storage: storage }).single("image"), async(req, re
             params.username = req.body.username
         }
 
-        if (req.body.lozinka && req.body.novaLozinka) {
-            const result = await session.run('MATCH (u:User) WHERE id(u)=$id RETURN u.lozinka', { id: parseInt(req.params.id) });
-            const isValid = await bcrypt.compare(req.body.lozinka, result.records[0].get(0));
+        if (req.body.password && req.body.newPassword) {
+            const result = await session.run('MATCH (u:User) WHERE id(u)=$id RETURN u.password', { id: parseInt(req.params.id) });
+            const isValid = await bcrypt.compare(req.body.password, result.records[0].get(0));
             if (isValid) {
-                const hesiranaLozinka = await bcrypt.hash(req.body.novaLozinka, 12);
+                const hashPassword = await bcrypt.hash(req.body.newPassword, 12);
                 if (chyper)
                     chyper += ', '
-                chyper += 'u.lozinka = $lozinka'
-                params.lozinka = hesiranaLozinka
+                chyper += 'u.password = $password'
+                params.password = hashPassword
             } else
-                return res.status(305).send("Uneta lozinka se ne poklapa sa trenutnom lozinkom, proverite unete podatke.");
+                return res.status(305).send("Uneta password se ne poklapa sa trenutnom lozinkom, proverite unete podatke.");
         }
 
-        if (req.body.opis) {
+        if (req.body.bio) {
             if (chyper)
                 chyper += ', '
-            chyper += 'u.opis = $opis'
-            params.opis = req.body.opis
+            chyper += 'u.bio = $bio'
+            params.bio = req.body.bio
         }
         if (req.file) {
             const url = req.protocol + "://" + req.get("host");
-            let putanjaSlike = url + "/images/" + req.file.filename;
+            let imgPath = url + "/images/" + req.file.filename;
             if (chyper)
                 chyper += ', '
-            chyper += 'u.slika = $slika'
-            params.slika = putanjaSlike
+            chyper += 'u.image = $image'
+            params.image = imgPath
 
         }
         await session.run('MATCH (u:User) WHERE id(u)=$id SET ' + chyper, params);
-        return res.send("Uspesno azuriranje")
+        return res.send("Ažuriranje podataka je uspešno.")
     } catch (ex) {
         if (ex.message.includes('username'))
-            return res.status(409).send("Postoji nalog sa ovim username-om");
-        return res.status(409), send("Doslo je do greske prilikom azuriranja!");
+            return res.status(409).send("Postoji nalog sa ovim username-om, probajte ponovo.");
+        return res.status(409), send("Doslo je do greške prilikom ažuriranja, pokušajte ponovo.");
     }
 })
 

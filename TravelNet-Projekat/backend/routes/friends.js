@@ -10,10 +10,10 @@ router.post("/request", async(req, res) => {
         const cypher = 'MATCH (u1:User), (u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 MERGE (u1)-[r:SENT_REQUEST]->(u2)'
         const params = { id1: req.body.id1, id2: req.body.id2 }
         await session.run(cypher, params);
-        return res.send("Zahtev poslat uspesno");
+        return res.send("Zahtev je poslat uspešno.");
     } catch (ex) {
         console.log(ex)
-        return res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Došlo je do greške, probajte ponovo.");
     }
 })
 
@@ -23,10 +23,10 @@ router.delete("/request", async(req, res) => {
         const cypher = 'MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2 DELETE r'
         const params = { id1: req.body.id1, id2: req.body.id2 }
         await session.run(cypher, params);
-        return res.send("Zahtev obrisan uspesno");
+        return res.send("Zahtev je obrisan uspešno.");
     } catch (ex) {
         console.log(ex)
-        return res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Došlo je do greške, probajte ponovo.");
     }
 })
 
@@ -69,18 +69,18 @@ router.get("/recommendation/:userId", async(req, res) => {
         let cypher =
             'MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User) ' +
             'WHERE id(u)=$id AND id(friend_of_friend)<>$id ' +
-            'RETURN DISTINCT count(friend_of_friend) AS zajednickiPrijatelji, friend_of_friend.username AS username , friend_of_friend.ime AS ime, friend_of_friend.prezime AS prezime, friend_of_friend.slika AS slika ' +
-            'ORDER BY zajednickiPrijatelji DESC ' +
+            'RETURN DISTINCT count(friend_of_friend) AS mutalFriends, friend_of_friend.username AS username , friend_of_friend.firstName AS firstName, friend_of_friend.lastName AS lastName, friend_of_friend.image AS image ' +
+            'ORDER BY mutalFriends DESC ' +
             'LIMIT 10'
         const params = { id: parseInt(req.params.userId) }
         const result = await session.run(cypher, params);
         const rez = result.records.map((record) => {
             return {
-                zajednickiPrijatelji: record.get('zajednickiPrijatelji').low,
+                mutalFriends: record.get('mutalFriends').low,
                 username: record.get('username'),
-                ime: record.get('ime'),
-                prezime: record.get('prezime'),
-                slika: record.get('slika')
+                firstName: record.get('firstName'),
+                lastName: record.get('lastName'),
+                image: record.get('image')
             }
         })
 

@@ -10,17 +10,18 @@ const session = driver.session();
 router.post("", async(req, res) => {
     try {
         //DODATI ZA SLIKU
-        const params = { opis: req.body.opis, idU: req.body.userId }
+        const params = { description: req.body.description, idU: req.body.userId }
         let cypher;
-        if (req.body.drzava && req.body.grad) {
-            console.log("Cao")
-            params.drzava = req.body.drzava;
-            params.grad = req.body.grad;
-            cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.drzava=$drzava AND l.grad=$grad CREATE (u)-[r1:SHARED]->(p:Post {opis: $opis})-[r2:LOCATED_AT]->(l)'
-        } else if ((req.body.drzava && req.body.noviGrad) || (req.body.novaDrzava && req.body.noviGrad) || (req.body.novaDrzava && req.body.grad)){
-            params.drzava = req.body.drzava ? req.body.drzava : req.body.novaDrzava;
-            params.grad = req.body.grad ? req.body.grad : req.body.noviGrad;
-            cypher = 'MATCH (u:User) WHERE id(u)=$idU CREATE (u)-[r1:SHARED]->(p:Post {opis: $opis})-[r2:LOCATED_AT]->(l:Location {drzava: $drzava, grad: $grad, opis: $opis})'
+        if (req.body.country && req.body.city) {
+            params.country = req.body.country;
+            params.city = req.body.city;
+            cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.country=$country AND l.city=$city '+
+            ' CREATE (u)-[r1:SHARED]->(p:Post {description: $description, likes:0, comments:0})-[r2:LOCATED_AT]->(l)'
+        } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity) || (req.body.newCountry && req.body.city)){
+            params.country = req.body.country ? req.body.country : req.body.newCountry;
+            params.city = req.body.city ? req.body.city : req.body.newCity;
+            cypher = 'MATCH (u:User) WHERE id(u)=$idU '+
+            'CREATE (u)-[r1:SHARED]->(p:Post {description: $description, likes:0, comments:0})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city})'
         }
         else
           return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
@@ -36,8 +37,8 @@ router.post("", async(req, res) => {
 //promena opisa objave
 router.patch("/:postId", async(req, res) => {
     try {
-        const cypher = 'MATCH (p:Post) WHERE id(p) = $id SET p.opis = $noviOpis'
-        const params = { id: parseInt(req.params.postId), noviOpis: req.body.noviOpis }
+        const cypher = 'MATCH (p:Post) WHERE id(p) = $id SET p.description = $newDescription'
+        const params = { id: parseInt(req.params.postId), newDescription: req.body.newDescription }
         await session.run(cypher, params);
         return res.send("Objava uspesno promenjena");
     } catch (ex) {
