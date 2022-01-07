@@ -13,8 +13,6 @@ export class ProfilePageComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    let path = "https://image.shutterstock.com/image-photo/young-girl-headphones-short-hair-600w-1951015864.jpg";
-    this.person = new PersonFull("pid1", "Srdjan", "Petrovic", path, [], [], "srdj4n@gmail.com");
   }
 
   isFriend(): boolean{

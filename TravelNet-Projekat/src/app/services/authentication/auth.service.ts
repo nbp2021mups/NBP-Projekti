@@ -8,7 +8,7 @@ import { Router } from "@angular/router";
 interface LoginData{
     id: number,
     token: string,
-    trajanjeTokena: number
+    expiration: number
 }
 
 
@@ -23,13 +23,13 @@ export class AuthService {
     register(fName: string, lName: string, email: string, username: string, password: string, desc: string, imagePath: string){
         return this.http.post("http://localhost:3000/users/register",
         {
-            ime : fName,
-            prezime: lName,
+            firstName : fName,
+            lastName: lName,
             email: email,
             username: username,
-            lozinka: password,
+            password: password,
             file: imagePath,
-            opis: desc
+            bio: desc
         },
         {responseType : 'text'});
     }
@@ -39,12 +39,12 @@ export class AuthService {
         return this.http.post<LoginData>("http://localhost:3000/users/login",
         {
             username: username,
-            lozinka : password
+            password : password
         }).pipe(tap(respData => {
-            const expDate = new Date(new Date().getTime() + respData.trajanjeTokena * 60 * 1000)
+            const expDate = new Date(new Date().getTime() + respData.expiration * 60 * 1000)
             const user = new User(respData.id, respData.token, expDate);
             this.user.next(user);
-            this.autoLogout(respData.trajanjeTokena * 60 * 1000);
+            this.autoLogout(respData.expiration * 60 * 1000);
             localStorage.setItem('logged-user', JSON.stringify(user));
         }));
     }
