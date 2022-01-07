@@ -8,9 +8,6 @@ const storage = require("../storage");
 
 const session = driver.session();
 
-/* friendsNo: Int				[Prijatelji]
-	followedLocationsNo: Int	[Praćene lokacije]
-	postsNo: Int */
 //registracija
 router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
 
@@ -46,7 +43,7 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
             image: imgPath
         }
 
-        if (req.body.bio!='') {
+        if (req.body.bio && req.body.bio!='') {
             cypher += ', bio: $bio';
             params.bio = req.body.bio;
         }
@@ -55,6 +52,7 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
 
         return res.send("Uspesno registrovan")
     } catch (ex) {
+      console.log(ex)
         if (ex.message.includes('email'))
             return res.status(409).send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
         else
