@@ -90,7 +90,28 @@ router.get("/recommendation/:userId", async(req, res) => {
         console.log(ex)
         return res.status(401).send("Došlo je do greške");
     }
-})
+});
+
+// Vracanje poslednjih 20 prijatelja korisnika
+router.get("/:username", async(req, res) => {
+    try {
+        const cypher = `MATCH (u1:User { username: $username })<-[r:IS_FRIEND]->(u2:User)
+                        RETURN u2
+                        ORDER BY r.time DESC
+                        LIMIT 20`;
+        const result = await session.run(cypher, { username: req.params.username });
+        const rez = {
+            friends: result.records.map(x => ({
+                id: x.get("u2").identity.low,
+                ...x.get("u2").properties
+            }))
+        };
+        res.send(rez);
+    } catch (ex) {
+        console.log(ex);
+        res.status(401).send("Došlo je do greške");
+    }
+});
 
 
 module.exports = router;

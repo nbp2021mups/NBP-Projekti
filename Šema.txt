@@ -8,7 +8,7 @@ User: {						[Korisnik]
 	firstName: String,		[Ime]
 	lastName: String,		[Prezime]
 	photo: String,			[Fotografija]
-	description: String,	[Opis]
+	bio: String,			[Opis]
 	joined: Date			[Korisnik od]
 }
 
@@ -54,6 +54,7 @@ LOCATED_AT : {				[Na]
 User -> Location
 FOLLOWS: {					[Prati]
 	id: Int,				[Identifikator]
+	time: Date				[Od]
 	notifications: Bool		[Omogućena obaveštenja]
 }
 

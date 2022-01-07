@@ -5,30 +5,72 @@ const router = express.Router();
 const session = driver.session();
 
 //korisnik zapracuje lokaciju
-router.post("/follow", async (req, res)=>{
+router.post("/follow", async(req, res) => {
 
-  try {
-    const cypher='MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS]->(l)'
-    await session.run(cypher, { userId: req.body.userId, locationId: req.body.locationId})
-    return res.send("Lokacija je zapraćena")
-  } catch (ex) {
-      console.log(ex)
-      return res.status(401).send("Došlo je do greške");
-  }
+    try {
+        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS]->(l)'
+        await session.run(cypher, { userId: req.body.userId, locationId: req.body.locationId })
+        return res.send("Lokacija je zapraćena")
+    } catch (ex) {
+        console.log(ex)
+        return res.status(401).send("Došlo je do greške");
+    }
 
 })
 
 //korisnik otpracuje lokaciju
-router.delete("/:relId/unfollow", async (req, res)=>{
-  try {
-    const cypher='MATCH ()-[r]-() WHERE id(r)=$id DELETE r'
-    await session.run(cypher, { id: parseInt(req.params.relId)})
-    return res.send("Lokacija je otpraćena")
-  } catch (ex) {
-      console.log(ex)
-      return res.status(401).send("Došlo je do greške");
-  }
+router.delete("/:relId/unfollow", async(req, res) => {
+    try {
+        const cypher = 'MATCH ()-[r]-() WHERE id(r)=$id DELETE r'
+        await session.run(cypher, { id: parseInt(req.params.relId) })
+        return res.send("Lokacija je otpraćena")
+    } catch (ex) {
+        console.log(ex)
+        return res.status(401).send("Došlo je do greške");
+    }
 
-})
+});
+
+// Vracanje poslednjih 20 lokacija koje korisnik prati
+router.get("/:username", async(req, res) => {
+    try {
+        const cypher = `MATCH (u:User { username: $username })-[r:FOLLOWS]->(l:Location)
+                        RETURN l
+                        ORDER BY r.time DESC
+                        LIMIT 20`;
+        const result = await session.run(cypher, { username: req.params.username });
+        const rez = {
+            locations: result.records.map(x => ({
+                id: x.get("l").identity.low,
+                ...x.get("l").properties
+            }))
+        };
+        res.send(rez);
+    } catch (ex) {
+        console.log(ex);
+        res.status(401).send("Došlo je do greške");
+    }
+});
+
+// Vracanje poslednjih 20 lokacija koje je korisnik tagovao u postovima (posetio)
+router.get("/postedOn/:username", async(req, res) => {
+    try {
+        const cypher = `MATCH (u:User { username: $username })-[r1:SHARED]->(p:Post)-[r2:LOCATED_AT]->(l:Location)
+                        RETURN l
+                        ORDER BY r1.time DESC
+                        LIMIT 20`;
+        const result = await session.run(cypher, { username: req.params.username });
+        const rez = {
+            locations: result.records.map(x => ({
+                id: x.get("l").identity.low,
+                ...x.get("l").properties
+            }))
+        };
+        res.send(rez);
+    } catch (ex) {
+        console.log(ex);
+        res.status(401).send("Došlo je do greške");
+    }
+});
 
 module.exports = router;
