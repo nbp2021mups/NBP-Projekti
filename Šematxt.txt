@@ -1,0 +1,79 @@
+// Nodes
+
+User: {
+	id: Int,
+	username: String,
+	email: String,
+	password: String,
+	first_name: String,
+	last_name: String,
+	photo: String,
+	bio: String,
+	joined: Date
+}
+
+Location: {
+	id: Int,
+	city: String,
+	country: String,
+	latitude: String,
+	longitude: String
+}
+
+Post: {
+	id: Int,
+	photo: String,
+	description: String
+}
+
+Message: {
+	id: Int, 
+	from: String,
+	to: String,
+	content_type: String,
+	content: String,
+	time_sent: String,
+	time_delivered: String
+}
+
+// Relations
+
+User -> Post
+SHARED:{
+	id: Int,
+	time: Date
+}
+
+User -> Post
+LIKED: {
+	id: Int,
+	time: Date
+}
+
+User -> Post
+COMMENTED: {
+	id: Int,
+	time: Date,
+	content: String
+}
+
+Post -> Location
+AT : {
+	id: Int
+}
+
+User <-> User
+IS_FRIEND: {
+	id: Int,
+	chat_id: Int,
+	since: Date
+}
+
+User -> Location
+FOLLOWING:{
+	id: Int,
+	notifications: Bool
+}
+
+
+
