@@ -28,7 +28,7 @@ router.post("/follow", async(req, res) => {
 //korisnik otpracuje lokaciju
 router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     try {
-        const cypher = `MATCH (u:User)-[r:FOLLOWS]-(l:Locations)
+        const cypher = `MATCH (u:User)-[r:FOLLOWS]->(l:Location)
         WHERE id(u)=$userId AND id(l)=$locationId
         SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
         DELETE r`

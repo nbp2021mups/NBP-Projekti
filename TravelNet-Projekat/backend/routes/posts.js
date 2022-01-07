@@ -20,10 +20,19 @@ router.post("", async(req, res) => {
                       WHERE id(u)=$idU AND l.country=$country AND l.city=$city
                       SET l.postsNo=l.postsNo+1, u.postsNo=u.postsNo+1
                       CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0})-[r2:LOCATED_AT]->(l)`
-        } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity) || (req.body.newCountry && req.body.city)) {
+        } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity)) {
+            if (req.body.newCountry){
+              const exist= await session.run(`MATCH (l:Location{country: $newCountry}) RETURN l`, {newCountry:req.body.newCountry});
+              console.log(exist)
+              if (exist.records.length>0)
+                return res.status(401).send("Država koju ste uneli već postoji na spisku, proverite ponovo unete podatke.");
+            }
+
             params.country = req.body.country ? req.body.country : req.body.newCountry;
             params.city = req.body.city ? req.body.city : req.body.newCity;
-            cypher = `MATCH (u:User) WHERE id(u)=$idU
+            cypher = `MATCH (u:User)
+            WHERE id(u)=$idU
+            SET u.postsNo=u.postsNo+1
             CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})`
         } else
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
@@ -32,7 +41,7 @@ router.post("", async(req, res) => {
         return res.send("Objava uspesno dodata");
     } catch (ex) {
         console.log(ex);
-        return res.status(401).send("Država koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
+        return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
     }
 });
 
@@ -53,16 +62,12 @@ router.patch("/:postId", async(req, res) => {
 //brisanje objave svih veza sa kojima je imala
 router.delete("/:postId", async(req, res) => {
     try {
-        const cypher = `MATCH (p:Post)-[r:LOCATED_AT]->(l:Location)
+        const cypher = `MATCH (u:User)-[r1:SHARED]->(p:Post)-[r2:LOCATED_AT]->(l:Location)
                         WHERE id(p) = $id
                         SET l.postsNo=l.postsNo-1, u.postsNo=u.postsNo-1
-                        DETACH DELETE p
-                        RETURN id(l)`
-        const rez = await session.run(cypher, { id: int(req.params.postId) });
+                        DETACH DELETE p`
+         await session.run(cypher, { id: int(req.params.postId) });
 
-        //brisanje lokacije ako nema vise veza ka njoj
-        /* const cypher2= 'MATCH (l:Location) WHERE NOT ()-[:LOCATED_AT]->(l) AND id(l)=$id DETACH DELETE l'
-        await session.run(cypher2, { id: rez.records[0].get('id(l)').low }); */
 
         return res.send("Objava uspesno obrisana");
     } catch (ex) {

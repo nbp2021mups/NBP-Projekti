@@ -91,19 +91,21 @@ router.delete("", async(req, res) => {
 //preporuka prijatelja korisniku ciji je id proslednjen, sortirani po broju zajednickih prijatelja
 router.get("/recommendation/:userId", async(req, res) => {
     try {
-        let cypher = `MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friend_of_friend:User)
-                    WHERE id(u)=$id AND id(friend_of_friend)<>$id
-                    RETURN DISTINCT count(friend_of_friend) AS mutalFriends,
-                    friend_of_friend.username AS username,
-                    friend_of_friend.firstName AS firstName,
-                    friend_of_friend.lastName AS lastName,
-                    friend_of_friend.image AS image
-                    ORDER BY mutalFriends DESC
+        let cypher = `MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friendOfFriend:User)
+                    WHERE id(u)=$id AND id(friendOfFriend)<>$id
+                    RETURN DISTINCT count(friendOfFriend) AS mutalFriends,
+                    id(friendOfFriend) AS id,
+                    friendOfFriend.username AS username,
+                    friendOfFriend.firstName AS firstName,
+                    friendOfFriend.lastName AS lastName,
+                    friendOfFriend.image AS image
+                    ORDER BY mutualFriends DESC
                     LIMIT 10`;
         const params = { id: parseInt(req.params.userId) };
         const result = await session.run(cypher, params);
         const rez = result.records.map((record) => ({
-            mutalFriends: record.get('mutalFriends').low,
+            id: record.get('id').low,
+            mutualFriends: record.get('mutualFriends').low,
             username: record.get('username'),
             firstName: record.get('firstName'),
             lastName: record.get('lastName'),

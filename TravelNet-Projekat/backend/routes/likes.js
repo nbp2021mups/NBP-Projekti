@@ -10,7 +10,7 @@ router.post("", async(req, res) => {
     try {
         const cypher = `MATCH (u:User), (p:Post)
                       WHERE id(u) = $userId AND id(p) = $postId
-                      SET p.likesNo=p.likesNo+1
+                      SET p.likeNo=p.likeNo+1
                       MERGE (u)-[r:LIKED{time: $time}]->(p)`;
         const params = {
             userId: req.body.userId,
@@ -29,7 +29,7 @@ router.delete("/:userId/:postId", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:LIKED]-(p:Post)
                         WHERE id(u)=$userId AND id(l)=$postId
-                        SET p.likesNo=p.likesNo-1
+                        SET p.likeNo=p.likeNo-1
                         DELETE r`;
         const params = {
             id: int(req.params.likeId),
