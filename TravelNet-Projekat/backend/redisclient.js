@@ -10,8 +10,21 @@ const getConnection = () => {
         });
 
     return client;
-}
+};
+
+const getChatId = (userId1, userId2) => {
+    if (userId1 < userId2)
+        return `chat:${userId1}:${userId2}`;
+    else
+        return `chat:${userId2}:${userId1}`;
+};
+
+const getMessageId = (chatId) => {
+    return `message:${new Date().toString()}:${chatId}`;
+};
 
 module.exports = {
-    client: getConnection()
+    client: getConnection(),
+    getChatId,
+    getMessageId
 };

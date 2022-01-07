@@ -41,7 +41,7 @@ router.get("/:postId", async(req, res) => {
             }))
         });
     } catch (ex) {
-        console.log(ex)
+        console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
 });
