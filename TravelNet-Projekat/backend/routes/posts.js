@@ -64,4 +64,21 @@ router.delete("/:postId", async(req, res) => {
     }
 })
 
+//vracanje ukupnog broja komentara i lajkova za konkretnu objavu
+router.get("/:postId/reactions", async (req, res) =>{
+  try {
+    const cypher='MATCH (p:Post)<-[r]->() WHERE id(p) = $id AND (type(r)="LIKED" OR type(r)="COMMENTED") RETURN type(r), count(*)';
+    const result=await session.run(cypher, { id: parseInt(req.params.postId) });
+    const rez={
+      likes: result.records[0].get('count(*)').low,
+      comments: result.records[1].get('count(*)').low
+    }
+    return res.send(rez);
+  } catch (ex) {
+      console.log(ex)
+      return res.status(401).send("Došlo je do greške");
+  }
+
+})
+
 module.exports = router;

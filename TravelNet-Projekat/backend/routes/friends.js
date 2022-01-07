@@ -82,7 +82,6 @@ router.get("/recommendation/:userId", async(req, res) => {
                 prezime: record.get('prezime'),
                 slika: record.get('slika')
             }
-
         })
 
         return res.send(rez)
