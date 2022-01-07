@@ -1,0 +1,79 @@
+// Nodes
+
+User: {
+	id: Int,
+	username: String, 		[Korisničko ime]
+	email: String,			[Email adresa]
+	password: String,		[Lozinka]
+	first_name: String,		[Ime]
+	last_name: String,		[Prezime]
+	photo: String,			[Fotografija]
+	bio: String,			[Opis]
+	joined: Date			[Korisnik od]
+}
+
+Location: {
+	id: Int,
+	city: String,			[Grad]
+	country: String,		[Država]
+	latitude: String,		[Geografska širina]
+	longitude: String		[Geografska dužina]
+}
+
+Post: {
+	id: Int,
+	photo: String,			[Fotografija]
+	description: String		[Opis]
+}
+
+Message: {
+	id: Int, 
+	from: String,			[Od]
+	to: String,				[Za]
+	content_type: String,	[Vrsta sadržaja]
+	content: String,		[Sadržaj]
+	time_sent: String,		[Poslato]
+	time_delivered: String	[Viđeno]
+}
+
+// Relations
+
+User -> Post
+SHARED:{
+	id: Int,
+	time: Date				[Objavljeno]
+}
+
+User -> Post
+LIKED: {
+	id: Int,
+	time: Date				[U]
+}
+
+User -> Post
+COMMENTED: {
+	id: Int,
+	time: Date,				[U]
+	content: String			[Sadržaj]
+}
+
+Post -> Location
+AT : {
+	id: Int
+}
+
+User <-> User
+IS_FRIEND: {
+	id: Int,
+	chat_id: Int,
+	since: Date				[Prijatelji od]
+}
+
+User -> Location
+FOLLOWING:{
+	id: Int,
+	notifications: Bool		[Omogućena obaveštenja]
+}
+
+
+
