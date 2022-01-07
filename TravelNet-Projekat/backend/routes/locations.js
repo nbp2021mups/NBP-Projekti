@@ -1,6 +1,5 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
-const { DateTime } = require('neo4j-driver');
 const router = express.Router();
 
 const session = driver.session();
@@ -9,11 +8,15 @@ const session = driver.session();
 router.post("/follow", async(req, res) => {
 
     try {
-        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS{time: $time}]->(l)'
-        await session.run(cypher, { userId: req.body.userId, locationId: req.body.locationId, time: new Date() })
-        return res.send("Lokacija je zapraćena")
+        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS{time: $time}]->(l)';
+        await session.run(cypher, {
+            userId: parseInt(req.body.userId),
+            locationId: parseInt(req.body.locationId),
+            time: new Date()
+        });
+        return res.send("Lokacija je zapraćena");
     } catch (ex) {
-        console.log(ex)
+        console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
 
