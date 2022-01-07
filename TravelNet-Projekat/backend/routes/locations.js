@@ -6,7 +6,6 @@ const session = driver.session();
 
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
-
     try {
         const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS{time: $time}]->(l)';
         await session.run(cypher, {
@@ -23,10 +22,10 @@ router.post("/follow", async(req, res) => {
 })
 
 //korisnik otpracuje lokaciju
-router.delete("/:relId/unfollow", async(req, res) => {
+router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     try {
-        const cypher = 'MATCH ()-[r]-() WHERE id(r)=$id DELETE r'
-        await session.run(cypher, { id: parseInt(req.params.relId) })
+        const cypher = 'MATCH (u:User)-[r:FOLLOWS]-(l:Locations) WHERE id(u)=$userId AND id(l)=$locationId DELETE r'
+        await session.run(cypher, { userId: parseInt(req.params.userId), locationId: parseInt(req.params.locationId) })
         return res.send("Lokacija je otpraćena")
     } catch (ex) {
         console.log(ex)
