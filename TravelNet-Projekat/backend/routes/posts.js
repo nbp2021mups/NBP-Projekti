@@ -15,11 +15,13 @@ router.post("", async(req, res) => {
         if (req.body.country && req.body.city) {
             params.country = req.body.country;
             params.city = req.body.city;
-            cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.country=$country AND l.city=$city CREATE (u)-[r1:SHARED]->(p:Post {description: $description})-[r2:LOCATED_AT]->(l)'
+            cypher = 'MATCH (u:User), (l:Location) WHERE id(u)=$idU AND l.country=$country AND l.city=$city '+
+            ' CREATE (u)-[r1:SHARED]->(p:Post {description: $description, likes:0, comments:0})-[r2:LOCATED_AT]->(l)'
         } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity) || (req.body.newCountry && req.body.city)){
             params.country = req.body.country ? req.body.country : req.body.newCountry;
             params.city = req.body.city ? req.body.city : req.body.newCity;
-            cypher = 'MATCH (u:User) WHERE id(u)=$idU CREATE (u)-[r1:SHARED]->(p:Post {description: $description})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city})'
+            cypher = 'MATCH (u:User) WHERE id(u)=$idU '+
+            'CREATE (u)-[r1:SHARED]->(p:Post {description: $description, likes:0, comments:0})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city})'
         }
         else
           return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
