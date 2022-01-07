@@ -8,10 +8,11 @@ const { int } = require('neo4j-driver');
 const session = driver.session();
 
 //dodavanje objave od strane korisnika ciji je id proslednjen
-router.post("", async(req, res) => {
+router.post("", multer({ storage: storage }).single("image"), async(req, res) => {
     try {
-        //DODATI ZA SLIKU
-        const params = { description: req.body.description, idU: req.body.userId, time: new Date().toString() }
+        const url = req.protocol + "://" + req.get("host");
+        const imgPath = url + "/images/"+req.file.filename;
+        const params = { description: req.body.description, idU: req.body.userId, time: new Date().toString(), image: imgPath }
         let cypher;
         if (req.body.country && req.body.city) {
             params.country = req.body.country;
@@ -19,7 +20,7 @@ router.post("", async(req, res) => {
             cypher = `MATCH (u:User), (l:Location)
                       WHERE id(u)=$idU AND l.country=$country AND l.city=$city
                       SET l.postsNo=l.postsNo+1, u.postsNo=u.postsNo+1
-                      CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0})-[r2:LOCATED_AT]->(l)`
+                      CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)`
         } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity)) {
             if (req.body.newCountry){
               const exist= await session.run(`MATCH (l:Location{country: $newCountry}) RETURN l`, {newCountry:req.body.newCountry});
@@ -33,7 +34,7 @@ router.post("", async(req, res) => {
             cypher = `MATCH (u:User)
             WHERE id(u)=$idU
             SET u.postsNo=u.postsNo+1
-            CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})`
+            CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})`
         } else
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
