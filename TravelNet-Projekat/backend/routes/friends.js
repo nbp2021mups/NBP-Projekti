@@ -104,7 +104,7 @@ router.get("/recommendation/:userId", async(req, res) => {
             username: record.get('username'),
             firstName: record.get('firstName'),
             lastName: record.get('lastName'),
-            photo: record.get('photo')
+            image: record.get('image')
         }));
         res.send(rez);
     } catch (ex) {
@@ -118,7 +118,7 @@ router.get("/:username", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User { username: $username })<-[r:IS_FRIEND]->(u2:User)
                         RETURN u2
-                        ORDER BY r.time DESC
+                        ORDER BY r.since DESC
                         LIMIT 20`;
         const result = await session.run(cypher, { username: req.params.username });
         const rez = {
