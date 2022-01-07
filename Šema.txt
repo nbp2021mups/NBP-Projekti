@@ -28,8 +28,8 @@ Post: {							[Objava]
 	id: Int,					[Identifikator]
 	image: String,				[Fotografija]
 	description: String,		[Opis]
-	likeNo: Int,				[Broj lajkova]
-	commentNo: Int				[Broj komenatara]
+	likesNo: Int,				[Broj lajkova]
+	commentsNo: Int				[Broj komenatara]
 }
 //
 

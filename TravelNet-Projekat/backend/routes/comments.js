@@ -32,7 +32,7 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
                         WHERE id(p)=$postId
                         RETURN r, u
                         ORDER BY r.time DESC
-                        SKIP $startIdex
+                        SKIP $startIndex
                         LIMIT $count`;
         const params = {
             postId: int(req.params.postId),
