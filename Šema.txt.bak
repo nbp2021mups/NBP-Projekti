@@ -51,7 +51,7 @@ User -> Post
 COMMENTED: {					[Komentarisano]
 	id: Int,					[Identifikator]
 	time: Date,					[U]
-	comment: String				[Sadržaj]
+	content: String				[Sadržaj]
 }
 
 Post -> Location
