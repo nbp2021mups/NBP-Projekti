@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { mimeType } from '../mime-type-validator/mime-type-validator';
+import { AuthService } from '../services/authentication/auth.service';
 
 @Component({
   selector: 'app-registration-page',
@@ -11,7 +12,7 @@ export class RegistrationPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
   imagePreview: string='./../../assets/resources/universal.jpg';
-  constructor() { }
+  constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -30,17 +31,27 @@ export class RegistrationPageComponent implements OnInit {
       opis: new FormControl(''),
     })
   }
+
+
   onSubmit(){
-    console.log( this.form.get('ime').value)
-    console.log( this.form.get('prezime').value)
-    console.log( this.form.get('email').value)
-    console.log( this.form.get('username').value)
-    console.log( this.form.get('lozinka').value)
-    console.log( this.form.get('opis').value)
-    console.log(this.form.value.slika)
+    
+    const fName = this.form.get('ime').value;
+    const lName = this.form.get('prezime').value;
+    const email = this.form.get('email').value;
+    const username = this.form.get('username').value;
+    const password = this.form.get('lozinka').value;
+    const desc = this.form.get('opis').value;
+    const imagePath = this.form.value.slika;
 
+    this.authService.register(fName, lName, email, username, password, desc, imagePath).subscribe(
+      {next : (resp) => {
+        console.log(resp);
+      },
+      error : (err) => {
+        console.log(err);
+      }});
 
-    //this.form.reset()
+    //this.form.reset()c
   }
 
   onImagePicked(event: Event) {

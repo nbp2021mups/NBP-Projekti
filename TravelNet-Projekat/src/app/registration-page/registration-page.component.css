@@ -1,12 +1,10 @@
 .container {
   margin-top: 5%;
+  width: 66%;
 }
 
 .mat-form-field-appearance-fill .mat-form-field-flex {
   background-color: rgb(13 104 136 / 13%);
-}
-mat-from-field {
-  width: 100;
 }
 
 input[type="file"] {

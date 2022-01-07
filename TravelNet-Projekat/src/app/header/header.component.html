@@ -8,12 +8,14 @@
 
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
             <div class="navbar-nav tabs">
-                <a class="nav-link" routerLink="/home"><mat-icon>home</mat-icon></a>
-                <a class="nav-link" routerLink="/explore"><mat-icon>search</mat-icon></a>
-                <a class="nav-link" routerLink="/messages"><mat-icon>message</mat-icon></a>
-                <button class="post-button nav-link" (click)="onNotificationsClicked()"><mat-icon>notifications</mat-icon></button>
-                <a class="nav-link" routerLink="/profile"><mat-icon>person</mat-icon></a>
-                <button class="post-button nav-link"><mat-icon>logout</mat-icon></button>
+                <a class="nav-link" routerLink="/home" *ngIf="isLoggedIn"><mat-icon>home</mat-icon></a>
+                <a class="nav-link" routerLink="/explore" *ngIf="isLoggedIn"><mat-icon>search</mat-icon></a>
+                <a class="nav-link" routerLink="/messages" *ngIf="isLoggedIn"><mat-icon>message</mat-icon></a>
+                <button class="post-button nav-link" (click)="onNotificationsClicked()" *ngIf="isLoggedIn"><mat-icon>notifications</mat-icon></button>
+                <a class="nav-link" routerLink="/profile" *ngIf="isLoggedIn"><mat-icon>person</mat-icon></a>
+                <button class="post-button nav-link" *ngIf="isLoggedIn" (click)="logout()"><mat-icon>logout</mat-icon></button>
+                <a class="nav-link" routerLink="/registration" *ngIf="!isLoggedIn">Sign Up</a>
+                <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Log in</a>
             </div>
         </div>
 
