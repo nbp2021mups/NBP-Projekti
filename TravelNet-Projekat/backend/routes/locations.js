@@ -1,5 +1,6 @@
 const driver = require('../neo4jdriver');
 const express = require("express");
+const { DateTime } = require('neo4j-driver');
 const router = express.Router();
 
 const session = driver.session();
@@ -8,8 +9,8 @@ const session = driver.session();
 router.post("/follow", async(req, res) => {
 
     try {
-        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS]->(l)'
-        await session.run(cypher, { userId: req.body.userId, locationId: req.body.locationId })
+        const cypher = 'MATCH (u:User), (l:Location) WHERE id(u) = $userId AND id(l) = $locationId MERGE (u)-[r:FOLLOWS{time: $time}]->(l)'
+        await session.run(cypher, { userId: req.body.userId, locationId: req.body.locationId, time: new Date() })
         return res.send("Lokacija je zapraćena")
     } catch (ex) {
         console.log(ex)
@@ -32,16 +33,17 @@ router.delete("/:relId/unfollow", async(req, res) => {
 });
 
 // Vracanje poslednjih 20 lokacija koje korisnik prati
-router.get("/:username", async(req, res) => {
+router.get("/follows/:username", async(req, res) => {
     try {
         const cypher = `MATCH (u:User { username: $username })-[r:FOLLOWS]->(l:Location)
-                        RETURN l
+                        RETURN l, r
                         ORDER BY r.time DESC
                         LIMIT 20`;
         const result = await session.run(cypher, { username: req.params.username });
         const rez = {
             locations: result.records.map(x => ({
                 id: x.get("l").identity.low,
+                time: x.get("r").properties.time,
                 ...x.get("l").properties
             }))
         };
