@@ -18,14 +18,6 @@ export class FriendItemComponent implements OnInit {
 
 
   isFriend(): boolean{
-    //ovo simulira ulogovane korisnike i njegove pratioce
-    const friends: PersonBasic[] = [];
-    friends.push(new PersonBasic("p1", "Djoka", "Djokic", "123", [], []));
-
-    if(friends.find(friend => friend.id == this.friend.id))
-      return true;
-    else
-      return false;
-
+    return true;
   }
 }

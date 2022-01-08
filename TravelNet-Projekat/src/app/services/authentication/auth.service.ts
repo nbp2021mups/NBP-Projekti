@@ -20,17 +20,19 @@ export class AuthService {
 
     constructor(private http: HttpClient, private router: Router) {}
 
-    register(fName: string, lName: string, email: string, username: string, password: string, desc: string, image: string){
+    register(fName: string, lName: string, email: string, username: string, password: string, desc: string, image: File){
+        
+        const reqData: FormData = new FormData();
+        reqData.append("firstName", fName);
+        reqData.append("lastName", lName);
+        reqData.append("email", email);
+        reqData.append("username", username);
+        reqData.append("password", password);
+        reqData.append("image", image);
+        reqData.append("bio", desc);
+
         return this.http.post("http://localhost:3000/users/register",
-        {
-            firstName : fName,
-            lastName: lName,
-            email: email,
-            username: username,
-            password: password,
-            image: image,
-            bio: desc
-        },
+        reqData,
         {responseType : 'text'});
     }
 

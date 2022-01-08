@@ -13,10 +13,7 @@ export class FriendsListComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    let path = "https://image.shutterstock.com/image-photo/home-office-dress-code-girl-600w-1719984745.jpg";
-    let p = new PersonBasic("p1", "Miljana", "Simic", path, [], []);
-    for(let i = 0; i < 5; i++)
-      this.friends.push(p);
+    
   }
 
 }

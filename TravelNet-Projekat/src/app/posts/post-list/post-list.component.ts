@@ -19,15 +19,7 @@ export class PostListComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    let imgPath: string = "https://image.shutterstock.com/image-photo/motivational-words-llc-on-keyboard-600w-1910672659.jpg";
-    let perImg: string = "https://image.shutterstock.com/image-photo/motivational-words-llc-on-keyboard-600w-1910672659.jpg";
-    let likes: LikeModel[] = [];
-    likes.push(new LikeModel("like2", "p2"));
-    likes.push(new LikeModel("like2", "p3"));
-    let post = new PostModel("post1234", new PersonBasic("p1", "Uros", "Pesic", perImg, [], []), new LocationBasic("l1", "Paralia"), imgPath, likes);
-    for(let i = 0; i < 5; i++){
-      this.posts.push(post);
-    }
+    
   }
 
 }
