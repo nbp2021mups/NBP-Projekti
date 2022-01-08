@@ -89,8 +89,8 @@ Message: {						[Poruka]
 	to: String,					[Za]
 	contentType: String,		[Vrsta sadržaja]
 	content: String,			[Sadržaj]
-	timeSent: String,			[Poslato]
-	timeDelivered: String		[Viđeno]
+	timeSent: Date,				[Poslato]
+	timeRead: Date				[Viđeno]
 }
 
 Chat: {							[Ćaskanje]
@@ -98,5 +98,14 @@ Chat: {							[Ćaskanje]
 	user1Id: String,			[Identifikator korisnika 1]
 	user2Id: String,			[Identifikator korisnika 2]
 	messages ??					[Poruke]
+}
+
+Notification: {					[Obaveštenje]
+	id: Int, 					[Identifikator]
+	to: String,					[Za]
+	type: String,				[Tip]
+	content: String,			[Sadržaj]
+	timeSent: Date,				[Poslato]
+	read: bool					[Viđeno]
 }
 //

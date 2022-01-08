@@ -9,6 +9,20 @@ import { Subscription } from 'rxjs';
 import { Notification } from 'src/app/models/notification-models/notification.model';
 import { Message } from 'src/app/models/message-model/message.model';
 
+const TYPES = {
+  'post-like': 'like',
+  'post-comment': 'comment',
+  'friend-request': 'friendRequest',
+  'accepted-friend-request': 'friends',
+};
+
+const TRANSLATION = {
+  'post-like': 'se sviđa Vaša objava!',
+  'post-comment': 'komentariše Vašu objavu!',
+  'friend-request': 'šalje zahtev za prijateljstvo!',
+  'accepted-friend-request': 'i Vi ste postali prijatelji!',
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -56,43 +70,48 @@ export class PopUpService {
   }
 
   notificationTriggered(n: Notification) {
-    console.log(n);
     Swal.fire({
+      allowOutsideClick: true,
       position: 'top-right',
-      title: `${n.type}`,
-      icon: 'info',
-      html: `<h5>${n.content}</h5>`,
+      width: '100%',
+      heightAuto: true,
+      padding: '0',
+      imageHeight: '2.5em',
+      imageWidth: '2.5em',
+      imageUrl: `http://localhost:3000/images/${TYPES[n.type]}.svg`,
+      html: `<b>${n.from}</b> ${TRANSLATION[n.type]}`,
       showConfirmButton: false,
+      backdrop: 'rgba(0,0,0,0)',
       showClass: {
-        popup: 'animate__animated animate__backInRight',
+        popup: 'animate__animated animate__flipInX',
       },
       hideClass: {
-        popup: 'animate__animated animate__fadeOutUp',
+        popup: 'animate__animated animate__flipOutX',
       },
       timer: 2000,
     });
   }
 
   messageTriggered(m: Message) {
-    console.log(m);
     Swal.fire({
+      allowOutsideClick: true,
       position: 'top-right',
-      title: `${m.from}`,
-      imageUrl: 'http://localhost:3000/images/universal.jpg',
+      width: '100%',
+      heightAuto: true,
+      padding: '0',
       imageHeight: '2.5em',
       imageWidth: '2.5em',
-      html: `<h5>${m.content}</h5>`,
+      imageUrl: `http://localhost:3000/images/message.svg`,
+      html: `<b>${m.from}</b>: ${m.content}`,
       showConfirmButton: false,
-      customClass: {
-        image: 'pop_up_image',
-      },
+      backdrop: 'rgba(0,0,0,0)',
       showClass: {
-        popup: 'animate__animated animate__backInRight',
+        popup: 'animate__animated animate__flipInX',
       },
       hideClass: {
-        popup: 'animate__animated animate__fadeOutUp',
+        popup: 'animate__animated animate__flipOutX',
       },
       timer: 2000,
-    });
+    }).then();
   }
 }

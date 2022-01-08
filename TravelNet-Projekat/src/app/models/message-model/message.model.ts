@@ -1,18 +1,18 @@
 export class Message {
-  public id!: Number;
-  public from: String;
-  public to: String;
-  public contentType: String;
-  public content: String;
+  public id!: number;
+  public from: string;
+  public to: string;
+  public contentType: string;
+  public content: string;
   public timeSent: Date;
   public timeRead: Date;
 
   constructor(
-    id: Number,
-    from: String,
-    to: String,
-    contentType: String,
-    content: String,
+    id: number,
+    from: string,
+    to: string,
+    contentType: string,
+    content: string,
     timeSent: Date,
     timeRead: Date
   ) {

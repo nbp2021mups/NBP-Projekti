@@ -9,7 +9,7 @@ export enum MESSAGE_EVENTS {
   MESSAGE_IN_MESSAGES = 'new-message-in-messages',
 }
 export enum NOTIFICATION_EVENTS {
-  NOTIFICATION_POP_UP = 'new-notification',
+  NOTIFICATION_POP_UP = 'new-notification-pop-up',
   NOTIFICATION_IN_NOTIFICATIONS = 'new-notification-in-notifications',
 }
 

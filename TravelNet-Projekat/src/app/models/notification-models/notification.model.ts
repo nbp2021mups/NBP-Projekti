@@ -1,21 +1,24 @@
 export class Notification {
-  public id!: Number;
-  public to: String;
-  public type: String;
-  public content: String;
+  public id!: number;
+  public to: string;
+  public from: string;
+  public type: string;
+  public content: string;
   public timeSent: Date;
   public read: boolean;
 
   constructor(
-    id: Number,
-    to: String,
-    type: String,
-    content: String,
+    id: number,
+    to: string,
+    from: string,
+    type: string,
+    content: string,
     timeSent: Date,
     read: boolean
   ) {
     this.id = id;
     this.to = to;
+    this.from = from;
     this.type = type;
     this.content = content;
     this.timeSent = timeSent;

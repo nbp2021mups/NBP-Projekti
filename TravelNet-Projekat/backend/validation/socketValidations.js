@@ -14,7 +14,13 @@ const validateReadMessages = (data) => {
 };
 
 const validateNotification = (data) => {
-    return data["to"] && data["type"] && data["content"] && data["timeSent"];
+    return (
+        data["from"] &&
+        data["to"] &&
+        data["type"] &&
+        data["content"] &&
+        data["timeSent"]
+    );
 };
 
 const validatePostLike = (data) => {
