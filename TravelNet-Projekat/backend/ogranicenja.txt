@@ -13,3 +13,4 @@ CREATE CONSTRAINT user_password_not_null FOR (u:User) REQUIRE u.password IS NOT 
 CREATE CONSTRAINT location_unique FOR (l:Location) REQUIRE (l.country, l.city) IS UNIQUE
 CREATE CONSTRAINT location_country_not_null FOR (l:Location) REQUIRE l.country IS NOT NULL
 CREATE CONSTRAINT location_city_not_null FOR (l:Location) REQUIRE l.city IS NOT NULL
+
