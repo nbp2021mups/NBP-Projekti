@@ -1,6 +1,6 @@
 require("dotenv").config();
 const path = require("path");
-const http = require('http');
+const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
 const {
@@ -9,7 +9,7 @@ const {
     validatePostLike,
     validatePostComment,
     validateSendFriendRequest,
-    validateAcceptFriendRequest
+    validateAcceptFriendRequest,
 } = require("./backend/validation/socketValidations");
 
 const app = express();
@@ -19,21 +19,25 @@ const hostname = process.env.SOCKET_SERVER_HOSTNAME;
 const port = process.env.SOCKET_SERVER_PORT;
 
 const server = http.createServer(app);
-const io = new socketIO.Server(server);
+const io = new socketIO.Server(server, {
+    cors: {
+        origin: "*",
+    },
+});
 
 // Users that are online
 const online = {};
 
 const unread = {
     chats: {},
-    notifications: {}
+    notifications: {},
 };
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
     console.log(`Client ${socket.id} connected`);
-    socket.emit("connected");
+    socket.emit("connected", { content: socket.id });
 
-    socket.on("join", data => {
+    socket.on("join", (data) => {
         if (data["username"] && data["view"]) {
             if (socket.username) {
                 console.log("Disconnect", socket.username);
@@ -51,7 +55,7 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("change-view", data => {
+    socket.on("change-view", (data) => {
         if (data["view"]) {
             if (socket.username) {
                 socket.view = data["view"];
@@ -75,17 +79,17 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("send-message", data => {
+    socket.on("send-message", (data) => {
         if (socket.username) {
             if (validateSentMessage(data)) {
                 console.log("Send-message", data);
-                let forUser = online[data["for_user"]];
+                let forUser = online[data["to"]];
                 if (forUser) {
                     switch (forUser.view) {
-                        case (`chat-tab::${data["chat_id"]}`):
+                        case `chat-tab::${data["chatId"]}`:
                             forUser.emit("new-message-in-chat", { content: data });
                             break;
-                        case ("messages-tab"):
+                        case "messages-tab":
                             forUser.emit("new-message-in-messages", { content: data });
                             break;
                         default:
@@ -96,12 +100,15 @@ io.on("connection", socket => {
                     console.log("User is offline!");
                 }
                 // Store in database
-                if (!unread["chats"][data["chat_id"]])
-                    unread["chats"][data["chat_id"]] = [];
-                unread["chats"][data["chat_id"]].push(data);
+                if (!unread["chats"][data["chatId"]])
+                    unread["chats"][data["chatId"]] = [];
+                unread["chats"][data["chatId"]].push(data);
             } else {
                 console.log("Invalid message format!");
-                socket.emit("error", { message: "Incorrect message format!", content: data });
+                socket.emit("error", {
+                    message: "Incorrect message format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -109,24 +116,29 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("read-messages", data => {
+    socket.on("read-messages", (data) => {
         if (socket.username) {
             if (validateReadMessages(data)) {
                 console.log("Read-messages", data);
-                let fromUser = online[data["from_user"]];
+                let fromUser = online[data["from"]];
                 // Update database
-                for (let msg of unread["chats"][data["chat_id"]])
-                    msg["time_read"] = new Date();
+                for (let msg of unread["chats"][data["chatId"]])
+                    msg["timeRead"] = new Date();
 
-                if (fromUser && fromUser.view === `chat-tab::${data["chat_id"]}`) {
-                    fromUser.emit("read-messages", { content: unread["chats"][data["chat_id"]] });
+                if (fromUser && fromUser.view === `chat-tab::${data["chatId"]}`) {
+                    fromUser.emit("read-messages", {
+                        content: unread["chats"][data["chatId"]],
+                    });
                 } else {
                     console.log("User is offline!");
                 }
-                unread["chats"][data["chat_id"]] = [];
+                unread["chats"][data["chatId"]] = [];
             } else {
                 console.log("Invalid message format!");
-                socket.emit("error", { message: "Invalid message format!", content: data });
+                socket.emit("error", {
+                    message: "Invalid message format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -134,14 +146,17 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("like-post", data => {
+    socket.on("like-post", (data) => {
         if (socket.username) {
             if (validatePostLike(data)) {
                 console.log("Like-post");
                 notify(data);
             } else {
                 console.log("Invalid comment format!");
-                socket.emit("error", { message: "Incorrect comment format!", content: data });
+                socket.emit("error", {
+                    message: "Incorrect comment format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -149,14 +164,17 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("comment-post", data => {
+    socket.on("comment-post", (data) => {
         if (socket.username) {
             if (validatePostComment(data)) {
                 console.log("Comment-post");
                 notify(data);
             } else {
                 console.log("Invalid notification format!");
-                socket.emit("error", { message: "Incorrect notification format!", content: data });
+                socket.emit("error", {
+                    message: "Incorrect notification format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -164,14 +182,17 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("send-friend-request", data => {
+    socket.on("send-friend-request", (data) => {
         if (socket.username) {
             if (validateSendFriendRequest(data)) {
                 console.log("Send-friend-request", data);
                 notify(data);
             } else {
                 console.log("Invalid notification format!");
-                socket.emit("error", { message: "Incorrect notification format!", content: data });
+                socket.emit("error", {
+                    message: "Incorrect notification format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -179,14 +200,17 @@ io.on("connection", socket => {
         }
     });
 
-    socket.on("accept-friend-request", data => {
+    socket.on("accept-friend-request", (data) => {
         if (socket.username) {
             if (validateAcceptFriendRequest(data)) {
                 console.log("Accept-friend-request", data);
                 notify(data);
             } else {
                 console.log("Invalid notification format!");
-                socket.emit("error", { message: "Incorrect notification format!", content: data });
+                socket.emit("error", {
+                    message: "Incorrect notification format!",
+                    content: data,
+                });
             }
         } else {
             console.log("User not logged in!");
@@ -197,10 +221,10 @@ io.on("connection", socket => {
 
 function notify(data) {
     console.log("Notification", data);
-    let forUser = online[data["for_user"]];
+    let forUser = online[data["to"]];
     if (forUser) {
         switch (forUser.view) {
-            case ("notification-tab"):
+            case "notification-tab":
                 forUser.emit("new-notification-in-notifications", { content: data });
                 break;
             default:
@@ -214,6 +238,9 @@ function notify(data) {
 }
 
 server.listen({
-    host: hostname,
-    port: port
-}, () => console.log(`Socket server listening on port http://${hostname}:${port}`));
+        host: hostname,
+        port: port,
+    },
+    () =>
+    console.log(`Socket server listening on port http://${hostname}:${port}`)
+);

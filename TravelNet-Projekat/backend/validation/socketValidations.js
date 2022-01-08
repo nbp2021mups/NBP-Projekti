@@ -1,33 +1,40 @@
 const validateSentMessage = (data) => {
-    return data["from_user"] && data["for_user"] && data["chat_id"] && data["time_sent"] && data["content_type"] && data["content"];
+    return (
+        data["from"] &&
+        data["to"] &&
+        data["chatId"] &&
+        data["timeSent"] &&
+        data["contentType"] &&
+        data["content"]
+    );
 };
 
 const validateReadMessages = (data) => {
-    return data["from_user"] && data["for_user"] && data["chat_id"];
+    return data["from"] && data["to"] && data["chatId"];
 };
 
 const validateNotification = (data) => {
-    return data["for_user"] && data["type"] && data["content"] && data["time_created"];
+    return data["to"] && data["type"] && data["content"] && data["timeSent"];
 };
 
 const validatePostLike = (data) => {
     data["type"] = "post-like";
-    return data["from_user"] && validateNotification(data);
+    return data["from"] && validateNotification(data);
 };
 
 const validatePostComment = (data) => {
     data["type"] = "post-comment";
-    return data["from_user"] && validateNotification(data);
+    return data["from"] && validateNotification(data);
 };
 
 const validateSendFriendRequest = (data) => {
     data["type"] = "friend-request";
-    return data["from_user"] && validateNotification(data);
+    return data["from"] && validateNotification(data);
 };
 
 const validateAcceptFriendRequest = (data) => {
     data["type"] = "accepted-friend-request";
-    return data["from_user"] && validateNotification(data);
+    return data["from"] && validateNotification(data);
 };
 
 module.exports = {
@@ -37,5 +44,5 @@ module.exports = {
     validatePostLike,
     validatePostComment,
     validateSendFriendRequest,
-    validateAcceptFriendRequest
+    validateAcceptFriendRequest,
 };

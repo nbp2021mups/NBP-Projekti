@@ -18,10 +18,14 @@ const view = document.body.querySelector("#view");
 
 const for_user_send_message = document.querySelector("#for-user-send-message");
 const chat_id_send_message = document.querySelector("#chat-id-send-message");
-const content_type_send_message = document.querySelector("#content-type-send-message");
+const content_type_send_message = document.querySelector(
+    "#content-type-send-message"
+);
 const content_send_message = document.querySelector("#content-send-message");
 
-const from_user_read_messages = document.querySelector("#from-user-read-messages");
+const from_user_read_messages = document.querySelector(
+    "#from-user-read-messages"
+);
 const chat_id_read_messages = document.querySelector("#chat-id-read-messages");
 
 const for_user_like_post = document.querySelector("#for-user-like-post");
@@ -30,16 +34,23 @@ const content_like_post = document.querySelector("#content-like-post");
 const for_user_comment_post = document.querySelector("#for-user-comment-post");
 const content_comment_post = document.querySelector("#content-comment-post");
 
-const for_user_send_friend_request = document.querySelector("#for-user-send-friend-request");
-const content_friend_request = document.querySelector("#content-friend-request");
+const for_user_send_friend_request = document.querySelector(
+    "#for-user-send-friend-request"
+);
+const content_friend_request = document.querySelector(
+    "#content-friend-request"
+);
 
-const for_user_accept_friend_request = document.querySelector("#for-user-accept-friend-request");
-const content_accept_friend_request = document.querySelector("#content-accept-friend-request");
+const for_user_accept_friend_request = document.querySelector(
+    "#for-user-accept-friend-request"
+);
+const content_accept_friend_request = document.querySelector(
+    "#content-accept-friend-request"
+);
 
 window.join = () => {
     console.log("joining...");
     socket.emit("join", { username: user.value, view: "home" });
-
 };
 
 window.changeView = () => {
@@ -48,60 +59,59 @@ window.changeView = () => {
 
 window.sendMessage = () => {
     socket.emit("send-message", {
-        from_user: loggedUser,
-        for_user: for_user_send_message.value,
-        chat_id: chat_id_send_message.value,
-        content_type: content_type_send_message.value,
+        from: loggedUser,
+        to: for_user_send_message.value,
+        chatId: chat_id_send_message.value,
+        contentType: content_type_send_message.value,
         content: content_send_message.value,
-        time_sent: new Date()
+        timeSent: new Date(),
     });
 };
 
 window.readMessages = () => {
     socket.emit("read-messages", {
-        for_user: loggedUser,
-        from_user: from_user_read_messages.value,
-        chat_id: chat_id_read_messages.value
+        to: loggedUser,
+        from: from_user_read_messages.value,
+        chatId: chat_id_read_messages.value,
     });
 };
 
 window.likePost = () => {
     socket.emit("like-post", {
-        from_user: loggedUser,
-        for_user: for_user_like_post.value,
+        from: loggedUser,
+        to: for_user_like_post.value,
         content: content_like_post.value,
-        time_created: new Date()
+        timeSent: new Date(),
     });
 };
 
 window.commentPost = () => {
     socket.emit("comment-post", {
-        from_user: loggedUser,
-        for_user: for_user_comment_post.value,
+        from: loggedUser,
+        to: for_user_comment_post.value,
         content: content_comment_post.value,
-        time_created: new Date()
+        timeSent: new Date(),
     });
 };
 
 window.sendFriendRequest = () => {
     socket.emit("send-friend-request", {
-        from_user: loggedUser,
-        for_user: for_user_send_friend_request.value,
+        from: loggedUser,
+        to: for_user_send_friend_request.value,
         content: content_friend_request.value,
-        time_created: new Date()
+        timeSent: new Date(),
     });
 };
 
 window.acceptFriendRequest = () => {
     socket.emit("accept-friend-request", {
-        from_user: loggedUser,
-        for_user: for_user_accept_friend_request.value,
+        from: loggedUser,
+        to: for_user_accept_friend_request.value,
         content: content_accept_friend_request.value,
-        time_created: new Date()
+        timeSent: new Date(),
     });
 };
 //
-
 
 // Event handlers
 function onConnected() {
@@ -118,7 +128,11 @@ function onJoined(data) {
 }
 
 function onNewMessageInChat(data) {
-    console.log("New message in chat", data["content"]["chat_id"], data["content"]);
+    console.log(
+        "New message in chat",
+        data["content"]["chatId"],
+        data["content"]
+    );
 }
 
 function onNewMessageInMessages(data) {

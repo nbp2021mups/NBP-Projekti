@@ -19,7 +19,7 @@ import { FriendItemComponent } from './friends/friend-item/friend-item.component
 import { LoginPageComponent } from './login-page/login-page.component';
 import { RegistrationPageComponent } from './registration-page/registration-page.component';
 
-import { FormsModule, ReactiveFormsModule} from '@angular/forms'
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AddPostComponent } from './posts/add-post/add-post.component';
@@ -40,22 +40,22 @@ import { HttpClientModule } from '@angular/common/http';
     FriendItemComponent,
     LoginPageComponent,
     RegistrationPageComponent,
-    AddPostComponent
+    AddPostComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     NoopAnimationsModule,
     MatIconModule,
-    MatCardModule ,
+    MatCardModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
     MatSelectModule,
-    HttpClientModule
+    HttpClientModule,
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}
