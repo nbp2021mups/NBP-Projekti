@@ -25,7 +25,7 @@ const getMessageId = (chatId) => {
 };
 
 module.exports = {
-    client: getConnection(),
+    getConnection,
     getChatId,
     getMessageId,
 };

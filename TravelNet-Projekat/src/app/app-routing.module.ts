@@ -24,7 +24,7 @@ const routes: Routes = [
   { path: 'messages', component: ChatComponent, canActivate: [AuthGuard] },
   { path: 'registration', component: RegistrationPageComponent },
   { path: 'login', component: LoginPageComponent },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: 'home' },
 ];
 
 @NgModule({
