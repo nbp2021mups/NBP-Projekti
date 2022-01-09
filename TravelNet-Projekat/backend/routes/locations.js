@@ -5,7 +5,6 @@ const router = express.Router();
 const { int } = require('neo4j-driver');
 const { arrayBuffer } = require('stream/consumers');
 const session = driver.session();
-const REDIS_LIST_NAME = "locationsList"
 
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
@@ -44,19 +43,19 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
 });
 router.get("/leaderboard",async(req,res)=>{
     try{
+        const client = await redis.getConnection();
+        let setExist = await client.sendCommand(['EXISTS','zsetLocations']);
+        if(!setExist){
         const cypher = 'MATCH (l:Location) RETURN id(l),l.country,l.city,l.postsNo'
         const neo4JList = await session.run(cypher)
-        var locationsList = [];
-        neo4JList.records.forEach(element => {
-           location = {
-               id: element.get(0).low,
-               drzava: element.get(1),
-               naziv: element.get(2),
-               broj: element.get(3)
-           } 
-           locationsList.push(location)
+        neo4JList.records.forEach(async (element) => {
+           await client.sendCommand(['hset',"'location:" +String(element.get(0).low) + "'",'city',String(element.get(2))]);
+           await client.sendCommand(['hset',"'location:" +String(element.get(0).low) + "'",'country',String(element.get(1))]);
+           await client.sendCommand(['zadd', 'lzsetLocations', String(element.get(3).low),"'location:" +String(element.get(0).low) + "'"]);
         });
-        return res.send(locationsList)
+    }   
+        const listRedis = await client.sendCommand(['ZREVRANGE','zsetLocations','0','100','WITHSCORES']);
+        return res.send(listRedis);
     }
     catch (ex) {
         console.log(ex);
