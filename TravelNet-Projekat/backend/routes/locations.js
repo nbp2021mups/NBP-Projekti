@@ -2,6 +2,7 @@ const driver = require('../neo4jdriver');
 const express = require("express");
 const router = express.Router();
 const { int } = require('neo4j-driver');
+const { arrayBuffer } = require('stream/consumers');
 
 const session = driver.session();
 
@@ -40,7 +41,28 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     }
 
 });
-
+router.get("/leaderboard",async(req,res)=>{
+    try{
+        const cypher = 'MATCH (l:Location) RETURN id(l),l.country,l.city,l.postsNo'
+        const lista = await session.run(cypher)
+        var arr = [];
+        lista.records.forEach(element => {
+           city = {
+               id: element.get(0).low,
+               drzava: element.get(1),
+               naziv: element.get(2),
+               broj: element.get(3)
+           } 
+           arr.push(city)
+        });
+        return res.send(arr)
+    }
+    catch (ex) {
+        console.log(ex);
+        res.status(401).send("Došlo je do greške");
+    }
+  
+})
 // Vracanje opsega lokacija koje korisnik prati
 router.get("/follows/:username/:startIndex/:count", async(req, res) => {
     try {
