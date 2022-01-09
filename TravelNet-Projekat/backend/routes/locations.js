@@ -1,10 +1,11 @@
 const driver = require('../neo4jdriver');
+const redis = require('../redisclient');
 const express = require("express");
 const router = express.Router();
 const { int } = require('neo4j-driver');
 const { arrayBuffer } = require('stream/consumers');
-
 const session = driver.session();
+const REDIS_LIST_NAME = "locationsList"
 
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
@@ -44,18 +45,18 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
 router.get("/leaderboard",async(req,res)=>{
     try{
         const cypher = 'MATCH (l:Location) RETURN id(l),l.country,l.city,l.postsNo'
-        const lista = await session.run(cypher)
-        var arr = [];
-        lista.records.forEach(element => {
-           city = {
+        const neo4JList = await session.run(cypher)
+        var locationsList = [];
+        neo4JList.records.forEach(element => {
+           location = {
                id: element.get(0).low,
                drzava: element.get(1),
                naziv: element.get(2),
                broj: element.get(3)
            } 
-           arr.push(city)
+           locationsList.push(location)
         });
-        return res.send(arr)
+        return res.send(locationsList)
     }
     catch (ex) {
         console.log(ex);
