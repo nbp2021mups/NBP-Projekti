@@ -2,8 +2,8 @@ import { Message } from '../message-model/message.model';
 
 export class Conversation {
   public id: number;
-  public user1: String;
-  public user2: String;
+  public user1: string;
+  public user2: string;
   public topMessage: Message;
   public messages: Array<Message>;
 
@@ -11,16 +11,23 @@ export class Conversation {
     this.id = id;
     this.user1 = user1;
     this.user2 = user2;
-    this.topMessage = new Message(
-      0,
-      '',
-      '',
-      'Text',
-      'New conversation',
-      new Date(),
-      null
-    );
     this.messages = new Array<Message>();
-    this.messages = [this.topMessage, ...this.messages];
+    this.messages = [
+      new Message(1, user1, user2, 'Eeeeej ćao', new Date(), new Date()),
+      ...this.messages,
+    ];
+    this.messages = [
+      new Message(2, user2, user1, 'Ćaos ćaos', new Date(), new Date()),
+      ...this.messages,
+    ];
+    this.messages = [
+      new Message(3, user2, user1, 'Šta ima?', new Date(), new Date()),
+      ...this.messages,
+    ];
+    this.messages = [
+      new Message(4, user1, user2, 'Evo jebavam se', new Date(), null),
+      ...this.messages,
+    ];
+    this.topMessage = this.messages[0];
   }
 }

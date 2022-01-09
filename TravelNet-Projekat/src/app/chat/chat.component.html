@@ -1,94 +1,139 @@
-<link
-  rel="stylesheet"
-  href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-  integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-  crossorigin="anonymous"
-/>
-<link
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
-  type="text/css"
-  rel="stylesheet"
-/>
-
-<div *ngIf="openConversation" class="container">
-  <div class="messaging">
-    <div class="inbox_msg">
-      <div class="inbox_people">
-        <div class="headind_srch">
-          <div class="channel_heading">
-            <h4>Konverzacije</h4>
+<div class="container">
+  <div class="outline">
+    <div class="conversations">
+      <div class="conversation-header-div">
+        <h2>Konverzacije</h2>
+      </div>
+      <div class="conversation-search-div">
+        <input
+          type="text"
+          placeholder="Nađite konveraciju s prijateljem..."
+          (keyup)="searchUsers($event)"
+        />
+      </div>
+      <div class="conversation-list-div">
+        <div *ngFor="let conversation of filteredConversations; index as i">
+          <div class="conversation-preview-div" (click)="selectConversation(i)">
+            <img
+              class="rounded-circle z-depth-2"
+              src="https://mdbootstrap.com/img/Photos/Avatars/img%20(31).jpg"
+              data-holder-rendered="true"
+            />
+            <div class="conversation-preview-content-div">
+              <h5>
+                {{
+                  conversation.user1 != loggedUser.username
+                    ? conversation.user1
+                    : conversation.user2
+                }}
+              </h5>
+              <label>{{ conversation.topMessage.content }}</label>
+            </div>
+            <label>{{ getDay(conversation.topMessage.timeSent) }}</label>
           </div>
         </div>
-        <div class="inbox_chat">
-          <div class="channels" *ngFor="let openConversation of channelList">
-            <div class="chat_list">
-              <div class="chat_people">
-                <div class="chat_ib">
-                  <h5>
-                    {{ openConversation.data.name }}
-                  </h5>
-                  <p>
-                    {{
-                      openConversation.state.messages[
-                        openConversation.state.messages.length - 1
-                      ].text
-                    }}
-                  </p>
+      </div>
+    </div>
+    <div class="chat">
+      <div *ngIf="selectedConversation; then thenBlock; else elseBlock"></div>
+      <ng-template #thenBlock>
+        <div class="selected-chat-div">
+          <div class="chat-header-div">
+            <h2>{{ selectedConversation.user1 }}</h2>
+          </div>
+          <div class="chat-messages-div">
+            <div *ngFor="let message of selectedConversation.messages">
+              <div
+                *ngIf="
+                  message.from == loggedUser.username;
+                  then myMessage;
+                  else friendsMessage
+                "
+              ></div>
+              <ng-template #myMessage>
+                <div class="my-message-div">
+                  <div class="message-content-div">
+                    {{ message.content }}
+                  </div>
+                  <label class="message-time-sent">
+                    {{ getTime(message.timeSent) }}
+                  </label>
+                  <div
+                    *ngIf="
+                      message.timeRead != null;
+                      then readCheck;
+                      else sentCheck
+                    "
+                  ></div>
+                  <ng-template #readCheck>
+                    <div class="message-delivery-indicator">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        class="bi bi-check2-all"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"
+                        />
+                        <path
+                          d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"
+                        />
+                      </svg>
+                    </div>
+                  </ng-template>
+                  <ng-template #sentCheck>
+                    <div class="message-delivery-indicator">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                        class="bi bi-check2"
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"
+                        />
+                      </svg>
+                    </div>
+                  </ng-template>
                 </div>
-              </div>
+              </ng-template>
+              <ng-template #friendsMessage>
+                <div class="friends-message-div">
+                  <div class="message-content-div">
+                    {{ message.content }}
+                  </div>
+                  <label class="message-time-sent">
+                    {{ getTime(message.timeSent) }}
+                  </label>
+                </div>
+              </ng-template>
             </div>
           </div>
-        </div>
-      </div>
-      <div class="mesgs">
-        <div class="msg_history">
-          <li class="message" *ngFor="let message of messages">
-            <div
-              *ngIf="
-                message.user.id !== currentUser.me.id;
-                then incoming_msg;
-                else outgoing_msg
-              "
-            ></div>
-            <ng-template #incoming_msg>
-              <div class="incoming_msg">
-                <div class="incoming_msg_img">
-                  <img
-                    src="https://i.imgur.com/k2PZLZa.png"
-                    alt="User avatar"
-                  />
-                </div>
-                <div class="received_msg">
-                  <div class="received_withd_msg">
-                    <p>{{ message.text }}</p>
-                  </div>
-                </div>
-              </div>
-            </ng-template>
-            <ng-template #outgoing_msg>
-              <div class="outgoing_msg">
-                <div class="sent_msg">
-                  <p>{{ message.text }}</p>
-                </div>
-              </div>
-            </ng-template>
-          </li>
-        </div>
-        <div class="type_msg">
-          <form class="input_msg_write" (ngSubmit)="sendMessage()">
+          <div class="chat-send-message-div">
             <input
+              id="send-message"
               type="text"
-              class="write_msg"
-              placeholder="Unesite poruku..."
-              name="newMessage"
+              placeholder="Unesite sadržaj poruke..."
               [(ngModel)]="newMessage"
+              (keyup.enter)="sendMessage()"
             />
-            <button class="msg_send_btn" type="button">
-              <i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+            <button (click)="sendMessage()">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                class="bi bi-send"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"
+                />
+              </svg>
             </button>
-          </form>
+          </div>
         </div>
-      </div>
+      </ng-template>
+      <ng-template #elseBlock></ng-template>
     </div>
   </div>
 </div>
