@@ -2,7 +2,7 @@
 <div class="container border border-rounded my-2 p-2">
     <div class="row d-flex justify-content-around">
         <div class="col-5 col-md-2">
-            <img src="{{person.imageBlob}}" class="rounded-circle img-fluid">
+            <img src="{{person.imagePath}}" class="rounded-circle img-fluid">
         </div>
         <div class="col-md-8">
             <p class="text-center info-text">
@@ -22,10 +22,10 @@
                     <button class="btn btn-info w-100">Obrisi prijatelja</button>
                 </div>
                 <div class="col-3 col-sm-3">
-                    <button class="btn btn-profile">{{ "Prijatelji: " + person.friends.length}}</button>
+                    <button class="btn btn-profile">{{ "Prijatelji: " + person.friendsNo}}</button>
                 </div>
                 <div class="col-3 col-sm-3">
-                    <button class="btn btn-profile">{{ "Lokacije: "+ person.locations.length}}</button>
+                    <button class="btn btn-profile">{{ "Lokacije: "+ person.followedLocNo}}</button>
                 </div>
             </div>
         </div>

@@ -12,7 +12,7 @@
                 <a class="nav-link" routerLink="/explore" *ngIf="isLoggedIn"><mat-icon>search</mat-icon></a>
                 <a class="nav-link" routerLink="/messages" *ngIf="isLoggedIn"><mat-icon>message</mat-icon></a>
                 <button class="post-button nav-link" (click)="onNotificationsClicked()" *ngIf="isLoggedIn"><mat-icon>notifications</mat-icon></button>
-                <a class="nav-link" routerLink="/profile" *ngIf="isLoggedIn"><mat-icon>person</mat-icon></a>
+                <a class="nav-link" [routerLink]="['/profile', this.username]" *ngIf="isLoggedIn"><mat-icon>person</mat-icon></a>
                 <button class="post-button nav-link" *ngIf="isLoggedIn" (click)="logout()"><mat-icon>logout</mat-icon></button>
                 <a class="nav-link" routerLink="/registration" *ngIf="!isLoggedIn">Sign Up</a>
                 <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Log in</a>

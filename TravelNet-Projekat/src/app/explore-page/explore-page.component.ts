@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PersonBasic } from '../models/person_models/person-basic.model';
-import { PostModel } from '../models/post_models/post.model';
+import { PostHomePageModel } from '../models/post_models/post-homepage.model';
 
 @Component({
   selector: 'app-explore-page',
@@ -9,7 +9,7 @@ import { PostModel } from '../models/post_models/post.model';
 })
 export class ExplorePageComponent implements OnInit {
 
-  posts: PostModel[] = [];
+  posts: PostHomePageModel[] = [];
   newFriends: PersonBasic[] = [];
 
   constructor() { }

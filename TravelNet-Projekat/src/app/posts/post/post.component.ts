@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { PostModel } from 'src/app/models/post_models/post.model';
+import { PostHomePageModel } from 'src/app/models/post_models/post-homepage.model';
 import { LikeModel } from 'src/app/models/post_models/like.model';
 
 @Component({
@@ -10,15 +10,15 @@ import { LikeModel } from 'src/app/models/post_models/like.model';
 export class PostComponent implements OnInit {
 
   @Input()
-  post: PostModel;
+  post: PostHomePageModel;
+  liked: boolean = false;
 
   constructor() { }
 
   ngOnInit(): void { }
 
   getColor(): string {
-    let index = this.post.likes.findIndex((like) => like.likePersonId == this.post.person.id);
-    if (index == -1){
+    if (!this.liked){
       return "black"
     }
     return "warn" 
@@ -26,14 +26,7 @@ export class PostComponent implements OnInit {
 
 
   onLikeClicked(): void {
-    let index = this.post.likes.findIndex((like) => like.likePersonId == this.post.person.id);
-    if (index == -1){
-      this.post.likes.push(new LikeModel("like4", "p1"));
-      // poziv ka bazi
-    }
-    else {
-      this.post.likes.splice(index, 1);
-    }
+    this.liked = !this.liked;
   }
 
   onCommentsClicked(): void{

@@ -177,4 +177,125 @@ router.patch(
     }
 );
 
+
+//pribavljanje informacija o korisniku (prijatelju ili nekom drugom korisniku), za prikazivanje pocetne strane
+router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
+
+    const cypher = `MATCH (otherU:User) WHERE otherU.username=$profileUser CALL {WITH otherU OPTIONAL MATCH (loc:Location)
+        <-[:LOCATED_AT]-(post:Post)<-[:SHARED]-(otherU:User)
+        <-[:IS_FRIEND]-(logU:User) WHERE otherU.username=$profileUser and id(logU)=$loggedID WITH post, loc ORDER BY post.time DESC
+        LIMIT $limit
+        RETURN collect({post:post, loc: {id:id(loc), country:loc.country, city:loc.city}}) as posts} RETURN id(otherU), otherU.firstName, 
+        otherU.lastName, otherU.username, otherU.image, otherU.email, otherU.bio,
+        otherU.followedLocationsNo, otherU.friendsNo, otherU.postsNo, posts`;
+    
+    try{
+        const result = await session.run(cypher, {profileUser: req.params.profileUser, loggedID: int(req.params.loggedID), limit: int(req.params.limit)});
+
+        const parsedRes = {
+            id: result.records[0].get("id(otherU)").low,
+            firstName: result.records[0].get(1),
+            lastName: result.records[0].get(2),
+            username: result.records[0].get(3),
+            image: result.records[0].get(4),
+            email: result.records[0].get(5),
+            bio: result.records[0].get(6),
+            followedLocationsNo: result.records[0].get(7).low,
+            friendsNo: result.records[0].get(8).low,
+            postsNo: result.records[0].get(9).low,
+            posts: null
+        }
+
+        const posts = result.records[0].get(10);
+
+        if (posts != null){
+            let parsedPosts = posts.map((postWithLoc) => {
+                if (postWithLoc.post != null){
+                    return {
+                        id: postWithLoc.post.identity.low,
+                        commentNo: postWithLoc.post.properties.commentNo.low,
+                        likeNo: postWithLoc.post.properties.likeNo.low,
+                        description: postWithLoc.post.properties.description,
+                        time: postWithLoc.post.properties.time,
+                        location: {
+                            id: postWithLoc.loc.id.low,
+                            country: postWithLoc.loc.country,
+                            city: postWithLoc.loc.city
+                        }
+                    }
+                }
+            });
+            if (posts.length == 1 && posts[0].post == null){
+                parsedRes.posts = null;
+            } else {
+                parsedRes.posts = parsedPosts;
+            }
+        }
+
+
+        return res.status(200).send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+});
+
+
+
+//pribavljanje informacija o profilu korisnika koji je ulogovan
+router.get("/profile/:username", async(req, res) => {
+
+    try{
+        const cypher = `MATCH (u: User) WHERE u.username=$username CALL {WITH u MATCH (u:User)-[:SHARED]->(p: Post)-[:LOCATED_AT]->(loc:Location)
+            WHERE u.username=$username
+            WITH u, loc, p LIMIT 10 RETURN collect({post:p, loc:{id:id(loc), country: loc.country, city: loc.city}}) as posts}
+            RETURN id(u), u.firstName, 
+            u.lastName, u.username, u.image, u.email, u.bio,
+            u.followedLocationsNo, u.friendsNo,u.postsNo, posts`;
+        const result = await session.run(cypher, {username: req.params.username});
+
+        const parsedRes = {
+            id: result.records[0].get("id(u)").low,
+            firstName: result.records[0].get(1),
+            lastName: result.records[0].get(2),
+            username: result.records[0].get(3),
+            image: result.records[0].get(4),
+            email: result.records[0].get(5),
+            bio: result.records[0].get(6),
+            followedLocationsNo: result.records[0].get(7).low,
+            friendsNo: result.records[0].get(8).low,
+            postsNo: result.records[0].get(9).low,
+            posts: null
+        };
+
+        const posts = result.records[0].get(10);
+
+        const parsedPosts = [];
+        posts.forEach((postWithLoc) => {
+            let parsedPost = {
+                id: postWithLoc.post.identity.low,
+                description: postWithLoc.post.properties.description,
+                image: postWithLoc.post.properties.image,
+                likeNo: postWithLoc.post.properties.likeNo.low,
+                commentNo: postWithLoc.post.properties.commentNo.low,
+                location: {
+                    id: postWithLoc.loc.id.low,
+                    country: postWithLoc.loc.country,
+                    city: postWithLoc.loc.city
+                }
+            };
+            parsedPosts.push(parsedPost);
+        });
+        parsedRes.posts = parsedPosts;
+
+        return res.status(200).send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+});
+
+
 module.exports = router;
