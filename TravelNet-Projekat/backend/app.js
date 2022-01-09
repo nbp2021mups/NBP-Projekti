@@ -9,6 +9,7 @@ const notificationRoutes = require("./routes/notifications");
 const commentsRoutes = require("./routes/comments");
 const likesRoutes = require("./routes/likes");
 const locationsRoutes = require("./routes/locations");
+const leaderboardsRoutes = require("./routes/leaderboards")
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -36,5 +37,6 @@ app.use("/messages", messageRoutes);
 app.use("/comments", commentsRoutes);
 app.use("/likes", likesRoutes);
 app.use("/locations", locationsRoutes);
+app.use("/leaderboards", leaderboardsRoutes);
 
 module.exports = app;
