@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const storage = require("../storage");
 const { int } = require("neo4j-driver");
+const app = require("../app");
 
 const session = driver.session();
 
@@ -177,10 +178,8 @@ router.patch(
     }
 );
 
-
 //pribavljanje informacija o korisniku (prijatelju ili nekom drugom korisniku), za prikazivanje pocetne strane
 router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
-
     const cypher = `MATCH (otherU:User) WHERE otherU.username=$profileUser CALL {WITH otherU OPTIONAL MATCH (loc:Location)
         <-[:LOCATED_AT]-(post:Post)<-[:SHARED]-(otherU:User)
         <-[:IS_FRIEND]-(logU:User) WHERE otherU.username=$profileUser and id(logU)=$loggedID WITH post, loc ORDER BY post.time DESC
@@ -188,9 +187,13 @@ router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
         RETURN collect({post:post, loc: {id:id(loc), country:loc.country, city:loc.city}}) as posts} RETURN id(otherU), otherU.firstName, 
         otherU.lastName, otherU.username, otherU.image, otherU.email, otherU.bio,
         otherU.followedLocationsNo, otherU.friendsNo, otherU.postsNo, posts`;
-    
-    try{
-        const result = await session.run(cypher, {profileUser: req.params.profileUser, loggedID: int(req.params.loggedID), limit: int(req.params.limit)});
+
+    try {
+        const result = await session.run(cypher, {
+            profileUser: req.params.profileUser,
+            loggedID: int(req.params.loggedID),
+            limit: int(req.params.limit),
+        });
 
         const parsedRes = {
             id: result.records[0].get("id(otherU)").low,
@@ -203,14 +206,14 @@ router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
             followedLocationsNo: result.records[0].get(7).low,
             friendsNo: result.records[0].get(8).low,
             postsNo: result.records[0].get(9).low,
-            posts: null
-        }
+            posts: null,
+        };
 
         const posts = result.records[0].get(10);
 
-        if (posts != null){
+        if (posts != null) {
             let parsedPosts = posts.map((postWithLoc) => {
-                if (postWithLoc.post != null){
+                if (postWithLoc.post != null) {
                     return {
                         id: postWithLoc.post.identity.low,
                         commentNo: postWithLoc.post.properties.commentNo.low,
@@ -220,40 +223,35 @@ router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
                         location: {
                             id: postWithLoc.loc.id.low,
                             country: postWithLoc.loc.country,
-                            city: postWithLoc.loc.city
-                        }
-                    }
+                            city: postWithLoc.loc.city,
+                        },
+                    };
                 }
             });
-            if (posts.length == 1 && posts[0].post == null){
+            if (posts.length == 1 && posts[0].post == null) {
                 parsedRes.posts = null;
             } else {
                 parsedRes.posts = parsedPosts;
             }
         }
 
-
         return res.status(200).send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
 
-
-
 //pribavljanje informacija o profilu korisnika koji je ulogovan
 router.get("/profile/:username", async(req, res) => {
-
-    try{
+    try {
         const cypher = `MATCH (u: User) WHERE u.username=$username CALL {WITH u MATCH (u:User)-[:SHARED]->(p: Post)-[:LOCATED_AT]->(loc:Location)
             WHERE u.username=$username
             WITH u, loc, p LIMIT 10 RETURN collect({post:p, loc:{id:id(loc), country: loc.country, city: loc.city}}) as posts}
             RETURN id(u), u.firstName, 
             u.lastName, u.username, u.image, u.email, u.bio,
             u.followedLocationsNo, u.friendsNo,u.postsNo, posts`;
-        const result = await session.run(cypher, {username: req.params.username});
+        const result = await session.run(cypher, { username: req.params.username });
 
         const parsedRes = {
             id: result.records[0].get("id(u)").low,
@@ -266,7 +264,7 @@ router.get("/profile/:username", async(req, res) => {
             followedLocationsNo: result.records[0].get(7).low,
             friendsNo: result.records[0].get(8).low,
             postsNo: result.records[0].get(9).low,
-            posts: null
+            posts: null,
         };
 
         const posts = result.records[0].get(10);
@@ -282,20 +280,69 @@ router.get("/profile/:username", async(req, res) => {
                 location: {
                     id: postWithLoc.loc.id.low,
                     country: postWithLoc.loc.country,
-                    city: postWithLoc.loc.city
-                }
+                    city: postWithLoc.loc.city,
+                },
             };
             parsedPosts.push(parsedPost);
         });
         parsedRes.posts = parsedPosts;
 
         return res.status(200).send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
 
+router.get("/light/:username", async(req, res) => {
+    try {
+        const cypher = `MATCH (u: User {username:$username})
+            RETURN u.firstName, 
+            u.lastName, u.username, u.image`;
+        const result = await session.run(cypher, { username: req.params.username });
+
+        const parsedRes = {
+            firstName: result.records[0].get(0),
+            lastName: result.records[0].get(1),
+            username: result.records[0].get(2),
+            image: result.records[0].get(3),
+        };
+
+        return res.status(200).send(parsedRes);
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send("Došlo je do greske!");
+    }
+});
+
+router.get("/conversations/:userId/:startIndex/:count", async(req, res) => {
+    try {
+        const cypher = `MATCH (u1: User)<-[r:IS_FRIEND]->(u2: User)
+                        WHERE id(u1) = $userId
+                        RETURN u2.firstName, u2.lastName, u2.username, u2.image, r.chatId
+                        ORDER BY r.since DESC
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            userId: int(req.params.userId),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count),
+        };
+        const result = await session.run(cypher, params);
+
+        const parsedRes = result.records.map((x) => ({
+            firstName: x.get(0),
+            lastName: x.get(1),
+            username: x.get(2),
+            image: x.get(3),
+            chatId: x.get(4),
+        }));
+
+        return res.status(200).send(parsedRes);
+    } catch (err) {
+        console.log(err);
+        return res.status(501).send("Došlo je do greske!");
+    }
+});
 
 module.exports = router;

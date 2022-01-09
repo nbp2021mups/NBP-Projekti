@@ -13,28 +13,34 @@ export enum NOTIFICATION_EVENTS {
   NOTIFICATION_IN_NOTIFICATIONS = 'new-notification-in-notifications',
 }
 
+export interface ReadReceipt {
+  chatId: number;
+  from: string;
+  to: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class SocketService {
-  private socket = null;
-  private readonly url: String = 'ws://localhost:5050';
+  private static socket = null;
+  private static readonly url: string = 'ws://localhost:5050';
 
   constructor() {}
 
-  connect(): void {
-    this.socket = io(this.url);
+  public static getSocket() {
+    if (SocketService.socket == null)
+      SocketService.socket = io(SocketService.url);
+    return SocketService.socket;
   }
 
   join(username: string, view: string = 'home') {
-    console.log(username);
-    this.connect();
-    this.socket.emit('join', { username, view });
+    SocketService.getSocket().emit('join', { username, view });
   }
 
   getMessagesObservable(event: MESSAGE_EVENTS): Observable<Message> {
     return new Observable((observer) => {
-      this.socket.on(event, (data) => {
+      SocketService.getSocket().on(event, (data) => {
         observer.next(data['content']);
       });
     });
@@ -44,9 +50,21 @@ export class SocketService {
     event: NOTIFICATION_EVENTS
   ): Observable<Notification> {
     return new Observable((observer) => {
-      this.socket.on(event, (data) => {
+      SocketService.getSocket().on(event, (data) => {
         observer.next(data['content']);
       });
     });
+  }
+
+  sendMessage(m: Message) {
+    SocketService.getSocket().emit('send-message', m);
+  }
+
+  readMessages(receipt: ReadReceipt) {
+    SocketService.getSocket().emit('read-messages', receipt);
+  }
+
+  changeView(view: string) {
+    SocketService.getSocket().emit('change-view', { view });
   }
 }

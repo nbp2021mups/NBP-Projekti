@@ -1,8 +1,8 @@
-const driver = require('../neo4jdriver');
+const driver = require("../neo4jdriver");
 const express = require("express");
 const { getChatId } = require("./../redisclient");
 const router = express.Router();
-const { int } = require('neo4j-driver');
+const { int } = require("neo4j-driver");
 
 const session = driver.session();
 
@@ -15,7 +15,7 @@ router.post("/request", async(req, res) => {
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
-            time: new Date().toString()
+            time: new Date().toString(),
         };
         await session.run(cypher, params);
         return res.send("Zahtev je poslat uspešno.");
@@ -33,7 +33,7 @@ router.delete("/request", async(req, res) => {
                         DELETE r`;
         const params = {
             id1: req.body.id1,
-            id2: req.body.id2
+            id2: req.body.id2,
         };
         await session.run(cypher, params);
         return res.send("Zahtev je obrisan uspešno.");
@@ -49,12 +49,12 @@ router.post("/accept", async(req, res) => {
         const cypher1 = `MATCH (u1:User), (u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
-                        MERGE (u2)<-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u1)`;
+                        MERGE (u1)<-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
             since: new Date().toString(),
-            chatId: getChatId()
+            chatId: getChatId(req.body.id1, req.body.id2),
         };
         await session.run(cypher1, params);
         const cypher2 = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2
@@ -78,15 +78,15 @@ router.delete("", async(req, res) => {
                         DELETE r`;
         const params = {
             id1: req.body.id1,
-            id2: req.body.id2
+            id2: req.body.id2,
         };
         await session.run(cypher, params);
         return res.send("Brisanje prijatelja je uspesno");
     } catch (ex) {
-        console.log(ex)
+        console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
-})
+});
 
 //preporuka prijatelja korisniku ciji je id proslednjen, sortirani po broju zajednickih prijatelja
 router.get("/recommendation/:userId", async(req, res) => {
@@ -104,12 +104,12 @@ router.get("/recommendation/:userId", async(req, res) => {
         const params = { id: parseInt(req.params.userId) };
         const result = await session.run(cypher, params);
         const rez = result.records.map((record) => ({
-            id: record.get('id').low,
-            mutualFriends: record.get('mutualFriends').low,
-            username: record.get('username'),
-            firstName: record.get('firstName'),
-            lastName: record.get('lastName'),
-            image: record.get('image')
+            id: record.get("id").low,
+            mutualFriends: record.get("mutualFriends").low,
+            username: record.get("username"),
+            firstName: record.get("firstName"),
+            lastName: record.get("lastName"),
+            image: record.get("image"),
         }));
         res.send(rez);
     } catch (ex) {
@@ -121,22 +121,22 @@ router.get("/recommendation/:userId", async(req, res) => {
 // Vracanje opsega prijatelja korisnika
 router.get("/:username/:startIndex/:count", async(req, res) => {
     try {
-        const cypher = `MATCH (u1:User { username: $username })-[r:IS_FRIEND]->(u2:User)
-                        RETURN u2
+        const cypher = `MATCH (u1:User { username: $username })<-[r:IS_FRIEND]->(u2:User)
+                        RETURN DISTINCT u2
                         ORDER BY r.since DESC
                         SKIP $startIndex
                         LIMIT $count`;
         const params = {
             username: req.params.username,
             startIndex: int(req.params.startIndex),
-            count: int(req.params.count)
+            count: int(req.params.count),
         };
         const result = await session.run(cypher, params);
         const rez = {
-            friends: result.records.map(x => ({
+            friends: result.records.map((x) => ({
                 id: x.get("u2").identity.low,
-                ...x.get("u2").properties
-            }))
+                ...x.get("u2").properties,
+            })),
         };
         res.send(rez);
     } catch (ex) {
