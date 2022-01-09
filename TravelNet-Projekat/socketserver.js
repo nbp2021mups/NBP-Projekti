@@ -145,6 +145,7 @@ io.on("connection", (socket) => {
 
         socket.on("read-messages", (data) => {
             try {
+                console.log(socket.username, data);
                 if (socket.username) {
                     if (validateReadMessages(data)) {
                         console.log("Read-messages", data);
@@ -152,11 +153,11 @@ io.on("connection", (socket) => {
                         // Update database
                         if (!unread["chatsId"]) unread["chatsId"] = {};
                         for (let msg of unread["chats"][data["chatId"]])
-                            msg["timeRead"] = new Date();
+                            msg["timeRead"] = data["timeRead"];
 
-                        if (fromUser && fromUser.view === `chat-tab::${data["chatId"]}`) {
+                        if (fromUser) {
                             fromUser.emit("read-messages", {
-                                content: unread["chats"][data["chatId"]],
+                                content: data,
                             });
                         } else {
                             console.log("User is offline!");

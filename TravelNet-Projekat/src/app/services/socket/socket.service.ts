@@ -7,6 +7,7 @@ import { Notification } from 'src/app/models/notification-models/notification.mo
 export enum MESSAGE_EVENTS {
   MESSAGE_POP_UP = 'new-message-pop-up',
   MESSAGE_IN_MESSAGES = 'new-message-in-messages',
+  READ_MESSAGES = 'read-messages',
 }
 export enum NOTIFICATION_EVENTS {
   NOTIFICATION_POP_UP = 'new-notification-pop-up',
@@ -15,8 +16,8 @@ export enum NOTIFICATION_EVENTS {
 
 export interface ReadReceipt {
   chatId: number;
+  timeRead: Date;
   from: string;
-  to: string;
 }
 
 @Injectable({

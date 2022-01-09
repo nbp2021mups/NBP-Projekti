@@ -77,6 +77,11 @@
       <ng-template #thenBlock>
         <div class="selected-chat-div">
           <div class="chat-header-div">
+            <img
+              class="rounded-circle z-depth-2"
+              src="{{ selectedConversation.friendImage }}"
+              data-holder-rendered="true"
+            />
             <h2>{{ selectedConversation.friend }}</h2>
           </div>
           <div class="chat-messages-div">

@@ -1,3 +1,24 @@
+button {
+    background-color: rgb(233, 238, 241);
+    border-radius: 1em;
+    border: 0;
+    width: 10%;
+    margin-left: 0.2em;
+    overflow: hidden;
+}
+
+img {
+    width: 10%;
+    height: 10%;
+    align-self: center;
+}
+
+svg {
+    justify-self: center;
+    max-width: 40%;
+    max-height: 40%;
+}
+
 .container {
     display: flex;
     flex: 1 0 100%;
@@ -16,8 +37,8 @@
 
 .outline {
     display: flex;
-    flex: 1 0 100%;
-    max-width: 95%;
+    flex: 1 0 90%;
+    max-width: 90%;
     height: 88%;
     max-height: 88%;
     flex-direction: row;
@@ -25,6 +46,7 @@
     border-radius: 1em;
     border: 0.2em solid rgba(209, 206, 204, 0.788);
     background-color: rgb(255, 255, 255);
+    overflow: hidden;
 }
 
 .conversations {
@@ -32,7 +54,7 @@
     flex-direction: column;
     flex: 1 0 35%;
     padding: 1em;
-    max-height: 90%;
+    max-height: 95%;
 }
 
 .conversation-list-div {
@@ -137,7 +159,20 @@
 }
 
 .chat-header-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    align-items: center;
+    align-content: center;
     border-bottom: 0.2em solid rgba(209, 206, 204, 0.788);
+}
+
+.chat-header-div>* {
+    height: 80%;
+    margin: 0 0 0.5em 0.5em;
+    align-self: center;
 }
 
 .chat-messages-div {
@@ -154,11 +189,13 @@
 .friends-message-div {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    flex: 1 0 90%;
+    justify-content: space-around;
     align-items: center;
     border-radius: 1em;
     background-color: antiquewhite;
-    max-width: 70%;
+    max-width: 90%;
     max-height: fit-content;
     padding: 0.5em;
     margin-top: 0.5em;
@@ -166,21 +203,19 @@
 
 .my-message-div {
     background-color: rgba(127, 127, 245, 0.578);
-    margin-left: 18em;
 }
 
 .message-content-div {
     display: flex;
     justify-content: flex-start;
-    flex: 3 0 70%;
+    flex: 1 0 60%;
 }
 
 .message-time-sent {
     display: flex;
     justify-content: center;
-    flex: 1 0 7.5%;
-    margin-left: 2em;
-    font-size: 0.7em;
+    flex: 1 0 10%;
+    font-size: 0.5em;
     align-self: center;
 }
 
@@ -201,30 +236,12 @@ input {
     background-color: rgb(233, 238, 241);
     padding: 1em;
     width: 85%;
+    max-width: 85%;
+    max-height: fit-content;
 }
 
 #send-message {
     text-align: left;
-}
-
-button {
-    background-color: rgb(233, 238, 241);
-    border-radius: 1em;
-    border: 0;
-    width: 10%;
-    margin-left: 0.2em;
-    overflow: hidden;
-}
-
-img {
-    width: 10%;
-    height: 10%;
-}
-
-svg {
-    justify-self: center;
-    max-width: 40%;
-    max-height: 40%;
 }
 
 

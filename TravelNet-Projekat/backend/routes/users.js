@@ -317,8 +317,9 @@ router.get("/light/:username", async(req, res) => {
 
 router.get("/conversations/:userId/:startIndex/:count", async(req, res) => {
     try {
-        const cypher = `MATCH (u1: User)<-[r:IS_FRIEND]->(u2: User)
+        const cypher = `MATCH (u1: User)-[r:IS_FRIEND]->(u2: User)
                         WHERE id(u1) = $userId
+                        WITH r, u2
                         RETURN u2.firstName, u2.lastName, u2.username, u2.image, r.chatId
                         ORDER BY r.since DESC
                         SKIP $startIndex

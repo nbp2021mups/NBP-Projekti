@@ -1,5 +1,6 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import axios from 'axios';
+import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
 import { FullUser } from '../models/full-user-model/full-user.model';
 import { Message } from '../models/message-model/message.model';
@@ -30,7 +31,7 @@ export const ALLOWED_ALPHANUM = [
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css'],
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
   public conversations: Conversation[] = Array<Conversation>();
   public filteredConversations: Conversation[] = Array<Conversation>();
   public selectedConversation: Conversation = null;
@@ -38,7 +39,15 @@ export class ChatComponent implements OnInit {
   public filter: string = '';
   public loggedUser: FullUser = null;
   public newMessage: string = '';
+  public readMsgSubscription: Subscription;
+  public receivedMsgSubscription: Subscription;
   constructor(private socketService: SocketService) {}
+
+  ngOnDestroy(): void {
+    this.readMsgSubscription.unsubscribe();
+    this.receivedMsgSubscription.unsubscribe();
+    this.socketService.changeView('default');
+  }
 
   ngOnInit(): void {
     axios
@@ -75,26 +84,58 @@ export class ChatComponent implements OnInit {
             this.filteredConversations = this.conversations;
           });
       });
-    this.socketService
+    this.readMsgSubscription = this.socketService
+      .getMessagesObservable(MESSAGE_EVENTS.READ_MESSAGES)
+      .subscribe((data) => {
+        console.log(data);
+        if (
+          this.selectedConversation &&
+          this.selectedConversation.id == data.chatId
+        ) {
+          this.selectedConversation.messages.forEach(
+            (m) => (m.timeRead = new Date(data.timeRead))
+          );
+        }
+      });
+    this.receivedMsgSubscription = this.socketService
       .getMessagesObservable(MESSAGE_EVENTS.MESSAGE_IN_MESSAGES)
       .subscribe((msg) => {
-        if (this.conversations[0].id != msg.chatId) {
-          const newTop = this.conversations.find((c) => c.id == msg.chatId);
-          this.filteredConversations = [
-            newTop,
-            ...this.filteredConversations.filter((c) => c.id != msg.chatId),
+        if (this.conversations.length > 0) {
+          if (this.conversations[0].id != msg.chatId) {
+            const newTop = this.conversations.find((c) => c.id == msg.chatId);
+            this.filteredConversations = [
+              newTop,
+              ...this.filteredConversations.filter((c) => c.id != msg.chatId),
+            ];
+            this.conversations = [
+              newTop,
+              ...this.conversations.filter((c) => c.id != msg.id),
+            ];
+          }
+          this.conversations[0].messages = [
+            msg,
+            ...this.conversations[0].messages,
           ];
-          this.conversations = [
-            newTop,
-            ...this.conversations.filter((c) => c.id != msg.id),
-          ];
+          this.conversations[0].topMessage = msg;
+          if (
+            this.selectedConversation &&
+            this.selectedConversation.id == this.conversations[0].id
+          ) {
+            msg.timeRead = new Date();
+            this.socketService.readMessages({
+              chatId: msg.chatId,
+              timeRead: msg.timeRead,
+              from: msg.from,
+            });
+          } else this.conversations[0].myUnread += 1;
         }
-        this.conversations[0].messages.push(msg);
       });
+    this.socketService.changeView('messages-tab');
   }
 
-  getDay(date: Date): string {
-    if (!date) return '';
+  getDay(dateCal): string {
+    if (!dateCal) return '';
+    let date = new Date(dateCal);
     const currentDate = new Date();
     const diff = currentDate.getTime() - date.getTime();
     if (diff < MILLISECONDS_PER_DAY) {
@@ -114,8 +155,9 @@ export class ChatComponent implements OnInit {
     return DAYS[date.getDay()];
   }
 
-  getTime(date: Date): string {
-    if (!date) return '';
+  getTime(dateCal): string {
+    if (!dateCal) return '';
+    let date = new Date(dateCal);
     let hoursInt = date.getHours(),
       hours = `${hoursInt < 10 ? '0' : ''}${hoursInt}`,
       minutesInt = date.getMinutes(),
@@ -129,7 +171,7 @@ export class ChatComponent implements OnInit {
       }
     }
 
-    return `${date.getMonth()}.${date.getDay()} u ${hours}:${minutes}h`;
+    return `${date.getMonth() + 1}.${date.getDay() + 1} u ${hours}:${minutes}h`;
   }
 
   searchUsers(event: KeyboardEvent) {
@@ -172,7 +214,6 @@ export class ChatComponent implements OnInit {
         null
       );
       this.newMessage = '';
-      this.socketService.sendMessage(m);
 
       this.selectedConversation.messages = [
         m,
@@ -190,6 +231,7 @@ export class ChatComponent implements OnInit {
         ...this.conversations.filter((val) => val != this.selectedConversation),
       ];
       this.selectedIndex = 0;
+      this.socketService.sendMessage(m);
     } catch (err) {
       console.log(err);
     }
@@ -205,8 +247,8 @@ export class ChatComponent implements OnInit {
     this.selectedConversation.myUnread = 0;
     this.socketService.readMessages({
       chatId: this.selectedConversation.id,
+      timeRead: new Date(),
       from: this.selectedConversation.friend,
-      to: this.loggedUser.username,
     });
   }
 }
