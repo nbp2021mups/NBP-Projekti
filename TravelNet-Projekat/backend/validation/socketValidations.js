@@ -4,7 +4,6 @@ const validateSentMessage = (data) => {
         data["to"] &&
         data["chatId"] &&
         data["timeSent"] &&
-        data["contentType"] &&
         data["content"]
     );
 };

@@ -95,8 +95,8 @@ Message: {						[Poruka]
 
 Chat: {							[Ćaskanje]
 	id: Int,					[Identifikator]
-	user1Id: String,			[Identifikator korisnika 1]
-	user2Id: String,			[Identifikator korisnika 2]
+	user1Id: Int,				[Identifikator korisnika 1]
+	user2Id: Int,				[Identifikator korisnika 2]
 	messages ??					[Poruke]
 }
 

@@ -13,24 +13,62 @@
       </div>
       <div class="conversation-list-div">
         <div *ngFor="let conversation of filteredConversations; index as i">
-          <div class="conversation-preview-div" (click)="selectConversation(i)">
-            <img
-              class="rounded-circle z-depth-2"
-              src="https://mdbootstrap.com/img/Photos/Avatars/img%20(31).jpg"
-              data-holder-rendered="true"
-            />
-            <div class="conversation-preview-content-div">
-              <h5>
-                {{
-                  conversation.user1 != loggedUser.username
-                    ? conversation.user1
-                    : conversation.user2
-                }}
-              </h5>
-              <label>{{ conversation.topMessage.content }}</label>
+          <div
+            *ngIf="
+              conversation.myUnread > 0;
+              then unreadMessages;
+              else readMessages
+            "
+          ></div>
+          <ng-template #unreadMessages>
+            <div
+              [class.selected-conversation-div]="
+                selectedConversation == conversation
+              "
+              class="conversation-preview-div unread-conversation-div"
+              (click)="selectConversation(i)"
+            >
+              <img
+                class="rounded-circle z-depth-2"
+                src="{{ conversation.friendImage }}"
+                data-holder-rendered="true"
+              />
+              <div class="conversation-preview-content-div">
+                <h5>
+                  {{ conversation.friend }}
+                </h5>
+                <label>{{ conversation.topMessage?.content }}</label>
+              </div>
+              <div class="conversation-info-div">
+                <label>{{ getDay(conversation.topMessage?.timeSent) }}</label>
+                <div class="unread-message-count">
+                  {{ conversation.myUnread }}
+                </div>
+              </div>
             </div>
-            <label>{{ getDay(conversation.topMessage.timeSent) }}</label>
-          </div>
+          </ng-template>
+          <ng-template #readMessages>
+            <div
+              [class.selected-conversation-div]="
+                selectedConversation == conversation
+              "
+              class="conversation-preview-div"
+              (click)="selectConversation(i)"
+            >
+              <img
+                class="rounded-circle z-depth-2"
+                src="{{ conversation.friendImage }}"
+                data-holder-rendered="true"
+              />
+              <div class="conversation-preview-content-div">
+                <h5>
+                  {{ conversation.friend }}
+                </h5>
+                <label>{{ conversation.topMessage?.content }}</label>
+              </div>
+              <label>{{ getDay(conversation.topMessage?.timeSent) }}</label>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
@@ -39,7 +77,7 @@
       <ng-template #thenBlock>
         <div class="selected-chat-div">
           <div class="chat-header-div">
-            <h2>{{ selectedConversation.user1 }}</h2>
+            <h2>{{ selectedConversation.friend }}</h2>
           </div>
           <div class="chat-messages-div">
             <div *ngFor="let message of selectedConversation.messages">
@@ -133,7 +171,11 @@
           </div>
         </div>
       </ng-template>
-      <ng-template #elseBlock></ng-template>
+      <ng-template #elseBlock>
+        <div class="no-conversation-selected-div">
+          <h1>Odaberite konveraciju</h1>
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>

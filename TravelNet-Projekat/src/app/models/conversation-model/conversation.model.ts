@@ -2,32 +2,24 @@ import { Message } from '../message-model/message.model';
 
 export class Conversation {
   public id: number;
-  public user1: string;
-  public user2: string;
-  public topMessage: Message;
   public messages: Array<Message>;
+  public topMessage: Message;
+  public myUnread: number;
+  public friend: string;
+  public friendImage: string;
 
-  public constructor(id: number, user1: string, user2: string) {
+  public constructor(
+    id: number,
+    friend: string,
+    friendImage: string,
+    myUnread: number,
+    messages: Array<Message> = new Array<Message>()
+  ) {
     this.id = id;
-    this.user1 = user1;
-    this.user2 = user2;
-    this.messages = new Array<Message>();
-    this.messages = [
-      new Message(1, user1, user2, 'Eeeeej ćao', new Date(), new Date()),
-      ...this.messages,
-    ];
-    this.messages = [
-      new Message(2, user2, user1, 'Ćaos ćaos', new Date(), new Date()),
-      ...this.messages,
-    ];
-    this.messages = [
-      new Message(3, user2, user1, 'Šta ima?', new Date(), new Date()),
-      ...this.messages,
-    ];
-    this.messages = [
-      new Message(4, user1, user2, 'Evo jebavam se', new Date(), null),
-      ...this.messages,
-    ];
-    this.topMessage = this.messages[0];
+    this.friend = friend;
+    this.friendImage = friendImage;
+    this.messages = messages;
+    this.myUnread = myUnread;
+    this.topMessage = this.messages.length > 0 ? this.messages[0] : null;
   }
 }

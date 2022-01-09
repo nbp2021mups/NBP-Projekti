@@ -1,7 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
+import axios from 'axios';
 import { Conversation } from '../models/conversation-model/conversation.model';
+import { FullUser } from '../models/full-user-model/full-user.model';
 import { Message } from '../models/message-model/message.model';
-import { User } from '../models/user.model';
+import {
+  MESSAGE_EVENTS,
+  SocketService,
+} from '../services/socket/socket.service';
 
 export const DAYS = {
   1: 'Pon',
@@ -31,23 +36,65 @@ export class ChatComponent implements OnInit {
   public selectedConversation: Conversation = null;
   public selectedIndex!: number;
   public filter: string = '';
-  public loggedUser: User = null;
+  public loggedUser: FullUser = null;
   public newMessage: string = '';
-  constructor() {}
+  constructor(private socketService: SocketService) {}
 
   ngOnInit(): void {
-    this.loggedUser = new User(102, 'Stefan', 'proba', new Date());
-    this.conversations.push(new Conversation(123, 'Frank', 'Stefan'));
-    this.conversations.push(new Conversation(123, 'Nenad', 'Stefan'));
-    this.conversations.push(new Conversation(123, 'Petko', 'Stefan'));
-    this.conversations.push(new Conversation(123, 'Ranko', 'Stefan'));
-    this.conversations.push(new Conversation(123, 'Dragoje', 'Stefan'));
-    this.conversations.push(new Conversation(123, 'Stojan', 'Stefan'));
-    this.selectedConversation = this.conversations[(this.selectedIndex = 0)];
-    this.filteredConversations = this.conversations;
+    axios
+      .get(
+        `http://localhost:3000/users/profile/${
+          JSON.parse(window.localStorage.getItem('logged-user'))['username']
+        }`
+      )
+      .then((res) => {
+        const data = res.data;
+        this.loggedUser = new FullUser(
+          data.id,
+          data.username,
+          data.firstName,
+          data.lastName,
+          data.image,
+          data.bio,
+          data.joined,
+          data.friendsNo,
+          data.followedLocationsNo,
+          data.postsNo
+        );
+
+        axios
+          .get(
+            `http://localhost:3000/users/conversations/${this.loggedUser.id}/0/${this.loggedUser.friendsNo}`
+          )
+          .then((result) => {
+            result.data.forEach((c) => {
+              this.conversations.push(
+                new Conversation(c.chatId, c.username, c.image, 0)
+              );
+            });
+            this.filteredConversations = this.conversations;
+          });
+      });
+    this.socketService
+      .getMessagesObservable(MESSAGE_EVENTS.MESSAGE_IN_MESSAGES)
+      .subscribe((msg) => {
+        if (this.conversations[0].id != msg.chatId) {
+          const newTop = this.conversations.find((c) => c.id == msg.chatId);
+          this.filteredConversations = [
+            newTop,
+            ...this.filteredConversations.filter((c) => c.id != msg.chatId),
+          ];
+          this.conversations = [
+            newTop,
+            ...this.conversations.filter((c) => c.id != msg.id),
+          ];
+        }
+        this.conversations[0].messages.push(msg);
+      });
   }
 
   getDay(date: Date): string {
+    if (!date) return '';
     const currentDate = new Date();
     const diff = currentDate.getTime() - date.getTime();
     if (diff < MILLISECONDS_PER_DAY) {
@@ -68,6 +115,7 @@ export class ChatComponent implements OnInit {
   }
 
   getTime(date: Date): string {
+    if (!date) return '';
     let hoursInt = date.getHours(),
       hours = `${hoursInt < 10 ? '0' : ''}${hoursInt}`,
       minutesInt = date.getMinutes(),
@@ -84,14 +132,6 @@ export class ChatComponent implements OnInit {
     return `${date.getMonth()}.${date.getDay()} u ${hours}:${minutes}h`;
   }
 
-  async joinChat() {
-    try {
-    } catch (err) {
-      console.log(err);
-      return;
-    }
-  }
-
   searchUsers(event: KeyboardEvent) {
     const input = event.key.toLocaleLowerCase();
     if (!ALLOWED_ALPHANUM[input]) return;
@@ -101,13 +141,19 @@ export class ChatComponent implements OnInit {
 
     if (this.filter == '') this.filteredConversations = this.conversations;
     else
-      this.filteredConversations = this.conversations.filter(
-        (val) =>
-          (val.user1 != this.loggedUser.username &&
-            val.user1.toLocaleLowerCase().match(this.filter)) ||
-          (val.user2 != this.loggedUser.username &&
-            val.user2.toLocaleLowerCase().match(this.filter))
+      this.filteredConversations = this.conversations.filter((val) =>
+        val.friend.toLocaleLowerCase().match(this.filter)
       );
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if (event.key == 'Escape') this.deselectConversation();
+  }
+
+  deselectConversation() {
+    this.selectedConversation = null;
+    this.selectedIndex = null;
   }
 
   sendMessage() {
@@ -117,13 +163,17 @@ export class ChatComponent implements OnInit {
 
     try {
       const m = new Message(
-        6,
+        null,
         this.loggedUser.username,
-        this.selectedConversation.user2,
+        this.selectedConversation.friend,
+        this.selectedConversation.id,
         this.newMessage,
         new Date(),
         null
       );
+      this.newMessage = '';
+      this.socketService.sendMessage(m);
+
       this.selectedConversation.messages = [
         m,
         ...this.selectedConversation.messages,
@@ -140,7 +190,6 @@ export class ChatComponent implements OnInit {
         ...this.conversations.filter((val) => val != this.selectedConversation),
       ];
       this.selectedIndex = 0;
-      this.newMessage = '';
     } catch (err) {
       console.log(err);
     }
@@ -149,5 +198,15 @@ export class ChatComponent implements OnInit {
   selectConversation(i: number) {
     this.selectedConversation = this.filteredConversations[i];
     this.selectedIndex = i;
+
+    this.selectedConversation.messages.forEach((m) => {
+      if (!m.timeRead) m.timeRead = new Date();
+    });
+    this.selectedConversation.myUnread = 0;
+    this.socketService.readMessages({
+      chatId: this.selectedConversation.id,
+      from: this.selectedConversation.friend,
+      to: this.loggedUser.username,
+    });
   }
 }
