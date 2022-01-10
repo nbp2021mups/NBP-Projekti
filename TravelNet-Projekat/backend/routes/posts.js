@@ -52,6 +52,8 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         const result=await session.run(cypher, params);
         if (req.body.country && req.body.city){
           const locationId=int(result.records[0].get('id(l)').low)
+          //TODO PROVERI
+          await client.sendCommand(["ZINCRYBY", "locations-leaderboard", "1", "location:"+locationId]);
           const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
           publisher.publish("location:"+locationId,message)
 
