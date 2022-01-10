@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PostHomePageModel } from 'src/app/models/post_models/post-homepage.model';
-import { LikeModel } from 'src/app/models/post_models/like.model';
 
 @Component({
   selector: 'app-post',
