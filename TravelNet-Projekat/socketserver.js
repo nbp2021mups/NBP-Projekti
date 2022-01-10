@@ -6,10 +6,10 @@ const socketIO = require("socket.io");
 const {
     validateSentMessage,
     validateReadMessages,
-    validatePostLike,
-    validatePostComment,
-    validateSendFriendRequest,
     validateAcceptFriendRequest,
+    validatePostComment,
+    validatePostLike,
+    validateSendFriendRequest,
 } = require("./backend/validation/socketValidations");
 const {
     rPushMessage,
@@ -32,11 +32,6 @@ const io = new socketIO.Server(server, {
 
 // Users that are online
 const online = {};
-
-const unread = {
-    chats: {},
-    notifications: {},
-};
 
 io.on("connection", (socket) => {
     try {

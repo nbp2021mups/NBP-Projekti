@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as io from 'node_modules/socket.io/client-dist/socket.io.js';
 import { Observable } from 'rxjs';
-import { Message } from 'src/app/models/message-model/message.model';
+import {
+  Message,
+  MessageReadReceipt,
+} from 'src/app/models/message-model/message.model';
 import { Notification } from 'src/app/models/notification-models/notification.model';
 
 export enum MESSAGE_EVENTS {
@@ -12,13 +15,6 @@ export enum MESSAGE_EVENTS {
 export enum NOTIFICATION_EVENTS {
   NOTIFICATION_POP_UP = 'new-notification-pop-up',
   NOTIFICATION_IN_NOTIFICATIONS = 'new-notification-in-notifications',
-}
-
-export interface ReadReceipt {
-  chatId: number;
-  timeRead: Date;
-  from: string;
-  unreadCount: number;
 }
 
 @Injectable({
@@ -62,11 +58,15 @@ export class SocketService {
     SocketService.getSocket().emit('send-message', m);
   }
 
-  readMessages(receipt: ReadReceipt) {
+  readMessages(receipt: MessageReadReceipt) {
     SocketService.getSocket().emit('read-messages', receipt);
   }
 
   changeView(view: string) {
     SocketService.getSocket().emit('change-view', { view });
+  }
+
+  createNotification(n: Notification) {
+    SocketService.getSocket().emit(n.type, { n });
   }
 }

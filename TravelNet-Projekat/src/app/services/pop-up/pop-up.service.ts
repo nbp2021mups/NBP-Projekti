@@ -1,27 +1,16 @@
 import { Injectable } from '@angular/core';
+import { Subscription } from 'rxjs/internal/Subscription';
+import { Message } from 'src/app/models/message-model/message.model';
+import {
+  Notification,
+  NOTIFICATION_TRANSLATION,
+} from 'src/app/models/notification-models/notification.model';
+import Swal from 'sweetalert2';
 import {
   MESSAGE_EVENTS,
   NOTIFICATION_EVENTS,
   SocketService,
 } from '../socket/socket.service';
-import Swal from 'sweetalert2';
-import { Subscription } from 'rxjs';
-import { Notification } from 'src/app/models/notification-models/notification.model';
-import { Message } from 'src/app/models/message-model/message.model';
-
-const TYPES = {
-  'post-like': 'like',
-  'post-comment': 'comment',
-  'friend-request': 'friendRequest',
-  'accepted-friend-request': 'friends',
-};
-
-const TRANSLATION = {
-  'post-like': 'se sviđa Vaša objava!',
-  'post-comment': 'komentariše Vašu objavu!',
-  'friend-request': 'šalje zahtev za prijateljstvo!',
-  'accepted-friend-request': 'i Vi ste postali prijatelji!',
-};
 
 @Injectable({
   providedIn: 'root',
@@ -60,7 +49,7 @@ export class PopUpService {
     this.notifications = this.socketService
       .getNotificationsObservable(NOTIFICATION_EVENTS.NOTIFICATION_POP_UP)
       .subscribe({
-        next: (data: Notification) => this.notificationTriggered(data),
+        next: (data) => this.notificationTriggered(data),
         error: (er) => console.log(er),
       });
   }
@@ -78,8 +67,8 @@ export class PopUpService {
       padding: '0',
       imageHeight: '2.5em',
       imageWidth: '2.5em',
-      imageUrl: `http://localhost:3000/images/${TYPES[n.type]}.svg`,
-      html: `<b>${n.from}</b> ${TRANSLATION[n.type]}`,
+      imageUrl: `http://localhost:3000/images/${n.type}.svg`,
+      html: `<b>${n.from}</b> ${NOTIFICATION_TRANSLATION[n.type]}`,
       showConfirmButton: false,
       backdrop: 'rgba(0,0,0,0)',
       showClass: {

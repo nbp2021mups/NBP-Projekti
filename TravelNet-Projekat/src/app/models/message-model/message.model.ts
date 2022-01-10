@@ -1,3 +1,10 @@
+export interface MessageReadReceipt {
+  chatId: number;
+  timeRead: Date;
+  from: string;
+  unreadCount: number;
+}
+
 export class Message {
   public id!: number;
   public from: string;
