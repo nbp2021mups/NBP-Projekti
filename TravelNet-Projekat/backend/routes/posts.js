@@ -22,7 +22,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
     try {
         const url = req.protocol + "://" + req.get("host");
         const imgPath = url + "/images/"+req.file.filename;
-        const params = { description: req.body.description, idU: req.body.userId, time: new Date().toString(), image: imgPath }
+        const params = { description: req.body.description, idU: int(req.body.userId), time: new Date().toString(), image: imgPath }
         let cypher;
         if (req.body.country && req.body.city) {
             params.country = req.body.country;
@@ -42,6 +42,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
 
             params.country = req.body.country ? req.body.country : req.body.newCountry;
             params.city = req.body.city ? req.body.city : req.body.newCity;
+
             cypher = `MATCH (u:User)
             WHERE id(u)=$idU
             SET u.postsNo=u.postsNo+1
@@ -50,8 +51,10 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         } else
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
+
         const result=await session.run(cypher, params);
-        /* const locationId=String(result.records[0].get('id(l)').low)
+        console.log(result);
+        const locationId=String(result.records[0].get('id(l)').low)
         const client = await redisClient.getConnection();
         if (req.body.country && req.body.city){
           await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
@@ -62,7 +65,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
           await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
           await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
           await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
-        } */
+        }
 
         return res.send("Objava uspesno dodata");
     } catch (ex) {
