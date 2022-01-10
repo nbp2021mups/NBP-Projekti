@@ -8,12 +8,8 @@ const { int } = require('neo4j-driver');
 const driver = require('../neo4jdriver');
 const session = driver.session()
 
-const redis = require("redis");
 const redisClient = require('../redisclient');
-const publisher=redis.createClient({
-  url: process.env.REDIS_URL,
-  password: process.env.REDIS_PASSWORD,
-});
+
 
 
 
@@ -53,18 +49,19 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
 
 
         const result=await session.run(cypher, params);
-        console.log(result);
         const locationId=String(result.records[0].get('id(l)').low)
         const client = await redisClient.getConnection();
+        const publisher = client.duplicate();
         if (req.body.country && req.body.city){
-          await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
-          const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
-          publisher.publish("location:"+locationId,message)
+            await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
+            const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
+            //publisher.publish("location:"+locationId,message)
+
 
         }else{
-          await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
-          await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
-          await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
+            await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
+            await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
+            await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
         }
 
         return res.send("Objava uspesno dodata");
@@ -98,6 +95,8 @@ router.delete("/:postId", async(req, res) => {
                         RETURN id(l)`
         const result=await session.run(cypher, { id: int(req.params.postId) });
         const locationId=String(result.records[0].get('id(l)').low)
+        console.log(locationId)
+        const client = await redisClient.getConnection();
         await client.sendCommand(["ZINCRBY", "locations-leaderboard", "-1", "location:"+locationId]);
 
 
@@ -109,7 +108,7 @@ router.delete("/:postId", async(req, res) => {
 });
 
 //vracanje ukupnog broja komentara i lajkova za konkretnu objavu
-router.get("/:postId/reactions", async(req, res) => {
+/* router.get("/:postId/reactions", async(req, res) => {
     try {
         const cypher = 'MATCH (p:Post)<-[r]->() WHERE id(p) = $id AND (type(r)="LIKED" OR type(r)="COMMENTED") RETURN type(r), count(*)';
         const result = await session.run(cypher, { id: int(req.params.postId) });
@@ -122,6 +121,6 @@ router.get("/:postId/reactions", async(req, res) => {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
-});
+}); */
 
 module.exports = router;
