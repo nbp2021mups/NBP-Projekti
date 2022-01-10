@@ -13,9 +13,6 @@ export class HotspotsComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.locations.push(new LocationBasic("l1", "Pefkohori"));
-    this.locations.push(new LocationBasic("l2", "Palilula"));
-    this.locations.push(new LocationBasic("l3", "Kusadasi"));
   }
 
 }

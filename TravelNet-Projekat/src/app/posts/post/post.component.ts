@@ -11,14 +11,13 @@ export class PostComponent implements OnInit {
 
   @Input()
   post: PostHomePageModel;
-  liked: boolean = false;
 
   constructor() { }
 
   ngOnInit(): void { }
 
   getColor(): string {
-    if (!this.liked){
+    if (!this.post.liked){
       return "black"
     }
     return "warn" 
@@ -26,7 +25,7 @@ export class PostComponent implements OnInit {
 
 
   onLikeClicked(): void {
-    this.liked = !this.liked;
+    this.post.liked = !this.post.liked;
   }
 
   onCommentsClicked(): void{

@@ -179,79 +179,114 @@ router.patch(
 );
 
 //pribavljanje informacija o korisniku (prijatelju ili nekom drugom korisniku), za prikazivanje pocetne strane
-router.get("/profile/:loggedID/:profileUser/:limit", async(req, res) => {
-    const cypher = `MATCH (otherU:User) WHERE otherU.username=$profileUser CALL {WITH otherU OPTIONAL MATCH (loc:Location)
-        <-[:LOCATED_AT]-(post:Post)<-[:SHARED]-(otherU:User)
-        <-[:IS_FRIEND]-(logU:User) WHERE otherU.username=$profileUser and id(logU)=$loggedID WITH post, loc ORDER BY post.time DESC
-        LIMIT $limit
-        RETURN collect({post:post, loc: {id:id(loc), country:loc.country, city:loc.city}}) as posts} RETURN id(otherU), otherU.firstName, 
-        otherU.lastName, otherU.username, otherU.image, otherU.email, otherU.bio,
-        otherU.followedLocationsNo, otherU.friendsNo, otherU.postsNo, posts`;
+router.get("/profile/:loggedUser/:profileUser/:limit", async(req, res) => {
 
-    try {
-        const result = await session.run(cypher, {
-            profileUser: req.params.profileUser,
-            loggedID: int(req.params.loggedID),
-            limit: int(req.params.limit),
-        });
-
-        const parsedRes = {
-            id: result.records[0].get("id(otherU)").low,
-            firstName: result.records[0].get(1),
-            lastName: result.records[0].get(2),
-            username: result.records[0].get(3),
-            image: result.records[0].get(4),
-            email: result.records[0].get(5),
-            bio: result.records[0].get(6),
-            followedLocationsNo: result.records[0].get(7).low,
-            friendsNo: result.records[0].get(8).low,
-            postsNo: result.records[0].get(9).low,
-            posts: null,
+    try{
+        const cypher = `MATCH(otherU:User{username:$otherU})
+                OPTIONAL MATCH(otherU:User)-[link]-(logU:User{username:$logU})
+                RETURN id(otherU), otherU.firstName, 
+                otherU.lastName, otherU.username, otherU.image, otherU.email, otherU.bio,
+                otherU.followedLocationsNo, otherU.friendsNo, otherU.postsNo, startNode(link).username, type(link)`;
+        const params = {
+            otherU: req.params.profileUser,
+            logU: req.params.loggedUser
         };
 
-        const posts = result.records[0].get(10);
+        const userResult = await session.run(cypher, params);
+        const link = userResult.records[0].get(11);
+        let parsedPosts = null;
+        let relation = null;
 
-        if (posts != null) {
-            let parsedPosts = posts.map((postWithLoc) => {
-                if (postWithLoc.post != null) {
-                    return {
+        if(link != null && link == "IS_FRIEND"){
+            relation = "friend";
+            parsedPosts = [];
+            const cypher = `MATCH(otherU:User{username: $otherU})
+            OPTIONAL MATCH(otherU:User)-[s:SHARED]->(post:Post)-[:LOCATED_AT]->(loc:Location)
+            WITH s, post, loc
+            ORDER BY s.time DESC
+            LIMIT $limit
+            CALL {
+                WITH post
+                OPTIONAL MATCH(logU: User{username: $logU})-[l:LIKED]->(post:Post)
+                RETURN count(l) as like
+            }
+            RETURN collect({post:post, time: s.time, like: like, loc: {id:id(loc), country:loc.country,city:loc.city}}) as posts`
+
+            const params = {
+                otherU: req.params.profileUser,
+                logU: req.params.loggedUser,
+                limit: int(req.params.limit)
+            };
+
+            const postResult = await session.run(cypher, params);
+            const posts = postResult.records[0].get(0);
+            posts.forEach(postWithLoc => {
+                if (postWithLoc.post != null){
+                    let parsedPost = {
                         id: postWithLoc.post.identity.low,
+                        image: postWithLoc.post.properties.image,
                         commentNo: postWithLoc.post.properties.commentNo.low,
                         likeNo: postWithLoc.post.properties.likeNo.low,
                         description: postWithLoc.post.properties.description,
                         time: postWithLoc.post.properties.time,
+                        like: postWithLoc.like == 0 ? false : true,
                         location: {
                             id: postWithLoc.loc.id.low,
                             country: postWithLoc.loc.country,
-                            city: postWithLoc.loc.city,
-                        },
+                            city: postWithLoc.loc.city
+                        }
                     };
+                    parsedPosts.push(parsedPost);
                 }
             });
-            if (posts.length == 1 && posts[0].post == null) {
-                parsedRes.posts = null;
-            } else {
-                parsedRes.posts = parsedPosts;
+        }
+
+        if(relation == null && link != null){
+            const startNode = userResult.records[0].get(10);
+            if (startNode == req.params.profileUser){
+                relation = "rec_req";
+            } else if(startNode == req.params.loggedUser) {
+                relation = "sent_req";
             }
         }
 
-        return res.status(200).send(parsedRes);
-    } catch (err) {
+        const parsedRes = {
+            id: userResult.records[0].get("id(otherU)").low,
+            firstName: userResult.records[0].get(1),
+            lastName: userResult.records[0].get(2),
+            username: userResult.records[0].get(3),
+            image: userResult.records[0].get(4),
+            email: userResult.records[0].get(5),
+            bio: userResult.records[0].get(6),
+            followedLocationsNo: userResult.records[0].get(7).low,
+            friendsNo: userResult.records[0].get(8).low,
+            postsNo: userResult.records[0].get(9).low,
+            relation: relation,
+            posts: parsedPosts
+        };
+
+        return res.send(parsedRes);
+
+    }
+    catch(err){
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
 
+
+
 //pribavljanje informacija o profilu korisnika koji je ulogovan
 router.get("/profile/:username", async(req, res) => {
-    try {
+
+    try{
         const cypher = `MATCH (u: User) WHERE u.username=$username CALL {WITH u MATCH (u:User)-[:SHARED]->(p: Post)-[:LOCATED_AT]->(loc:Location)
             WHERE u.username=$username
             WITH u, loc, p LIMIT 10 RETURN collect({post:p, loc:{id:id(loc), country: loc.country, city: loc.city}}) as posts}
             RETURN id(u), u.firstName, 
             u.lastName, u.username, u.image, u.email, u.bio,
             u.followedLocationsNo, u.friendsNo,u.postsNo, posts`;
-        const result = await session.run(cypher, { username: req.params.username });
+        const result = await session.run(cypher, {username: req.params.username});
 
         const parsedRes = {
             id: result.records[0].get("id(u)").low,
@@ -264,7 +299,7 @@ router.get("/profile/:username", async(req, res) => {
             followedLocationsNo: result.records[0].get(7).low,
             friendsNo: result.records[0].get(8).low,
             postsNo: result.records[0].get(9).low,
-            posts: null,
+            posts: null
         };
 
         const posts = result.records[0].get(10);
@@ -280,19 +315,22 @@ router.get("/profile/:username", async(req, res) => {
                 location: {
                     id: postWithLoc.loc.id.low,
                     country: postWithLoc.loc.country,
-                    city: postWithLoc.loc.city,
-                },
+                    city: postWithLoc.loc.city
+                }
             };
             parsedPosts.push(parsedPost);
         });
         parsedRes.posts = parsedPosts;
 
         return res.status(200).send(parsedRes);
-    } catch (err) {
+    }
+    catch(err){
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
+
+
 
 router.get("/light/:username", async(req, res) => {
     try {

@@ -1,5 +1,5 @@
 <!-- informacije o korisniku -->
-<div class="container border border-rounded my-2 p-2">
+<div class="container border border-rounded my-2 p-2" *ngIf="this.person">
     <div class="row d-flex justify-content-around">
         <div class="col-5 col-md-2">
             <img src="{{person.imagePath}}" class="rounded-circle img-fluid">
@@ -8,18 +8,27 @@
             <p class="text-center info-text">
                 {{person.firstName + " " + person.lastName}}
             </p>
-            <p class="text-center info-text" *ngIf="isFriend()">
+            <p class="text-center info-text">
                 {{person.email}}
             </p>
-            <p class="text-center info-text" *ngIf="!isFriend()">
-                Niste prijatelj sa ovom osobom. Dodajte prijatelja da bi videli njegove objave!
-            </p>
             <div class="row d-flex justify-content-around mt-2">
-                <div class="col-3 col-sm-3" *ngIf="!isFriend()">
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 3">
                     <button class="btn btn-primary w-100">Dodaj prijatelja</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="isFriend()">
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 2">
                     <button class="btn btn-info w-100">Obrisi prijatelja</button>
+                </div>
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
+                    <button class="btn btn-info w-100">Prihvati zahtev</button>
+                </div>
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
+                    <button class="btn btn-info w-100">Odbij zahtev</button>
+                </div>
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 4">
+                    <button class="btn btn-info w-100">Otkazi zahtev</button>
+                </div>
+                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 1">
+                    <button class="btn btn-primary w-100"><mat-icon>add_to_photos</mat-icon>Nova objava</button>
                 </div>
                 <div class="col-3 col-sm-3">
                     <button class="btn btn-profile">{{ "Prijatelji: " + person.friendsNo}}</button>
@@ -34,4 +43,12 @@
 
 
 <!-- objave korisnika -->
-<app-post-list [profilePosts]="true" *ngIf="isFriend()"></app-post-list>
+<app-post-list [profilePosts]="true"
+    *ngIf="person && person.posts && (profileType && (profileType == 1 || profileType == 2))"
+    [posts]="this.person.posts.slice()">
+</app-post-list>
+<div class="container" *ngIf="this.person && this.person.posts && this.person.posts.length == 0">
+    <h2 *ngIf="this.profileType==1">Dodajte novu objavu</h2>
+    <h2 *ngIf="this.profileType==2">Ovaj korisnik nema objave</h2>
+    <h2 *ngIf="this.profileType != 1 && this.profileType != 2">Ne mozete videti objave korisnika koji vam nisu prijatelji!</h2>
+</div>
