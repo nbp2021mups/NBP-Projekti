@@ -190,19 +190,25 @@ svg {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    flex: 1 0 90%;
-    justify-content: space-around;
+    flex: 1 0 98%;
+    justify-content: space-between;
+    align-content: center;
     align-items: center;
     border-radius: 1em;
     background-color: antiquewhite;
-    max-width: 90%;
+    max-width: 98%;
     max-height: fit-content;
-    padding: 0.5em;
+    padding: 1em;
     margin-top: 0.5em;
+}
+
+.friends-message-div {
+    border-top-left-radius: 0;
 }
 
 .my-message-div {
     background-color: rgba(127, 127, 245, 0.578);
+    border-bottom-right-radius: 0;
 }
 
 .message-content-div {
@@ -215,7 +221,7 @@ svg {
     display: flex;
     justify-content: center;
     flex: 1 0 10%;
-    font-size: 0.5em;
+    font-size: 0.75em;
     align-self: center;
 }
 

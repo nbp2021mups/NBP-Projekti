@@ -78,7 +78,7 @@ export class ChatComponent implements OnInit, OnDestroy {
           .then((result) => {
             result.data.forEach((c) => {
               this.conversations.push(
-                new Conversation(c.chatId, c.username, c.image, 0)
+                new Conversation(c.chatId, c.username, c.image)
               );
             });
             this.filteredConversations = this.conversations;
@@ -126,6 +126,7 @@ export class ChatComponent implements OnInit, OnDestroy {
               chatId: msg.chatId,
               timeRead: msg.timeRead,
               from: msg.from,
+              unreadCount: 1,
             });
           } else this.conversations[0].myUnread += 1;
         }
@@ -244,11 +245,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.selectedConversation.messages.forEach((m) => {
       if (!m.timeRead) m.timeRead = new Date();
     });
-    this.selectedConversation.myUnread = 0;
     this.socketService.readMessages({
       chatId: this.selectedConversation.id,
       timeRead: new Date(),
       from: this.selectedConversation.friend,
+      unreadCount: this.selectedConversation.myUnread,
     });
+    this.selectedConversation.myUnread = 0;
   }
 }

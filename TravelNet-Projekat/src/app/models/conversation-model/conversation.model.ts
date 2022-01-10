@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Message } from '../message-model/message.model';
 
 export class Conversation {
@@ -8,18 +9,23 @@ export class Conversation {
   public friend: string;
   public friendImage: string;
 
-  public constructor(
-    id: number,
-    friend: string,
-    friendImage: string,
-    myUnread: number,
-    messages: Array<Message> = new Array<Message>()
-  ) {
+  public constructor(id: number, friend: string, friendImage: string) {
     this.id = id;
     this.friend = friend;
     this.friendImage = friendImage;
-    this.messages = messages;
-    this.myUnread = myUnread;
-    this.topMessage = this.messages.length > 0 ? this.messages[0] : null;
+    this.messages = new Array<Message>();
+    this.topMessage = null;
+    this.myUnread = 0;
+    this.onInit();
+  }
+
+  async onInit() {
+    axios.get(`http://localhost:3000/messages/${this.id}/-20/0`).then((res) => {
+      res.data.forEach((m) => {
+        this.messages = [m, ...this.messages];
+        this.topMessage = m;
+        if (m.from == this.friend && m.timeRead == null) this.myUnread += 1;
+      });
+    });
   }
 }

@@ -18,6 +18,7 @@ export interface ReadReceipt {
   chatId: number;
   timeRead: Date;
   from: string;
+  unreadCount: number;
 }
 
 @Injectable({

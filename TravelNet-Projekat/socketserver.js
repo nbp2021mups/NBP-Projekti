@@ -11,7 +11,11 @@ const {
     validateSendFriendRequest,
     validateAcceptFriendRequest,
 } = require("./backend/validation/socketValidations");
-const { exec } = require("child_process");
+const {
+    rPushMessage,
+    lRangeMessage,
+    lSetMessage,
+} = require("./backend/redisclient");
 
 const app = express();
 app.use(express.static(path.join("backend/public")));
@@ -99,17 +103,22 @@ io.on("connection", (socket) => {
             }
         });
 
-        socket.on("send-message", (data) => {
+        socket.on("send-message", async(data) => {
             try {
                 if (socket.username) {
                     if (validateSentMessage(data)) {
                         console.log("Send-message", data);
+                        data["id"] = await rPushMessage(
+                            data["chatId"],
+                            data["from"],
+                            data["to"],
+                            data["content"],
+                            data["timeSent"],
+                            data["timeRead"]
+                        );
                         let forUser = online[data["to"]];
                         if (forUser) {
                             switch (forUser.view) {
-                                case `chat-tab::${data["chatId"]}`:
-                                    forUser.emit("new-message-in-chat", { content: data });
-                                    break;
                                 case "messages-tab":
                                     forUser.emit("new-message-in-messages", { content: data });
                                     break;
@@ -120,12 +129,8 @@ io.on("connection", (socket) => {
                         } else {
                             console.log("User is offline!");
                         }
-                        // Store in database
-                        if (!unread["chats"][data["chatId"]])
-                            unread["chats"][data["chatId"]] = [];
-                        unread["chats"][data["chatId"]].push(data);
                     } else {
-                        console.log("Invalid message format!");
+                        console.log("Invalid message format!", data);
                         socket.emit("error", {
                             message: "Incorrect message format!",
                             content: data,
@@ -150,11 +155,6 @@ io.on("connection", (socket) => {
                     if (validateReadMessages(data)) {
                         console.log("Read-messages", data);
                         let fromUser = online[data["from"]];
-                        // Update database
-                        if (!unread["chatsId"]) unread["chatsId"] = {};
-                        for (let msg of unread["chats"][data["chatId"]])
-                            msg["timeRead"] = data["timeRead"];
-
                         if (fromUser) {
                             fromUser.emit("read-messages", {
                                 content: data,
@@ -162,7 +162,16 @@ io.on("connection", (socket) => {
                         } else {
                             console.log("User is offline!");
                         }
-                        unread["chats"][data["chatId"]] = [];
+                        lRangeMessage(data["chatId"], -data["unreadCount"], 0).then(
+                            (res) => {
+                                res.forEach((x) => {
+                                    lSetMessage(x["chatId"], x["id"], {
+                                        ...x,
+                                        timeRead: data["timeRead"],
+                                    });
+                                });
+                            }
+                        );
                     } else {
                         console.log("Invalid message format!");
                         socket.emit("error", {

@@ -20,12 +20,37 @@ const getChatId = (userId1, userId2) => {
     else return `chat:${userId2}:${userId1}`;
 };
 
-const getMessageId = async(chatId) => {
-    return `message:${await (await getConnection()).incr(chatId)}:${chatId}`;
+const rPushMessage = async(chatId, from, to, content, timeSent, timeRead) => {
+    const redisClient = await getConnection();
+    const key = chatId;
+    const messageId = await redisClient.lLen(chatId);
+    const value = JSON.stringify({
+        id: messageId,
+        chatId,
+        from,
+        to,
+        content,
+        timeSent,
+        timeRead,
+    });
+    await redisClient.rPush(key, [value]);
+    return { messageId };
+};
+
+const lRangeMessage = async(chatId, startIndex, stopIndex) => {
+    return (
+        await (await getConnection()).lRange(chatId, startIndex, stopIndex - 1)
+    ).map((x) => JSON.parse(x));
+};
+
+const lSetMessage = async(chatId, index, value) => {
+    await (await getConnection()).lSet(chatId, index, JSON.stringify(value));
 };
 
 module.exports = {
     getConnection,
     getChatId,
-    getMessageId,
+    rPushMessage,
+    lRangeMessage,
+    lSetMessage,
 };
