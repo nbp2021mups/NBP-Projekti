@@ -8,6 +8,7 @@ import { PostHomePageModel } from 'src/app/models/post_models/post-homepage.mode
 })
 export class PostListComponent implements OnInit {
 
+  @Input()
   posts: PostHomePageModel[] = [];
   
   @Input()

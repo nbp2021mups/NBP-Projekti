@@ -14,11 +14,10 @@ export class PersonFull extends PersonBasic{
         postsNo: number, followedLocNo: number){
         super(id, fName, lName, img, username);
         this.email = email;
-        this.bio = bio;
+        bio ? this.bio = bio : this.bio = "";
         this.friendsNo = friendsNo;
         this.postsNo = postsNo;
         this.followedLocNo = followedLocNo;
-        this.posts = [];
     }
 
     addPost(post: PostHomePageModel){
