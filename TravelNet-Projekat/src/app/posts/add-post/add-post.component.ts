@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-import { find } from 'rxjs';
 import { LocationBasic } from 'src/app/models/location_models/location-basic.model';
 import { AuthService } from 'src/app/services/authentication/auth.service';
 import { LocationsService } from 'src/app/services/locations.service';
@@ -67,11 +66,12 @@ export class AddPostComponent implements OnInit {
         alert(resp);
       });
     });
+    userSub.unsubscribe();
   }
 
   checkCountry(event) {
     this.drzava=event.value;
-    this.grad = undefined;
+    this.grad = this.grad != 'ostalo' ? undefined : this.grad;
   }
 
   checkCity(event) {

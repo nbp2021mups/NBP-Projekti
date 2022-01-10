@@ -2,7 +2,7 @@
     <mat-card-header>
         <img mat-card-avatar src= "{{post.person.imagePath}}">
         <mat-card-title [routerLink]="['/profile', this.post.person.username]" class="mb-1">{{post.person.firstName +  " " + post.person.lastName}}</mat-card-title>
-        <mat-card-subtitle routerLink="/location" class="m-1">{{post.location.country + ", " + post.location.city}}</mat-card-subtitle>
+        <mat-card-subtitle routerLink="/location" class="mt-1 mb-1">{{post.location.country + ", " + post.location.city}}</mat-card-subtitle>
     </mat-card-header>
 
     <img mat-card-image src="{{post.imagePath}}" class="mt-1 mb-1 post-img">
