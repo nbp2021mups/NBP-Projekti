@@ -32,6 +32,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       next: (params: Params) => {
         const username = params['username'];
         this.loggedUserSub = this.authService.user.subscribe(user => {
+          if(!user){ return;}
           const loggedUser = user.username;
           if(username == loggedUser) {
             this.profileType = ProfileType.personal;
