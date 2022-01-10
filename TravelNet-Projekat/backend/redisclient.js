@@ -20,8 +20,8 @@ const getChatId = (userId1, userId2) => {
     else return `chat:${userId2}:${userId1}`;
 };
 
-const getMessageId = (chatId) => {
-    return `message:${new Date().toString()}:${chatId}`;
+const getMessageId = async(chatId) => {
+    return `message:${await (await getConnection()).incr(chatId)}:${chatId}`;
 };
 
 module.exports = {
