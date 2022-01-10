@@ -1,11 +1,21 @@
-const driver = require('../neo4jdriver');
+require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const storage = require("../storage");
 const { int } = require('neo4j-driver');
 
-const session = driver.session();
+const driver = require('../neo4jdriver');
+const session = driver.session()
+
+const redis = require("redis");
+const redisClient = require('../redisclient');
+const publisher=redis.createClient({
+  url: process.env.REDIS_URL,
+  password: process.env.REDIS_PASSWORD,
+});
+
+
 
 //dodavanje objave od strane korisnika ciji je id proslednjen
 router.post("", multer({ storage: storage }).single("image"), async(req, res) => {
@@ -20,7 +30,8 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
             cypher = `MATCH (u:User), (l:Location)
                       WHERE id(u)=$idU AND l.country=$country AND l.city=$city
                       SET l.postsNo=l.postsNo+1, u.postsNo=u.postsNo+1
-                      CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)`
+                      CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)
+                      RETURN id(l)`
         } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity)) {
             if (req.body.newCountry){
               const exist= await session.run(`MATCH (l:Location{country: $newCountry}) RETURN l`, {newCountry:req.body.newCountry});
@@ -38,7 +49,14 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         } else
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
-        await session.run(cypher, params);
+        const result=await session.run(cypher, params);
+        if (req.body.country && req.body.city){
+          const locationId=int(result.records[0].get('id(l)').low)
+          const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
+          publisher.publish("location:"+locationId,message)
+
+        }
+
         return res.send("Objava uspesno dodata");
     } catch (ex) {
         console.log(ex);
