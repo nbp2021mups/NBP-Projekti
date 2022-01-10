@@ -67,6 +67,6 @@ export class SocketService {
   }
 
   createNotification(n: Notification) {
-    SocketService.getSocket().emit(n.type, { n });
+    SocketService.getSocket().emit(n.type, n);
   }
 }

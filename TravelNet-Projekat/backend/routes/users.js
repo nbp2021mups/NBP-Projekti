@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const storage = require("../storage");
 const { int } = require("neo4j-driver");
-const app = require("../app");
 
 const session = driver.session();
 
