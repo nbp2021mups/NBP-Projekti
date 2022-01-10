@@ -2,17 +2,16 @@
 <mat-card class="container">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" class="me-1">
       <mat-label>Izaberite državu</mat-label>
       <mat-select
       aria-label="Default select example"
       formControlName="drzava"
       (selectionChange)="checkCountry($event)">
-        <mat-option value="dr1">dr1</mat-option>
-        <mat-option value="dr2">dr2</mat-option>
+        <mat-option *ngFor="let country of getCountries();" [value]="country">{{country}}</mat-option>
         <mat-option value="ostalo">Ostalo</mat-option>
       </mat-select>
-      <mat-error *ngIf="form.get('drzava').invalid">Molimo Vas da izaberete jednu državu</mat-error>
+      <mat-error *ngIf="form.get('drzava').invalid">Izaberite državu</mat-error>
     </mat-form-field>
 
     <mat-form-field
@@ -31,17 +30,16 @@
       >
     </mat-form-field>
 
-    <mat-form-field appearance="fill" *ngIf="drzava != 'ostalo'">
+    <mat-form-field appearance="fill" *ngIf="drzava && drzava != 'ostalo'" class="ms-1">
       <mat-label>Izaberite grad</mat-label>
       <mat-select
        aria-label="Default select example"
        formControlName="grad"
        (selectionChange)="checkCity($event)">
-        <mat-option value="gr1">gr</mat-option>
-        <mat-option value="gr2">gr2</mat-option>
-        <mat-option value="ostalo">Ostalo</mat-option>
+       <mat-option *ngFor="let city of getCities(this.form.get('drzava').value);" [value]="city">{{city}}</mat-option>
+       <mat-option value="ostalo">Ostalo</mat-option>
       </mat-select>
-      <mat-error *ngIf="form.get('grad').invalid">Molimo Vas da izaberete jedan grad</mat-error>
+      <mat-error *ngIf="form.get('grad').invalid">Izaberite grad</mat-error>
     </mat-form-field>
     <mat-form-field
       class="input-group mb-3 form-group col-md-6"
@@ -59,7 +57,7 @@
         >Molimo Vas da unesete naziv grada</mat-error
       >
     </mat-form-field>
-    <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+    <mat-form-field class="input-group mt-2 mb-3 form-group col-md-6" appearance="fill">
       <mat-label>Opis</mat-label>
       <input
       matInput

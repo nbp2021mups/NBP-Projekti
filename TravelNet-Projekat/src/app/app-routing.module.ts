@@ -4,6 +4,7 @@ import { ChatComponent } from './chat/chat.component';
 import { ExplorePageComponent } from './explore-page/explore-page.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { LoginPageComponent } from './login-page/login-page.component';
+import { AddPostComponent } from './posts/add-post/add-post.component';
 import { ProfilePageComponent } from './profile-page/profile-page.component';
 import { RegistrationPageComponent } from './registration-page/registration-page.component';
 import { AuthGuard } from './services/authentication/auth-guard.service';
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 'messages', component: ChatComponent, canActivate: [AuthGuard] },
   { path: 'registration', component: RegistrationPageComponent },
   { path: 'login', component: LoginPageComponent },
+  { path: 'add-post', component: AddPostComponent, canActivate: [AuthGuard]},
   { path: '**', redirectTo: 'home' },
 ];
 

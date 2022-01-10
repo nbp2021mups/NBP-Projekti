@@ -51,7 +51,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
         const result=await session.run(cypher, params);
-        const locationId=String(result.records[0].get('id(l)').low)
+        /* const locationId=String(result.records[0].get('id(l)').low)
         const client = await redisClient.getConnection();
         if (req.body.country && req.body.city){
           await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
@@ -62,7 +62,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
           await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
           await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
           await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
-        }
+        } */
 
         return res.send("Objava uspesno dodata");
     } catch (ex) {

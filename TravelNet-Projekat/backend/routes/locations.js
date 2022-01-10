@@ -114,4 +114,30 @@ router.get("/postedOn/:username/:startIndex/:count", async(req, res) => {
     }
 });
 
+
+//vracamo sve lokacije
+router.get("/all-locations", async(req, res) => {
+    try{
+        const cypher = `MATCH(l:Location) RETURN id(l), l.country, l.city`;
+        const result = await session.run(cypher, {});
+        if(result.records.length == 0){
+            return [];
+        }
+        const locations = [];
+        result.records.forEach(record => {
+            let location = {
+                id: record.get("id(l)").low,
+                country: record.get(1),
+                city: record.get(2)
+            };
+            locations.push(location);
+        })
+
+        return res.send(locations);
+    }
+    catch(err){
+        return res.status(501).send("Doslo je do greske!");
+    }
+});
+
 module.exports = router;

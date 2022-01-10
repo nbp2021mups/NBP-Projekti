@@ -41,6 +41,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
             })
           } else {
             this.profileService.getOtherUserProfileInfo(user.username, username, 10).subscribe(userData =>{
+              console.log(userData);
               if(userData.relation == null){
                 this.profileType = ProfileType.non_friend;
               } else if(userData.relation == "friend"){
@@ -54,7 +55,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
             });
           }
         });
-      },
+      }
     });
   }
 
