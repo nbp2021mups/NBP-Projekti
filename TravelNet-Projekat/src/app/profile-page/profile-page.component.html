@@ -13,19 +13,19 @@
             </p>
             <div class="row d-flex justify-content-around mt-2">
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 3">
-                    <button class="btn btn-primary w-100">Dodaj prijatelja</button>
+                    <button class="btn btn-primary w-100" (click)=onAddFriend()>Dodaj prijatelja</button>
                 </div>
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 2">
-                    <button class="btn btn-info w-100">Obrisi prijatelja</button>
+                    <button class="btn btn-info w-100" (click)="onDeleteFriend()">Obrisi prijatelja</button>
                 </div>
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
-                    <button class="btn btn-info w-100">Prihvati zahtev</button>
+                    <button class="btn btn-info w-100" (click)="onAcceptRequest()">Prihvati zahtev</button>
                 </div>
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
-                    <button class="btn btn-info w-100">Odbij zahtev</button>
+                    <button class="btn btn-info w-100" (click)="onRejectRequest()">Odbij zahtev</button>
                 </div>
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 4">
-                    <button class="btn btn-info w-100">Otkazi zahtev</button>
+                    <button class="btn btn-info w-100" (click)="onCancelRequest()">Otkazi zahtev</button>
                 </div>
                 <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 1">
                     <button class="btn btn-primary w-100" routerLink="/add-post"><mat-icon>add_to_photos</mat-icon>Nova objava</button>

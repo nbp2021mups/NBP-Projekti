@@ -10,7 +10,7 @@ export class PersonFull extends PersonBasic{
     public followedLocNo: number;
     public posts: PostHomePageModel[] = [];
 
-    constructor(id: string, fName: string, lName: string, img:string, username: string, email: string, bio: string, friendsNo: number,
+    constructor(id: number, fName: string, lName: string, img:string, username: string, email: string, bio: string, friendsNo: number,
         postsNo: number, followedLocNo: number){
         super(id, fName, lName, img, username);
         this.email = email;

@@ -238,6 +238,7 @@ io.on("connection", (socket) => {
 
         socket.on("send-friend-request", (data) => {
             try {
+                console.log(data);
                 if (socket.username) {
                     if (validateSendFriendRequest(data)) {
                         console.log("Send-friend-request", data);

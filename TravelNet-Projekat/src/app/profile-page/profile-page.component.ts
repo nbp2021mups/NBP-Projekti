@@ -1,9 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { Notification, NOTIFICATION_TRIGGERS } from '../models/notification-models/notification.model';
 import { PersonFull } from '../models/person_models/person-full.model';
 import { AuthService } from '../services/authentication/auth.service';
+import { FriendsService } from '../services/friends.service';
 import { ProfileService } from '../services/profile.service';
+import { SocketService } from '../services/socket/socket.service';
 
 export enum ProfileType {
   personal = 1,
@@ -23,9 +26,12 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
 
   person: PersonFull;
   loggedUserSub: Subscription;
+  loggedID: number;
+  loggedUsername: string;
   profileType: ProfileType;
 
-  constructor(private authService: AuthService, private route: ActivatedRoute, private profileService: ProfileService) { }
+  constructor(private authService: AuthService, private route: ActivatedRoute, 
+    private profileService: ProfileService, private friendService: FriendsService, private socketService: SocketService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe({
@@ -33,15 +39,15 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         const username = params['username'];
         this.loggedUserSub = this.authService.user.subscribe(user => {
           if(!user){ return;}
-          const loggedUser = user.username;
-          if(username == loggedUser) {
+          this.loggedID = user.id;
+          this.loggedUsername = user.username;
+          if(username == this.loggedUsername) {
             this.profileType = ProfileType.personal;
-            this.profileService.getLoggedUserProfileInfo(loggedUser).subscribe(user => {
+            this.profileService.getLoggedUserProfileInfo(this.loggedUsername).subscribe(user => {
               this.person = user;
             })
           } else {
             this.profileService.getOtherUserProfileInfo(user.username, username, 10).subscribe(userData =>{
-              console.log(userData);
               if(userData.relation == null){
                 this.profileType = ProfileType.non_friend;
               } else if(userData.relation == "friend"){
@@ -58,6 +64,61 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  onAddFriend() {
+    this.friendService.sendRequest(this.loggedID, this.person.id).subscribe({
+      next: resp => {
+        alert(resp);
+        this.profileType = ProfileType.sent_req;
+        this.socketService.createNotification(new Notification(0, this.person.username, this.loggedUsername, 
+          NOTIFICATION_TRIGGERS.SEND_FRIEND_REQUEST, "test"));
+      },
+      error: err => {console.log(err);}
+    });
+  }
+
+  onDeleteFriend() {
+    this.friendService.deleteFriend(this.loggedID, this.person.id).subscribe({
+      next: resp => {
+        alert(resp);
+        this.profileType = ProfileType.non_friend;
+      },
+      error: err => {console.log(err);}
+    });
+  }
+
+  onAcceptRequest() {
+    this.friendService.acceptRequest(this.loggedID, this.person.id).subscribe({
+      next: resp => {
+        alert(resp);
+        this.profileType = ProfileType.friend;
+        this.socketService.createNotification(new Notification(0, this.person.username, this.loggedUsername, 
+          NOTIFICATION_TRIGGERS.ACCEPT_FRIEND_REQUEST, "test2"));
+      },
+      error: err => {console.log(err);}
+    });
+  }
+
+  onRejectRequest() {
+    this.friendService.deleteRequest(this.person.id, this.loggedID).subscribe({
+      next: resp => {
+        alert(resp);
+        this.profileType = ProfileType.non_friend;
+      },
+      error: err => {console.log(err);}
+    });
+  }
+
+  onCancelRequest() {
+    this.friendService.deleteRequest(this.loggedID, this.person.id).subscribe({
+      next: resp => {
+        alert(resp);
+        this.profileType = ProfileType.non_friend;
+      },
+      error: err => {console.log(err);}
+    });
+  }
+
 
 
   ngOnDestroy(): void {
