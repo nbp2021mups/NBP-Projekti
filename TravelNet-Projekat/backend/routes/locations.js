@@ -24,9 +24,9 @@ router.post("/follow", async(req, res) => {
         WHERE id(u) = $userId AND id(l) = $locationId
         SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
         MERGE (u)-[r:FOLLOWS{time: $time}]->(l)`;
-        const locationId=int(req.body.locationId)
+        const locationId=req.body.locationId
         await session.run(cypher, {
-            userId: int(req.body.userId),
+            userId: req.body.userId,
             locationId: locationId,
             time: new Date().toString()
         });
@@ -48,9 +48,9 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         WHERE id(u)=$userId AND id(l)=$locationId
         SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
         DELETE r`
-        const locationId=int(req.body.locationId)
+        const locationId=int(req.params.locationId)
         await session.run(cypher, { userId: int(req.params.userId), locationId: locationId })
-        subscriber.unsubscribe("location:"+String(locationId))
+        subscriber.unsubscribe("location:"+req.params.locationId)
         return res.send("Lokacija je otpraćena")
     } catch (ex) {
         console.log(ex)

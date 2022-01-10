@@ -45,18 +45,23 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
             cypher = `MATCH (u:User)
             WHERE id(u)=$idU
             SET u.postsNo=u.postsNo+1
-            CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})`
+            CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
+            RETURN id(l)`
         } else
             return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
         const result=await session.run(cypher, params);
+        const locationId=String(result.records[0].get('id(l)').low)
+        const client = await redisClient.getConnection();
         if (req.body.country && req.body.city){
-          const locationId=int(result.records[0].get('id(l)').low)
-          //TODO PROVERI
-          await client.sendCommand(["ZINCRYBY", "locations-leaderboard", "1", "location:"+locationId]);
+          await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
           const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
           publisher.publish("location:"+locationId,message)
 
+        }else{
+          await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
+          await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
+          await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
         }
 
         return res.send("Objava uspesno dodata");
@@ -86,8 +91,11 @@ router.delete("/:postId", async(req, res) => {
         const cypher = `MATCH (u:User)-[r1:SHARED]->(p:Post)-[r2:LOCATED_AT]->(l:Location)
                         WHERE id(p) = $id
                         SET l.postsNo=l.postsNo-1, u.postsNo=u.postsNo-1
-                        DETACH DELETE p`
-         await session.run(cypher, { id: int(req.params.postId) });
+                        DETACH DELETE p
+                        RETURN id(l)`
+        const result=await session.run(cypher, { id: int(req.params.postId) });
+        const locationId=String(result.records[0].get('id(l)').low)
+        await client.sendCommand(["ZINCRBY", "locations-leaderboard", "-1", "location:"+locationId]);
 
 
         return res.send("Objava uspesno obrisana");
