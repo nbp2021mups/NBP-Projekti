@@ -66,7 +66,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   }
 
   onAddFriend() {
-    this.friendService.sendRequest(this.loggedID, this.person.id).subscribe({
+    this.friendService.sendRequest(this.loggedUsername, this.person.username).subscribe({
       next: resp => {
         alert(resp);
         this.profileType = ProfileType.sent_req;
@@ -100,7 +100,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   }
 
   onRejectRequest() {
-    this.friendService.deleteRequest(this.person.id, this.loggedID).subscribe({
+    this.friendService.deleteRequest(this.person.username, this.loggedUsername).subscribe({
       next: resp => {
         alert(resp);
         this.profileType = ProfileType.non_friend;
@@ -110,7 +110,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   }
 
   onCancelRequest() {
-    this.friendService.deleteRequest(this.loggedID, this.person.id).subscribe({
+    this.friendService.deleteRequest(this.loggedUsername, this.person.username).subscribe({
       next: resp => {
         alert(resp);
         this.profileType = ProfileType.non_friend;

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ChatComponent } from './chat/chat.component';
 import { ExplorePageComponent } from './explore-page/explore-page.component';
 import { HomePageComponent } from './home-page/home-page.component';
+import { LocationPageComponent } from './location-page/location-page.component';
 import { LoginPageComponent } from './login-page/login-page.component';
 import { AddPostComponent } from './posts/add-post/add-post.component';
 import { ProfilePageComponent } from './profile-page/profile-page.component';
@@ -20,6 +21,11 @@ const routes: Routes = [
   {
     path: 'profile/:username',
     component: ProfilePageComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'location/:locationId',
+    component: LocationPageComponent,
     canActivate: [AuthGuard],
   },
   { path: 'messages', component: ChatComponent, canActivate: [AuthGuard] },

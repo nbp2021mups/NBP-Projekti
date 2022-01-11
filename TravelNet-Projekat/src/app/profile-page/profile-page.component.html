@@ -43,7 +43,7 @@
 
 
 <!-- objave korisnika -->
-<app-post-list [profilePosts]="true" [isPersonal]="this.profileType && this.profileType == 1"
+<app-post-list [profilePosts]="true"
     *ngIf="person && person.posts && (profileType && (profileType == 1 || profileType == 2))"
     [posts]="this.person.posts">
 </app-post-list>
