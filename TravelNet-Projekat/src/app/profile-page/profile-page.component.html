@@ -43,9 +43,9 @@
 
 
 <!-- objave korisnika -->
-<app-post-list [profilePosts]="true"
+<app-post-list [profilePosts]="true" [isPersonal]="this.profileType && this.profileType == 1"
     *ngIf="person && person.posts && (profileType && (profileType == 1 || profileType == 2))"
-    [posts]="this.person.posts.slice()">
+    [posts]="this.person.posts">
 </app-post-list>
 <div class="container" *ngIf="this.person && this.person.posts && this.person.posts.length == 0">
     <h2 *ngIf="this.person && this.profileType==1">Dodajte novu objavu</h2>

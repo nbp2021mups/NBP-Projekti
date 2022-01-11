@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LocationBasic } from 'src/app/models/location_models/location-basic.model';
 import { AuthService } from 'src/app/services/authentication/auth.service';
 import { LocationsService } from 'src/app/services/locations.service';
@@ -18,7 +19,8 @@ export class AddPostComponent implements OnInit {
   drzava: string;
   grad: string;
 
-  constructor(private locService: LocationsService, private authService: AuthService, private http: HttpClient) { }
+  constructor(private locService: LocationsService, private authService: AuthService, 
+    private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -60,10 +62,13 @@ export class AddPostComponent implements OnInit {
 
   onSubmit(){
     const postValues: FormData = this.getPostValues();
+    let username = null;
     let userSub = this.authService.user.subscribe(user => {
+      username = user.username;
       postValues.append('userId', user.id.toString());
       this.http.post('http://localhost:3000/posts', postValues, {responseType: 'text'}).subscribe(resp => {
         alert(resp);
+        this.router.navigate(['/profile', username]);
       });
     });
     userSub.unsubscribe();

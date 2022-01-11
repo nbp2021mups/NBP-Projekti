@@ -10,7 +10,8 @@ export class PostListComponent implements OnInit {
 
   @Input()
   posts: PostHomePageModel[] = [];
-  
+  @Input()
+  isPersonal: boolean = false;
   @Input()
   profilePosts: boolean = false;
 
@@ -20,4 +21,10 @@ export class PostListComponent implements OnInit {
     
   }
 
+  onPostDeleted(event: number) {
+    const index = this.posts.findIndex(post => post.id == event);
+    if(index != -1){
+      this.posts.splice(index, 1);
+    }
+  }
 }

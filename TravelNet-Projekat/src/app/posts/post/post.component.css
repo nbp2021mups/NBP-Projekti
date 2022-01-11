@@ -5,3 +5,10 @@ mat-card-title, mat-card-subtitle:hover{
 .post-img{
     height: 250px;
 }
+.float-r{
+    float: right;
+}
+.post-desc{
+    font-size: 0.8em;
+    color: #cfcfcf;
+}
