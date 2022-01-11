@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const storage = require("../storage");
 const { int } = require('neo4j-driver');
+const fs = require('fs')
 
 const driver = require('../neo4jdriver');
 const session = driver.session()
@@ -16,6 +17,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         const imgPath = url + "/images/"+req.file.filename;
         const params = { description: req.body.description, idU: int(req.body.userId), time: new Date().toString(), image: imgPath }
         let cypher;
+
         if (req.body.country && req.body.city) {
             params.country = req.body.country;
             params.city = req.body.city;
@@ -27,8 +29,13 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity)) {
             if (req.body.newCountry){
               const exist= await session.run(`MATCH (l:Location{country: $newCountry}) RETURN l`, {newCountry:req.body.newCountry});
-              if (exist.records.length>0)
+              if (exist.records.length>0){
+                fs.unlink(req.file.path, (err) => {
+                  if (err)
+                    return res.status(401).send("Država koju ste uneli već postoji na spisku, proverite ponovo unete podatke.");
+                })
                 return res.status(401).send("Država koju ste uneli već postoji na spisku, proverite ponovo unete podatke.");
+              }
             }
 
             params.country = req.body.country ? req.body.country : req.body.newCountry;
@@ -39,9 +46,15 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
             SET u.postsNo=u.postsNo+1
             CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
             RETURN id(l)`
-        } else
-            return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
 
+        }
+        else {
+          fs.unlink(req.file.path, (err) => {
+            if (err)
+              return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
+          })
+          return res.status(401).send("Uneti podaci nisu validni, proverite ponovo.");
+        }
 
         const result=await session.run(cypher, params);
         const locationId=String(result.records[0].get('id(l)').low)
@@ -49,18 +62,20 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
 
         if (req.body.country && req.body.city){
             await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
-            const message="Lokacija "+req.body.country+", "+req.body.city;
+            const message="Lokacija "+req.body.city+", "+req.body.country;
             await client.publish("location:"+locationId,message)
-        }else{
+        }
+        else{
             await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
             await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
             await client.sendCommand(["ZADD", "locations-leaderboard", "1","location:"+locationId]);
         }
-
         return res.send("Objava uspesno dodata");
     } catch (ex) {
-        console.log("EX U LINIJI 66")
-        console.log(ex);
+      fs.unlink(req.file.path, (err) => {
+        if (err)
+          return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
+      })
         return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
     }
 });
@@ -87,15 +102,22 @@ router.delete("/:postId", async(req, res) => {
                         SET l.postsNo=l.postsNo-1, u.postsNo=u.postsNo-1
                         DETACH DELETE p
                         RETURN id(l)`
+        console.log(req.body.imagePath.substring(req.body.imagePath.indexOf("/images")))
         const result=await session.run(cypher, { id: int(req.params.postId) });
         const locationId=String(result.records[0].get('id(l)').low)
 
         const client = await redisClient.getConnection();
         await client.sendCommand(["ZINCRBY", "locations-leaderboard", "-1", "location:"+locationId]);
 
+        const path="./backend"+req.body.imagePath.substring(req.body.imagePath.indexOf("/images"))
+        fs.unlink(path, (err) => {
+          if (err)
+            console.log(err)
+        })
 
         return res.send("Objava uspesno obrisana");
     } catch (ex) {
+
         console.log(ex)
         return res.status(401).send("Došlo je do greške");
     }

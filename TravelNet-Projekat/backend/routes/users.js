@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const storage = require("../storage");
+const fs = require('fs')
 
 const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
@@ -13,14 +14,14 @@ const redis = require('../redisclient');
 
 //registracija
 router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
-        if (
-            req.body.firstName == null ||
-            req.body.lastName == null ||
-            req.body.email == null ||
-            req.body.username == null ||
-            req.body.password == null
-        )
-        return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
+        if (req.body.firstName == null || req.body.lastName == null || req.body.email == null || req.body.username == null || req.body.password == null){
+          fs.unlink(req.file.filename, (err) => {
+            if (err)
+              return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
+          })
+          return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
+        }
+
 
         const hashPassword = await bcrypt.hash(req.body.password, 12);
         const userFirstName = req.body.firstName.charAt(0).toUpperCase() + req.body.firstName.slice(1);
@@ -61,6 +62,10 @@ router.post("/register", multer({ storage: storage }).single("image"), async(req
 
           return res.send("Uspesno registrovan");
         } catch (ex) {
+            fs.unlink(req.file.path, (err) => {
+              if (err)
+                return res.status(409).send("Niste uneli validne podatke, proverite ponovo.")
+            })
             console.log(ex);
             if (ex.message.includes("email"))
                 return res.status(409).send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
