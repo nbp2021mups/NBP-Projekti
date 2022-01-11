@@ -55,9 +55,9 @@ const getDuplicatedClient = async() => {
         duplicate = await redisClient.duplicate();
         await duplicate.connect();
 
-        duplicate.on("message", (channel, message) => {
+        /* duplicate.on("message", (channel, message) => {
             console.log("Message: " + message + "on channel " + channel);
-        });
+        }); */
     }
 
     return duplicate;

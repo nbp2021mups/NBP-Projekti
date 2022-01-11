@@ -33,7 +33,7 @@ router.delete("/:userId/:postId", async(req, res) => {
                         DELETE r`;
         const params = {
             id: int(req.params.likeId),
-            locationId: int(req.params.locationId)
+            postId: int(req.params.postId)
         };
         await session.run(cypher, params);
         return res.send("Lajk obrisan uspesno");

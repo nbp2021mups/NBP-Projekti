@@ -22,8 +22,10 @@ router.post("/follow", async(req, res) => {
             time: new Date().toString()
         });
 
-        const subscriber = await redisClient.getSubscriber()
-        subscriber.subscribe("location:"+String(locationId))
+        const subscriber = await redisClient.getDuplicatedClient()
+        subscriber.subscribe("location:"+String(locationId), (message, channel)=>{
+          console.log("Message: " + message + "on channel " + channel);
+        })
         console.log("loc", subscriber)
 
         return res.send("Lokacija je zapraćena");
@@ -43,7 +45,7 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         DELETE r`
         const locationId=int(req.params.locationId)
         await session.run(cypher, { userId: int(req.params.userId), locationId: locationId })
-        const subscriber = await redisClient.getSubscriber();
+        const subscriber = await redisClient.getDuplicatedClient()
         subscriber.unsubscribe("location:"+req.params.locationId)
         return res.send("Lokacija je otpraćena")
     } catch (ex) {

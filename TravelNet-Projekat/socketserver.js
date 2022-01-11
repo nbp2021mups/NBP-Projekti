@@ -3,6 +3,9 @@ const path = require("path");
 const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
+const driver = require("./backend/neo4jdriver");
+const session = driver.session();
+
 const {
     validateSentMessage,
     validateReadMessages,
@@ -18,6 +21,7 @@ const {
 } = require("./backend/redisclient");
 
 const { getDuplicatedClient } = require("./backend/redisclient");
+const { int } = require("neo4j-driver");
 
 const app = express();
 app.use(express.static(path.join("backend/public")));
@@ -41,7 +45,7 @@ io.on("connection", (socket) => {
         console.log(`Client ${socket.id} connected`);
         socket.emit("connected", { content: socket.id });
 
-        socket.on("join", (data) => {
+        socket.on("join", async (data) => {
             try {
                 if (data["username"] && data["view"]) {
                     if (socket.username) {
@@ -54,6 +58,33 @@ io.on("connection", (socket) => {
                     console.log("Join", socket.username);
                     online[socket.username] = socket;
                     socket.emit("joined", { content: data });
+
+                    const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
+                          WHERE u.username=$username
+                          RETURN ID(l)`
+
+                    const locations=await session.run(chyper, {username:data["username"]})
+                    console.log(locations.records.length)
+                    if(locations.records.length>0){
+                      console.log("67")
+                      const subscriber = await getDuplicatedClient()
+                      locations.records.forEach(record=>{
+                        console.log("70")
+                        subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
+                          notify({
+                            id:0,
+                            from:message,
+                            to: data["username"],
+                            content: int(record.get('ID(l)').low),
+                            timeSent: new Date(),
+                            type: 'new-post-on-location'
+                          })
+                        })
+                      })
+                      console.log("users", subscriber)
+
+
+                    }
                 } else {
                     console.log("Invalid parameters!");
                     socket.emit("error", {

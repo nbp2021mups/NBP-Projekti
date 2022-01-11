@@ -49,7 +49,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
 
         if (req.body.country && req.body.city){
             await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
-            const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
+            const message="Lokacija "+req.body.country+", "+req.body.city;
             await client.publish("location:"+locationId,message)
         }else{
             await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
