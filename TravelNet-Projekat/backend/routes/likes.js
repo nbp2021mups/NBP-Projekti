@@ -1,23 +1,38 @@
-const driver = require('../neo4jdriver');
 const express = require("express");
-const { int } = require('neo4j-driver');
 const router = express.Router();
 
+const driver = require('../neo4jdriver');
+const { int } = require('neo4j-driver');
 const session = driver.session();
+
+const {getConnection} = require('../redisclient');
 
 
 router.post("", async(req, res) => {
     try {
-        const cypher = `MATCH (u:User), (p:Post)
+        const cypher = `MATCH (u:User), (p:Post)<-[:SHARED]-(toUser:User)
                       WHERE id(u) = $userId AND id(p) = $postId
                       SET p.likeNo=p.likeNo+1
-                      MERGE (u)-[r:LIKED{time: $time}]->(p)`;
+                      MERGE (u)-[r:LIKED{time: $time}]->(p)
+                      RETURN u.username, toUser.username`;
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
             time: new Date().toString()
         };
-        await session.run(cypher, params);
+        const result=await session.run(cypher, params);
+        const from=result.records[0].get('u.username');
+        const to= result.records[0].get('toUser.username');
+        console.log("from",from,"to",to)
+        getConnection().then(redisClient=>redisClient.publish("post-like:" + to, JSON.stringify({
+          id: 0,
+          from: from,
+          to: to,
+          type: "post-like",
+          content: req.body.postId,
+          timeSent: new Date()
+          })));
+
         return res.send("Lajk!");
     } catch (ex) {
         console.log(ex);
@@ -28,11 +43,11 @@ router.post("", async(req, res) => {
 router.delete("/:userId/:postId", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:LIKED]-(p:Post)
-                        WHERE id(u)=$userId AND id(l)=$postId
+                        WHERE id(u)=$userId AND id(p)=$postId
                         SET p.likeNo=p.likeNo-1
                         DELETE r`;
         const params = {
-            id: int(req.params.likeId),
+            userId: int(req.params.userId),
             postId: int(req.params.postId)
         };
         await session.run(cypher, params);
