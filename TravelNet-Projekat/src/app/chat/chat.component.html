@@ -22,8 +22,10 @@
           ></div>
           <ng-template #unreadMessages>
             <div
-              [class.selected-conversation-div]="
+              [class]="
                 selectedConversation == conversation
+                  ? selected - conversation - div
+                  : hoverable
               "
               class="conversation-preview-div unread-conversation-div"
               (click)="selectConversation(i)"
@@ -82,7 +84,12 @@
               src="{{ selectedConversation.friendImage }}"
               data-holder-rendered="true"
             />
-            <h2>{{ selectedConversation.friend }}</h2>
+            <h2
+              class="hoverable"
+              (click)="goToProfile(selectedConversation.friend)"
+            >
+              @{{ selectedConversation.friend }}
+            </h2>
           </div>
           <div class="chat-messages-div">
             <div *ngFor="let message of selectedConversation.messages">
@@ -98,18 +105,18 @@
                   <div class="message-content-div">
                     {{ message.content }}
                   </div>
-                  <label class="message-time-sent">
-                    {{ getTime(message.timeSent) }}
-                  </label>
-                  <div
-                    *ngIf="
-                      message.timeRead != null;
-                      then readCheck;
-                      else sentCheck
-                    "
-                  ></div>
-                  <ng-template #readCheck>
-                    <div class="message-delivery-indicator">
+                  <div class="message-info-div">
+                    <label class="message-time-sent">
+                      {{ getTime(message.timeSent) }}
+                    </label>
+                    <div
+                      *ngIf="
+                        message.timeRead != null;
+                        then readCheck;
+                        else sentCheck
+                      "
+                    ></div>
+                    <ng-template #readCheck>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
@@ -123,10 +130,8 @@
                           d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"
                         />
                       </svg>
-                    </div>
-                  </ng-template>
-                  <ng-template #sentCheck>
-                    <div class="message-delivery-indicator">
+                    </ng-template>
+                    <ng-template #sentCheck>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="currentColor"
@@ -137,8 +142,8 @@
                           d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"
                         />
                       </svg>
-                    </div>
-                  </ng-template>
+                    </ng-template>
+                  </div>
                 </div>
               </ng-template>
               <ng-template #friendsMessage>
@@ -146,9 +151,11 @@
                   <div class="message-content-div">
                     {{ message.content }}
                   </div>
-                  <label class="message-time-sent">
-                    {{ getTime(message.timeSent) }}
-                  </label>
+                  <div class="message-info-div">
+                    <label class="message-time-sent">
+                      {{ getTime(message.timeSent) }}
+                    </label>
+                  </div>
                 </div>
               </ng-template>
             </div>

@@ -134,6 +134,10 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.socketService.changeView('messages-tab');
   }
 
+  goToProfile(username) {
+    window.location.href = `/profile/${username}`;
+  }
+
   getDay(dateCal): string {
     if (!dateCal) return '';
     let date = new Date(dateCal);
@@ -153,7 +157,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     )
       return 'Juče';
 
-    return DAYS[date.getDay()];
+    if (diff < 7 * MILLISECONDS_PER_DAY) return DAYS[date.getDay()];
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate() + 1;
+
+    return `${month < 10 ? '0' : ''}${month}.${day < 10 ? '0' : ''}${day}`;
   }
 
   getTime(dateCal): string {
@@ -168,11 +177,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     const diff = currentDate.getTime() - date.getTime();
     if (diff < MILLISECONDS_PER_DAY) {
       if (currentDate.getHours() >= date.getHours()) {
-        return `Danas u ${hours}:${minutes}h`;
+        return `${hours}:${minutes}h`;
       }
     }
+    if (diff < 7 * MILLISECONDS_PER_DAY)
+      return `${DAYS[date.getDay()]} u ${hours}:${minutes}h`;
 
-    return `${date.getMonth() + 1}.${date.getDay() + 1} u ${hours}:${minutes}h`;
+    const month = date.getMonth() + 1;
+    const day = date.getDate() + 1;
+
+    return `${month < 10 ? '0' : ''}${month}.${
+      day < 10 ? '0' : ''
+    }${day} u ${hours}:${minutes}h`;
   }
 
   searchUsers(event: KeyboardEvent) {
