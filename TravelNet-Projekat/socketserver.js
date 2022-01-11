@@ -5,23 +5,17 @@ const express = require("express");
 const socketIO = require("socket.io");
 const driver = require("./backend/neo4jdriver");
 const session = driver.session();
-
+const { int } = require("neo4j-driver");
 const {
     validateSentMessage,
     validateReadMessages,
-    validateAcceptFriendRequest,
-    validatePostComment,
-    validatePostLike,
-    validateSendFriendRequest,
 } = require("./backend/validation/socketValidations");
 const {
     rPushMessage,
     lRangeMessage,
     lSetMessage,
+    getDuplicatedClient,
 } = require("./backend/redisclient");
-
-const { getDuplicatedClient } = require("./backend/redisclient");
-const { int } = require("neo4j-driver");
 
 const app = express();
 app.use(express.static(path.join("backend/public")));
@@ -36,6 +30,86 @@ const io = new socketIO.Server(server, {
     },
 });
 
+const notifyUpdates = async(data) => {
+    try {
+        console.log("Notification", data);
+        const cypher = `MATCH (u:User{username:$to})
+                        MERGE (u)-[r:HAS]->(n:Notification{
+                            from: $from,
+                            to: $to,
+                            timeSent: $timeSent,
+                            read: $read,
+                            content: $content,
+                            type: $type
+                        })
+                        RETURN n`;
+        session.run(cypher, data).then((result) => {
+            console.log(result);
+            const parsedResult = {
+                id: result.records[0].get("identity").low,
+                ...result.records[0].get("n"),
+            };
+            console.log("Parsed data", parsedResult);
+            let forUser = online[data["to"]];
+            if (forUser) {
+                switch (forUser.view) {
+                    case "notification-tab":
+                        forUser.emit("new-notification-in-notifications", {
+                            content: parsedResult,
+                        });
+                        break;
+                    default:
+                        forUser.emit("new-notification-pop-up", { content: parsedResult });
+                        break;
+                }
+            } else {
+                console.log("User is offline!");
+            }
+        });
+    } catch (ex) {
+        console.log(ex);
+    }
+};
+
+const subscribeToUpdates = async(socket) => {
+    const redisDuplicate = await getDuplicatedClient();
+
+    redisDuplicate.subscribe(
+        `post-like:${socket.username}`,
+        `post-comment:${socket.username}`,
+        `sent-friend-request:${socket.username}`,
+        `accepted-friend-request:${socket.username}`,
+        (message) => {
+            notifyUpdates(JSON.parse(message));
+        }
+    );
+
+    const chyper = `MATCH (l:Location)<-[:FOLLOWS]-(u:User)
+          WHERE u.username=$username
+          RETURN ID(l)`;
+
+    const locations = await session.run(chyper, {
+        username: data["username"],
+    });
+    if (locations.records.length > 0) {
+        locations.records.forEach((record) => {
+            const locId = int(record.get("ID(l)").low);
+            redisDuplicate.subscribe("location:" + locId, (message) => {
+                notifyUpdates({
+                    id: 0,
+                    from: message,
+                    to: data["username"],
+                    content: locId,
+                    timeSent: new Date(),
+                    type: "new-post-on-location",
+                });
+            });
+        });
+    }
+
+    return redisDuplicate;
+};
+
 // Users that are online
 const online = {};
 
@@ -45,7 +119,7 @@ io.on("connection", (socket) => {
         console.log(`Client ${socket.id} connected`);
         socket.emit("connected", { content: socket.id });
 
-        socket.on("join", async (data) => {
+        socket.on("join", async(data) => {
             try {
                 if (data["username"] && data["view"]) {
                     if (socket.username) {
@@ -59,32 +133,9 @@ io.on("connection", (socket) => {
                     online[socket.username] = socket;
                     socket.emit("joined", { content: data });
 
-                    const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
-                          WHERE u.username=$username
-                          RETURN ID(l)`
-
-                    const locations=await session.run(chyper, {username:data["username"]})
-                    console.log(locations.records.length)
-                    if(locations.records.length>0){
-                      console.log("67")
-                      const subscriber = await getDuplicatedClient()
-                      locations.records.forEach(record=>{
-                        console.log("70")
-                        subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
-                          notify({
-                            id:0,
-                            from:message,
-                            to: data["username"],
-                            content: int(record.get('ID(l)').low),
-                            timeSent: new Date(),
-                            type: 'new-post-on-location'
-                          })
-                        })
-                      })
-                      console.log("users", subscriber)
-
-
-                    }
+                    subscribeToUpdates(socket).then(
+                        (redisDuplicate) => (redisDup = redisDuplicate)
+                    );
                 } else {
                     console.log("Invalid parameters!");
                     socket.emit("error", {
@@ -126,6 +177,8 @@ io.on("connection", (socket) => {
                     online[socket.username] = null;
                     socket.username = null;
                     socket.view = null;
+                    redisDup.unsubscribe();
+                    redisDup = null;
                 }
             } catch (ex) {
                 socket.emit("error", { message: ex, content: data });
@@ -219,133 +272,10 @@ io.on("connection", (socket) => {
                 socket.emit("error", { message: ex, content: data });
             }
         });
-
-        socket.on("like-post", (data) => {
-            try {
-                if (socket.username) {
-                    if (validatePostLike(data)) {
-                        console.log("Like-post");
-                        notify(data);
-                    } else {
-                        console.log("Invalid comment format!");
-                        socket.emit("error", {
-                            message: "Incorrect comment format!",
-                            content: data,
-                        });
-                    }
-                } else {
-                    console.log("User not logged in!");
-                    socket.emit("error", {
-                        message: "User not logged in!",
-                        content: data,
-                    });
-                }
-            } catch (ex) {
-                socket.emit("error", { message: ex, content: data });
-            }
-        });
-
-        socket.on("comment-post", (data) => {
-            try {
-                if (socket.username) {
-                    if (validatePostComment(data)) {
-                        console.log("Comment-post");
-                        notify(data);
-                    } else {
-                        console.log("Invalid notification format!");
-                        socket.emit("error", {
-                            message: "Incorrect notification format!",
-                            content: data,
-                        });
-                    }
-                } else {
-                    console.log("User not logged in!");
-                    socket.emit("error", {
-                        message: "User not logged in!",
-                        content: data,
-                    });
-                }
-            } catch (ex) {
-                socket.emit("error", { message: ex, content: data });
-            }
-        });
-
-        socket.on("send-friend-request", (data) => {
-            try {
-                console.log(data);
-                if (socket.username) {
-                    if (validateSendFriendRequest(data)) {
-                        console.log("Send-friend-request", data);
-                        notify(data);
-                    } else {
-                        console.log("Invalid notification format!");
-                        socket.emit("error", {
-                            message: "Incorrect notification format!",
-                            content: data,
-                        });
-                    }
-                } else {
-                    console.log("User not logged in!");
-                    socket.emit("error", {
-                        message: "User not logged in!",
-                        content: data,
-                    });
-                }
-            } catch (ex) {
-                socket.emit("error", { message: ex, content: data });
-            }
-        });
-
-        socket.on("accept-friend-request", (data) => {
-            try {
-                if (socket.username) {
-                    if (validateAcceptFriendRequest(data)) {
-                        console.log("Accept-friend-request", data);
-                        notify(data);
-                    } else {
-                        console.log("Invalid notification format!");
-                        socket.emit("error", {
-                            message: "Incorrect notification format!",
-                            content: data,
-                        });
-                    }
-                } else {
-                    console.log("User not logged in!");
-                    socket.emit("error", {
-                        message: "User not logged in!",
-                        content: data,
-                    });
-                }
-            } catch (ex) {
-                socket.emit("error", { message: ex, content: data });
-            }
-        });
     } catch (ex) {
         console.log(ex);
     }
 });
-
-function notify(data) {
-    try {
-        console.log("Notification", data);
-        let forUser = online[data["to"]];
-        if (forUser) {
-            switch (forUser.view) {
-                case "notification-tab":
-                    forUser.emit("new-notification-in-notifications", { content: data });
-                    break;
-                default:
-                    forUser.emit("new-notification-pop-up", { content: data });
-                    break;
-            }
-        } else {
-            console.log("User is offline!");
-        }
-        // Store in database
-    } catch (ex) {
-        console.log(ex);
-    }
-}
 
 server.listen({
         host: hostname,
