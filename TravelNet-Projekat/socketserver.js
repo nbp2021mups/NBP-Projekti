@@ -17,6 +17,8 @@ const {
     lSetMessage,
 } = require("./backend/redisclient");
 
+const { getDuplicatedClient } = require("./backend/redisclient");
+
 const app = express();
 app.use(express.static(path.join("backend/public")));
 
@@ -35,6 +37,7 @@ const online = {};
 
 io.on("connection", (socket) => {
     try {
+        let redisDup = null;
         console.log(`Client ${socket.id} connected`);
         socket.emit("connected", { content: socket.id });
 

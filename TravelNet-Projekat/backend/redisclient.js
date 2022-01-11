@@ -2,7 +2,7 @@ require("dotenv").config();
 const redis = require("redis");
 
 let client = null;
-let subscriber = null;
+let duplicate = null;
 
 const getConnection = async() => {
     if (!client) {
@@ -49,20 +49,19 @@ const lSetMessage = async(chatId, index, value) => {
     await (await getConnection()).lSet(chatId, index, JSON.stringify(value));
 };
 
-const getSubscriber = async() => {
-  if (!subscriber) {
-    const redisClient = await getConnection();
-    subscriber = await redisClient.duplicate();
-    await subscriber.connect();
+const getDuplicatedClient = async() => {
+    if (!duplicate) {
+        const redisClient = await getConnection();
+        duplicate = await redisClient.duplicate();
+        await duplicate.connect();
 
-    subscriber.on("message", (channel, message)=>{
-      console.log("Message: "+message + "on channel "+channel)
-    })
-  }
+        duplicate.on("message", (channel, message) => {
+            console.log("Message: " + message + "on channel " + channel);
+        });
+    }
 
-  return subscriber;
-
-}
+    return duplicate;
+};
 
 module.exports = {
     getConnection,
@@ -70,5 +69,5 @@ module.exports = {
     rPushMessage,
     lRangeMessage,
     lSetMessage,
-    getSubscriber
+    getDuplicatedClient,
 };
