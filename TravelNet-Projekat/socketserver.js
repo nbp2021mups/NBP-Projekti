@@ -17,6 +17,7 @@ const {
     getDuplicatedClient,
     getConnection,
 } = require("./backend/redisclient");
+const { ms } = require("date-fns/locale");
 
 const app = express();
 app.use(express.static(path.join("backend/public")));
@@ -114,7 +115,6 @@ const subscribeToUpdates = async(socket) => {
 };
 
 const storeMessage = async(msg) => {
-    console.log("Message", msg);
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     MERGE (c)-[:HAS]->(m:Message{
@@ -122,19 +122,24 @@ const storeMessage = async(msg) => {
                         from: $from,
                         to: $to,
                         content: $content,
-                        timeSent: $timeSent,
-                        timeRead: $timeRead
-                    }) RETURN id(m)`;
-    const result = await session.run(cypher, msg);
-    console.log("Result", result);
+                        timeSent: $timeSent
+                        ${msg.timeRead != null ? ", timeRead: $timeRead" : ""}})
+                    RETURN id(m)`;
+    const result = await session.run(cypher, {
+        chatId: msg.chatId,
+        from: msg.from,
+        to: msg.to,
+        content: msg.content,
+        timeSent: msg.timeSent,
+        timeRead: msg.timeRead,
+    });
     if (result.records.length > 0) {
         msg["id"] = result.records[0].get(0).low;
 
         getConnection().then((redis) => {
-            redis.rPush(msg["chatId"], JSON.stringify(msg));
+            redis.rPush(`chat:${msg["chatId"]}`, JSON.stringify(msg));
         });
     }
-
     return msg;
 };
 
@@ -258,6 +263,7 @@ io.on("connection", (socket) => {
             try {
                 console.log(socket.username, data);
                 if (socket.username) {
+                    console.log(data);
                     if (validateReadMessages(data)) {
                         console.log("Read-messages", data);
                         let fromUser = online[data["from"]];
