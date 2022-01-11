@@ -15,15 +15,8 @@
     padding: 1em;
 }
 
-.wrapper {
-    margin-bottom: 1em;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border-radius: 1em;
-}
-
-.container>h3 {
+.container>h3,
+.container>h4 {
     color: rgb(160, 160, 160);
     margin-bottom: 1em;
     text-align: center;
