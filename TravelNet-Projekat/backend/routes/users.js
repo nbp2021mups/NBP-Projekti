@@ -1,19 +1,18 @@
-const driver = require("../neo4jdriver");
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const storage = require("../storage");
-const { int } = require("neo4j-driver");
 
+const { int } = require("neo4j-driver");
+const driver = require("../neo4jdriver");
 const session = driver.session();
 
+const redis = require('../redisclient');
+
 //registracija
-router.post(
-    "/register",
-    multer({ storage: storage }).single("image"),
-    async(req, res) => {
+router.post("/register", multer({ storage: storage }).single("image"), async(req, res) => {
         if (
             req.body.firstName == null ||
             req.body.lastName == null ||
@@ -21,57 +20,52 @@ router.post(
             req.body.username == null ||
             req.body.password == null
         )
-            return res
-                .status(409)
-                .send("Niste uneli validne podatke, proverite ponovo.");
+        return res.status(409).send("Niste uneli validne podatke, proverite ponovo.");
 
         const hashPassword = await bcrypt.hash(req.body.password, 12);
-        const userFirstName =
-            req.body.firstName.charAt(0).toUpperCase() + req.body.firstName.slice(1);
-        const userLastName =
-            req.body.lastName.charAt(0).toUpperCase() + req.body.lastName.slice(1);
+        const userFirstName = req.body.firstName.charAt(0).toUpperCase() + req.body.firstName.slice(1);
+        const userLastName = req.body.lastName.charAt(0).toUpperCase() + req.body.lastName.slice(1);
         const url = req.protocol + "://" + req.get("host");
         let imgPath = url + "/images/";
-        if (req.file) imgPath += req.file.filename;
-        else imgPath += "universal.jpg";
+        if (req.file)
+          imgPath += req.file.filename;
+        else
+          imgPath += "universal.jpg";
 
         try {
-            let cypher = `CREATE (a:User {firstName: $firstName,
-          lastName: $lastName,
-          email: $email,
-          username: $username,
-          password: $password,
-          image: $image,
-          friendsNo: 0,
-          followedLocationsNo: 0,
-          postsNo: 0`;
-            const params = {
-                firstName: userFirstName,
-                lastName: userLastName,
-                email: req.body.email,
-                username: req.body.username,
-                password: hashPassword,
-                image: imgPath,
-            };
 
-            if (req.body.bio && req.body.bio != "") {
-                cypher += ", bio: $bio";
-                params.bio = req.body.bio;
-            }
-            cypher += "})";
-            await session.run(cypher, params);
+          let cypher = `CREATE (a:User {firstName: $firstName,
+                        lastName: $lastName,
+                        email: $email,
+                        username: $username,
+                        password: $password,
+                        image: $image,
+                        friendsNo: 0,
+                        followedLocationsNo: 0,
+                        postsNo: 0`;
+          const params = {
+              firstName: userFirstName,
+              lastName: userLastName,
+              email: req.body.email,
+              username: req.body.username,
+              password: hashPassword,
+              image: imgPath,
+          };
 
-            return res.send("Uspesno registrovan");
+          if (req.body.bio && req.body.bio != "") {
+              cypher += ", bio: $bio";
+              params.bio = req.body.bio;
+          }
+          cypher += "})";
+          await session.run(cypher, params);
+
+          return res.send("Uspesno registrovan");
         } catch (ex) {
             console.log(ex);
             if (ex.message.includes("email"))
-                return res
-                    .status(409)
-                    .send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
+                return res.status(409).send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
             else
-                return res
-                    .status(409)
-                    .send("Postoji nalog sa ovim username-om, probajte ponovo");
+                return res.status(409).send("Postoji nalog sa ovim username-om, probajte ponovo");
         }
     }
 );
@@ -96,6 +90,22 @@ router.post("/login", async(req, res) => {
                 },
                 "token", { expiresIn: "1h" }
             );
+
+            const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
+                          WHERE u.username=$username
+                          RETURN ID(l)`
+
+            const locations=await session.run(chyper, {username:req.body.username})
+            console.log(locations.records.length)
+            if(locations.records.length>0){
+              const subscriber = await redis.getSubscriber()
+              locations.records.forEach(record=>{
+                subscriber.subscribe("location:"+record.get('ID(l)').low)
+              })
+              console.log("users", subscriber)
+
+            }
+
             return res.send({
                 id: userId,
                 username: req.body.username,
@@ -104,16 +114,14 @@ router.post("/login", async(req, res) => {
             });
         } else
             return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
-    } catch {
+    } catch(ex) {
+        console.log(ex)
         return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
     }
 });
 
 //promena slike, username-a, lozinke, opisa profila
-router.patch(
-    "/:id",
-    multer({ storage: storage }).single("image"),
-    async(req, res) => {
+router.patch("/:id", multer({ storage: storage }).single("image"), async(req, res) => {
         try {
             let chyper = "";
             const params = new Object();
@@ -183,7 +191,7 @@ router.get("/profile/:loggedUser/:profileUser/:limit", async(req, res) => {
     try{
         const cypher = `MATCH(otherU:User{username:$otherU})
                 OPTIONAL MATCH(otherU:User)-[link]-(logU:User{username:$logU})
-                RETURN id(otherU), otherU.firstName, 
+                RETURN id(otherU), otherU.firstName,
                 otherU.lastName, otherU.username, otherU.image, otherU.email, otherU.bio,
                 otherU.followedLocationsNo, otherU.friendsNo, otherU.postsNo, startNode(link).username, type(link)`;
         const params = {
@@ -282,7 +290,7 @@ router.get("/profile/:username", async(req, res) => {
         const cypher = `MATCH (u: User) WHERE u.username=$username CALL {WITH u MATCH (u:User)-[:SHARED]->(p: Post)-[:LOCATED_AT]->(loc:Location)
             WHERE u.username=$username
             WITH u, loc, p LIMIT 10 RETURN collect({post:p, loc:{id:id(loc), country: loc.country, city: loc.city}}) as posts}
-            RETURN id(u), u.firstName, 
+            RETURN id(u), u.firstName,
             u.lastName, u.username, u.image, u.email, u.bio,
             u.followedLocationsNo, u.friendsNo,u.postsNo, posts`;
         const result = await session.run(cypher, {username: req.params.username});
@@ -334,7 +342,7 @@ router.get("/profile/:username", async(req, res) => {
 router.get("/light/:username", async(req, res) => {
     try {
         const cypher = `MATCH (u: User {username:$username})
-            RETURN u.firstName, 
+            RETURN u.firstName,
             u.lastName, u.username, u.image`;
         const result = await session.run(cypher, { username: req.params.username });
 

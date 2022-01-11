@@ -6,16 +6,7 @@ const { int } = require('neo4j-driver');
 const driver = require('../neo4jdriver');
 const session = driver.session();
 
-const redis = require("redis");
 const redisClient = require('../redisclient');
-const subscriber= redis.createClient({
-  url: process.env.REDIS_URL,
-  password: process.env.REDIS_PASSWORD,
-});
-
-subscriber.on("message", (channel, message)=>{
-  console.log("Message: "+message + "on channel "+channel)
-})
 
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
@@ -30,8 +21,10 @@ router.post("/follow", async(req, res) => {
             locationId: locationId,
             time: new Date().toString()
         });
-        await subscriber.connect();
+
+        const subscriber = await redisClient.getSubscriber()
         subscriber.subscribe("location:"+String(locationId))
+        console.log("loc", subscriber)
 
         return res.send("Lokacija je zapraćena");
     } catch (ex) {
@@ -50,6 +43,7 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         DELETE r`
         const locationId=int(req.params.locationId)
         await session.run(cypher, { userId: int(req.params.userId), locationId: locationId })
+        const subscriber = await redisClient.getSubscriber();
         subscriber.unsubscribe("location:"+req.params.locationId)
         return res.send("Lokacija je otpraćena")
     } catch (ex) {

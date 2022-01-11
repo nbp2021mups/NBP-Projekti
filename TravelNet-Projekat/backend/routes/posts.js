@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -9,9 +8,6 @@ const driver = require('../neo4jdriver');
 const session = driver.session()
 
 const redisClient = require('../redisclient');
-
-
-
 
 //dodavanje objave od strane korisnika ciji je id proslednjen
 router.post("", multer({ storage: storage }).single("image"), async(req, res) => {
@@ -31,7 +27,6 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         } else if ((req.body.country && req.body.newCity) || (req.body.newCountry && req.body.newCity)) {
             if (req.body.newCountry){
               const exist= await session.run(`MATCH (l:Location{country: $newCountry}) RETURN l`, {newCountry:req.body.newCountry});
-              console.log(exist)
               if (exist.records.length>0)
                 return res.status(401).send("Država koju ste uneli već postoji na spisku, proverite ponovo unete podatke.");
             }
@@ -51,13 +46,11 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
         const result=await session.run(cypher, params);
         const locationId=String(result.records[0].get('id(l)').low)
         const client = await redisClient.getConnection();
-        const publisher = client.duplicate();
+
         if (req.body.country && req.body.city){
             await client.sendCommand(["ZINCRBY", "locations-leaderboard", "1", "location:"+locationId]);
             const message="Na lokaciji "+req.body.country+", "+req.body.city+" je dodata nova objava"
-            //publisher.publish("location:"+locationId,message)
-
-
+            await client.publish("location:"+locationId,message)
         }else{
             await client.sendCommand(["HSET", "location:" + locationId, "city", params.city]);
             await client.sendCommand(["HSET", "location:" + locationId, "country", params.country]);
@@ -66,6 +59,7 @@ router.post("", multer({ storage: storage }).single("image"), async(req, res) =>
 
         return res.send("Objava uspesno dodata");
     } catch (ex) {
+        console.log("EX U LINIJI 66")
         console.log(ex);
         return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
     }
@@ -95,7 +89,7 @@ router.delete("/:postId", async(req, res) => {
                         RETURN id(l)`
         const result=await session.run(cypher, { id: int(req.params.postId) });
         const locationId=String(result.records[0].get('id(l)').low)
-        console.log(locationId)
+
         const client = await redisClient.getConnection();
         await client.sendCommand(["ZINCRBY", "locations-leaderboard", "-1", "location:"+locationId]);
 
