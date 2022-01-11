@@ -4,18 +4,15 @@ const router = express.Router();
 const multer = require("multer");
 const storage = require("../storage");
 const { int } = require('neo4j-driver');
-
 const driver = require('../neo4jdriver');
 const session = driver.session()
-
 const redisClient = require('../redisclient');
 
 router.get("/:username", async(req, res) => {
     try {
-        // REDIS CODE AND CHECKING 
         const client = await redisClient.getConnection();
         const listExist = await client.sendCommand(["EXISTS","homepagePosts"]);
-        //let listaobjava = [];
+        let listaobjava = [];
         if(listExist == 0)
         {
         const cypher = `MATCH(u1:User{username: $username})-[r1:IS_FRIEND]->(u2:User)-[r2:SHARED]->(p:Post)-[r3:LOCATED_AT]->(l:Location) 
@@ -54,19 +51,21 @@ router.get("/:username", async(req, res) => {
             }
             
         }
-       // console.log(objava);
-       // listaobjava.push(objava);
         var stringPost = JSON.stringify(objava);
         await client.sendCommand(["RPUSH","homepagePosts",stringPost]);
-        // REDIS LIST ADD OBJAVA JSON.STRINGIFY
     });
 }
-        const listaobjava = await client.sendCommand('LRANGE','homepagePosts','0','10');
-        res.send(listaobjava);
 
-        // REDIS GET ELEMENT FROM LIST ( STRING )
-        // STRING JSON.PARSE TO GET JSON OBJECT
-        // SEND JSON OBJECT TO FRONT
+        //redisList = await client.sendCommand(["RPUSH","homepagePosts",stringPost]);
+        i=0;
+        listLen = await client.sendCommand(['LLEN','homepagePosts'])
+        while(i< listLen){
+            redisObjava = await client.sendCommand(["LRANGE","homepagePosts",String(i),String(i)]);
+            i++;
+            jsonObjava = JSON.parse(redisObjava);
+            listaobjava.push(jsonObjava);
+        } 
+        res.send(listaobjava);
     } catch (ex) {
         console.log(ex);
         res.status(401).send("Došlo je do greške");
