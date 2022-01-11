@@ -11,20 +11,20 @@ const { getConnection, getChatId } = require("./../redisclient");
 router.post("/request", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User), (u2:User)
-                        WHERE id(u1)=$id1 AND id(u2)=$id2
+                        WHERE u1.username=$u1 AND u2.username=$u2
                         MERGE (u1)-[r:SENT_REQUEST{time: $time}]->(u2)
                         RETURN ID(r)`;
         const params = {
-            id1: req.body.id1,
-            id2: req.body.id2,
+            u1: req.body.username1,
+            u2: req.body.username2,
             time: new Date().toString(),
         };
         const result=await session.run(cypher, params);
 
         getConnection().then(redisClient=>redisClient.publish("sent-friend-request:" + to, JSON.stringify({
           id: 0,
-          from: req.body.id1,
-          to: req.body.id2,
+          from: req.body.username1,
+          to: req.body.username2,
           type: "sent-friend-request",
           content: result.records[0].get('ID(r)'),
           timeSent: new Date()
@@ -41,14 +41,14 @@ router.post("/request", async(req, res) => {
 router.delete("/request", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User)
-                        WHERE id(u1)=$id1 AND id(u2)=$id2
+                        WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
                         /* MATCH (n:Notification)
-                        WHERE n.from=$id1 AND n.to=$id2 AND n.type="sent-friend-request"
+                        WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
                         DETACH DELETE n */
         const params = {
-            id1: req.body.id1,
-            id2: req.body.id2,
+            u1: req.body.username1,
+            u2: req.body.username2,
         };
         await session.run(cypher, params);
         return res.send("Zahtev je obrisan uspešno.");
@@ -67,19 +67,20 @@ router.post("/accept", async(req, res) => {
                         MERGE (u1)<-[r1:IS_FRIEND{since: $since, chatId: $chatId}]-(u2)
                         MERGE (u1)-[r2:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)
                         MERGE (u1)-[r3:HAS]->(c:Chat)<-[r4:HAS]-(u2)
-                        DELETE r3`;
+                        DELETE r3
+                        RETURN u1.username, u2.username`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
             since: new Date().toString(),
             chatId: getChatId(req.body.id1, req.body.id2),
         };
-        await session.run(cypher, params);
+        const result=await session.run(cypher, params);
 
         getConnection().then(redisClient=>redisClient.publish("accepted-friend-request:" + to, JSON.stringify({
           id: 0,
-          from: req.body.id2,
-          to: req.body.id1,
+          from: result.records[0].get('u2.username'),
+          to: result.records[0].get('u1.username'),
           type: "accepted-friend-request",
           content: '',
           timeSent: new Date()
