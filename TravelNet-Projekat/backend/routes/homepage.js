@@ -13,24 +13,31 @@ const redisClient = require('../redisclient');
 router.get("/:username", async(req, res) => {
     try {
         // REDIS CODE AND CHECKING 
-        const client = await redis.getConnection();
-        const setExist = await client.sendCommand(["EXISTS","locations-leaderboard"]);
-
-        // IF NOT EXIST 
+        const client = await redisClient.getConnection();
+        const listExist = await client.sendCommand(["EXISTS","homepagePosts"]);
+        //let listaobjava = [];
+        if(listExist == 0)
+        {
         const cypher = `MATCH(u1:User{username: $username})-[r1:IS_FRIEND]->(u2:User)-[r2:SHARED]->(p:Post)-[r3:LOCATED_AT]->(l:Location) 
+        CALL{
+                WITH u1,p
+                MATCH (u1)-[r4:LIKED]->(p)
+                RETURN count(p)>0 as liked
+        }
         RETURN id(p),p.description,p.image,p.commentNo,p.likeNo,id(l),l.city,l.country,
-        id(u2),u2.firstName,u2.lastName,u2.username,u2.image`;
+        id(u2),u2.firstName,u2.lastName,u2.username,u2.image,liked`;
         const params = {
             username: req.params.username
         };
-        let listaobjava = [];
+    
         const postsList = await session.run(cypher,params);
-        postsList.records.forEach(record => {
+        postsList.records.forEach(async record => {
         objava = {
             id: record.get(0).low,
             description: record.get(1),
             image: record.get(2),
             commentNo: record.get(3).low,
+            liked: record.get(13),
             likesNo: record.get(4).low,
             location:
             {
@@ -47,11 +54,15 @@ router.get("/:username", async(req, res) => {
             }
             
         }
-        listaobjava.push(objava);
-
+       // console.log(objava);
+       // listaobjava.push(objava);
+        var stringPost = JSON.stringify(objava);
+        await client.sendCommand(["RPUSH","homepagePosts",stringPost]);
         // REDIS LIST ADD OBJAVA JSON.STRINGIFY
     });
-        res.send(postsList);
+}
+        const listaobjava = await client.sendCommand('LRANGE','homepagePosts','0','10');
+        res.send(listaobjava);
 
         // REDIS GET ELEMENT FROM LIST ( STRING )
         // STRING JSON.PARSE TO GET JSON OBJECT
