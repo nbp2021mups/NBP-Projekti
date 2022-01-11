@@ -20,7 +20,7 @@ export class Conversation {
   }
 
   async onInit() {
-    axios.get(`http://localhost:3000/messages/${this.id}/-20/0`).then((res) => {
+    axios.get(`http://localhost:3000/messages/${this.id}/0/20`).then((res) => {
       res.data.forEach((m) => {
         this.messages = [m, ...this.messages];
         this.topMessage = m;

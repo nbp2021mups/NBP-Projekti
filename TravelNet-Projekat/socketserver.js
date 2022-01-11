@@ -15,6 +15,7 @@ const {
     lRangeMessage,
     lSetMessage,
     getDuplicatedClient,
+    getConnection,
 } = require("./backend/redisclient");
 
 const app = express();
@@ -75,10 +76,12 @@ const subscribeToUpdates = async(socket) => {
     const redisDuplicate = await getDuplicatedClient();
 
     redisDuplicate.subscribe(
-        `post-like:${socket.username}`,
-        `post-comment:${socket.username}`,
-        `sent-friend-request:${socket.username}`,
-        `accepted-friend-request:${socket.username}`,
+        [
+            `post-like:${socket.username}`,
+            `post-comment:${socket.username}`,
+            `sent-friend-request:${socket.username}`,
+            `accepted-friend-request:${socket.username}`,
+        ],
         (message) => {
             notifyUpdates(JSON.parse(message));
         }
@@ -89,7 +92,7 @@ const subscribeToUpdates = async(socket) => {
           RETURN ID(l)`;
 
     const locations = await session.run(chyper, {
-        username: data["username"],
+        username: socket.username,
     });
     if (locations.records.length > 0) {
         locations.records.forEach((record) => {
@@ -98,7 +101,7 @@ const subscribeToUpdates = async(socket) => {
                 notifyUpdates({
                     id: 0,
                     from: message,
-                    to: data["username"],
+                    to: socket.username,
                     content: locId,
                     timeSent: new Date(),
                     type: "new-post-on-location",
@@ -108,6 +111,31 @@ const subscribeToUpdates = async(socket) => {
     }
 
     return redisDuplicate;
+};
+
+const storeMessage = async(msg) => {
+    console.log("Message", msg);
+    const cypher = `MATCH (c:Chat)
+                    WHERE id(c)=$chatId
+                    MERGE (c)-[:HAS]->(m:Message{
+                        chatId: $chatId,
+                        from: $from,
+                        to: $to,
+                        content: $content,
+                        timeSent: $timeSent,
+                        timeRead: $timeRead
+                    }) RETURN id(m)`;
+    const result = await session.run(cypher, msg);
+    console.log("Result", result);
+    if (result.records.length > 0) {
+        msg["id"] = result.records[0].get(0).low;
+
+        getConnection().then((redis) => {
+            redis.rPush(msg["chatId"], JSON.stringify(msg));
+        });
+    }
+
+    return msg;
 };
 
 // Users that are online
@@ -177,8 +205,8 @@ io.on("connection", (socket) => {
                     online[socket.username] = null;
                     socket.username = null;
                     socket.view = null;
-                    redisDup.unsubscribe();
-                    redisDup = null;
+                    //redisDup.unsubscribe();
+                    //redisDup = null;
                 }
             } catch (ex) {
                 socket.emit("error", { message: ex, content: data });
@@ -190,27 +218,23 @@ io.on("connection", (socket) => {
                 if (socket.username) {
                     if (validateSentMessage(data)) {
                         console.log("Send-message", data);
-                        data["id"] = await rPushMessage(
-                            data["chatId"],
-                            data["from"],
-                            data["to"],
-                            data["content"],
-                            data["timeSent"],
-                            data["timeRead"]
-                        );
-                        let forUser = online[data["to"]];
-                        if (forUser) {
-                            switch (forUser.view) {
-                                case "messages-tab":
-                                    forUser.emit("new-message-in-messages", { content: data });
-                                    break;
-                                default:
-                                    forUser.emit("new-message-pop-up", { content: data });
-                                    break;
+                        storeMessage(data).then((result) => {
+                            let forUser = online[result["to"]];
+                            if (forUser) {
+                                switch (forUser.view) {
+                                    case "messages-tab":
+                                        forUser.emit("new-message-in-messages", {
+                                            content: result,
+                                        });
+                                        break;
+                                    default:
+                                        forUser.emit("new-message-pop-up", { content: result });
+                                        break;
+                                }
+                            } else {
+                                console.log("User is offline!");
                             }
-                        } else {
-                            console.log("User is offline!");
-                        }
+                        });
                     } else {
                         console.log("Invalid message format!", data);
                         socket.emit("error", {

@@ -1,3 +1,4 @@
+const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
 const router = require("express").Router();
 const {
@@ -12,12 +13,25 @@ const session = driver.session();
 // Routes
 router.get("/:chatId/:startIndex/:count", async(req, res) => {
     try {
-        const result = await lRangeMessage(
-            req.params.chatId,
-            parseInt(req.params.startIndex),
-            parseInt(req.params.count)
-        );
-        res.send(result);
+        const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
+                        WHERE id(c) = $chatId
+                        RETURN m
+                        ORDER BY m.timeSent
+                        SKIP $startIndex
+                        LIMIT $count`;
+        const params = {
+            chatId: int(req.params.chatId),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count),
+        };
+
+        const result = await session.run(cypher, params);
+        res.send({
+            messages: result.records.map((x) => ({
+                id: x.get("identity").low,
+                ...x.get("m"),
+            })),
+        });
     } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");
