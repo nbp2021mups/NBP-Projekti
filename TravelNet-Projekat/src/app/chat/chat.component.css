@@ -250,32 +250,20 @@ input {
     text-align: left;
 }
 
-
-/* width */
-
 ::-webkit-scrollbar {
     width: 0.5em;
     border-radius: 1em;
 }
-
-
-/* Track */
 
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 1em;
 }
 
-
-/* Handle */
-
 ::-webkit-scrollbar-thumb {
     background: #888;
     border-radius: 1em;
 }
-
-
-/* Handle on hover */
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
@@ -283,6 +271,6 @@ input {
 
 @media only screen and (max-width: 600px) {
     .container {
-      height: 900px;
+        height: 900px;
     }
-  }
+}

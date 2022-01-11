@@ -9,8 +9,8 @@ import { PopUpService } from '../services/pop-up/pop-up.service';
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-
   private userSub: Subscription;
+  public displayNotifications: boolean = false;
   isLoggedIn: boolean;
   private username: string;
 
@@ -33,7 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onNotificationsClicked(): void {
-    alert('radi');
+    this.displayNotifications = !this.displayNotifications;
   }
 
   logout(): void {

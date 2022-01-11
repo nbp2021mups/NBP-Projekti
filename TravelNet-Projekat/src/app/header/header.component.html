@@ -1,23 +1,56 @@
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" routerLink="">TravelNet</a>
+  <div class="container-fluid">
+    <a class="navbar-brand" routerLink="">TravelNet</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNavDropdown"
+      aria-controls="navbarNavDropdown"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <div class="navbar-nav tabs">
+        <a class="nav-link" routerLink="/home" *ngIf="isLoggedIn"
+          ><mat-icon>home</mat-icon></a
+        >
+        <a class="nav-link" routerLink="/explore" *ngIf="isLoggedIn"
+          ><mat-icon>search</mat-icon></a
+        >
+        <a class="nav-link" routerLink="/messages" *ngIf="isLoggedIn"
+          ><mat-icon>message</mat-icon></a
+        >
+        <button
+          class="post-button nav-link"
+          (click)="onNotificationsClicked()"
+          *ngIf="isLoggedIn"
+        >
+          <mat-icon>notifications</mat-icon>
         </button>
-
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <div class="navbar-nav tabs">
-                <a class="nav-link" routerLink="/home" *ngIf="isLoggedIn"><mat-icon>home</mat-icon></a>
-                <a class="nav-link" routerLink="/explore" *ngIf="isLoggedIn"><mat-icon>search</mat-icon></a>
-                <a class="nav-link" routerLink="/messages" *ngIf="isLoggedIn"><mat-icon>message</mat-icon></a>
-                <button class="post-button nav-link" (click)="onNotificationsClicked()" *ngIf="isLoggedIn"><mat-icon>notifications</mat-icon></button>
-                <a class="nav-link" [routerLink]="['/profile', this.username]" *ngIf="isLoggedIn"><mat-icon>person</mat-icon></a>
-                <button class="post-button nav-link" *ngIf="isLoggedIn" (click)="logout()"><mat-icon>logout</mat-icon></button>
-                <a class="nav-link" routerLink="/registration" *ngIf="!isLoggedIn">Sign Up</a>
-                <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Log in</a>
-            </div>
-        </div>
-
+        <a
+          class="nav-link"
+          [routerLink]="['/profile', this.username]"
+          *ngIf="isLoggedIn"
+          ><mat-icon>person</mat-icon></a
+        >
+        <button
+          class="post-button nav-link"
+          *ngIf="isLoggedIn"
+          (click)="logout()"
+        >
+          <mat-icon>logout</mat-icon>
+        </button>
+        <a class="nav-link" routerLink="/registration" *ngIf="!isLoggedIn"
+          >Sign Up</a
+        >
+        <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Log in</a>
+      </div>
     </div>
+  </div>
 </nav>
+<app-notifications *ngIf="displayNotifications"></app-notifications>

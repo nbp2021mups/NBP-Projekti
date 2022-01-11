@@ -26,6 +26,7 @@ import { AddPostComponent } from './posts/add-post/add-post.component';
 import { MatSelectModule } from '@angular/material/select';
 import { HttpClientModule } from '@angular/common/http';
 import { ChatComponent } from './chat/chat.component';
+import { NotificationsComponent } from './notifications/notifications.component';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import { ChatComponent } from './chat/chat.component';
     RegistrationPageComponent,
     AddPostComponent,
     ChatComponent,
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
