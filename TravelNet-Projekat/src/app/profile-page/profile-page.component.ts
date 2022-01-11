@@ -88,7 +88,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   }
 
   onAcceptRequest() {
-    this.friendService.acceptRequest(this.loggedID, this.person.id).subscribe({
+    this.friendService.acceptRequest(this.person.id, this.loggedID).subscribe({
       next: resp => {
         alert(resp);
         this.profileType = ProfileType.friend;

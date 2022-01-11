@@ -46,10 +46,12 @@ router.delete("/request", async(req, res) => {
 //prihvatanje zahteva za prijateljstvo(u2 prihvata u1)
 router.post("/accept", async(req, res) => {
     try {
-        const cypher1 = `MATCH (u1:User), (u2:User)
+        const cypher1 = `MATCH (u1:User), (u2:User), (u1:User)-[r3:SENT_REQUEST]->(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
-                        MERGE (u1)<-[r:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)`;
+                        MERGE (u1)<-[r1:IS_FRIEND{since: $since, chatId: $chatId}]-(u2)
+                        MERGE (u1)-[r2:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)
+                        DELETE r3`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
@@ -57,11 +59,6 @@ router.post("/accept", async(req, res) => {
             chatId: getChatId(req.body.id1, req.body.id2),
         };
         await session.run(cypher1, params);
-        const cypher2 = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User) WHERE id(u1)=$id1 AND id(u2)=$id2
-                    CALL apoc.refactor.setType(r, "IS_FRIEND")
-                    YIELD input, output
-                    RETURN input, output`;
-        await session.run(cypher2, params);
         return res.send("Zahtev je prihvacen");
     } catch (ex) {
         console.log(ex);
@@ -72,10 +69,10 @@ router.post("/accept", async(req, res) => {
 //brisanje prijatelja
 router.delete("", async(req, res) => {
     try {
-        const cypher = `MATCH (u1:User)-[r:IS_FRIEND]-(u2:User)
+        const cypher = `MATCH (u1:User)-[r1:IS_FRIEND]->(u2:User), (u1:User)<-[r2:IS_FRIEND]-(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo-1, u2.friendsNo=u2.friendsNo-1
-                        DELETE r`;
+                        DELETE r1, r2`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
