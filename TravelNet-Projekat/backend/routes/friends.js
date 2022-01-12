@@ -54,8 +54,8 @@ router.delete("/request", async(req, res) => {
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
         /* MATCH (n:Notification)
-                                                                                                                                                            WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                                                                                                                            DETACH DELETE n */
+                                                                                                                                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                                                                                                                                    DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -90,7 +90,7 @@ router.post("/accept", async(req, res) => {
                             content: id(r4),
                             type: 'accepted-friend-request'
                         })
-                        DELETE r3
+                        DELETE r1
                         RETURN n`;
         const params = {
             id1: req.body.id1,
