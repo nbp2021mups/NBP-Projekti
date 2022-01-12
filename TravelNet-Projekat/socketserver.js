@@ -3,6 +3,7 @@ const path = require("path");
 const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
+const driver = require("./backend/neo4jdriver");
 const { int } = require("neo4j-driver");
 const {
     validateSentMessage,
@@ -24,24 +25,6 @@ const io = new socketIO.Server(server, {
     },
 });
 
-require("dotenv").config();
-const neo4j = require("neo4j-driver");
-
-const uri = process.env.NEO4J_URL;
-const username = process.env.NEO4J_USERNAME;
-const password = process.env.NEO4J_PASSWORD;
-
-let driver = null;
-
-const getDriver = () => {
-    if (driver) return driver;
-
-    driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
-    return driver;
-};
-
-session = getDriver().session();
-
 const notifyUpdates = async(data) => {
     try {
         const cypher = `MATCH (u:User{username:$to})
@@ -54,7 +37,8 @@ const notifyUpdates = async(data) => {
                             type: $type
                         })
                         RETURN n`;
-        session
+        driver
+            .session()
             .run(cypher, {
                 read: false,
                 ...data,
@@ -117,7 +101,7 @@ const subscribeToUpdates = async(socket) => {
           WHERE u.username=$username
           RETURN ID(l)`;
 
-    const locations = await session.run(chyper, {
+    const locations = await driver.session().run(chyper, {
         username: socket.username,
     });
     if (locations.records.length > 0) {
@@ -152,7 +136,7 @@ const storeMessage = async(msg) => {
                     })
                     SET c.topMessageFrom=$from, c.topMessageTimeSent=$timeSent, c.topMessageContent=$content, c.unreadCount=c.unreadCount+1
                     RETURN id(m)`;
-    const result = await session.run(cypher, {
+    const result = await driver.session().run(cypher, {
         chatId: msg.chatId,
         from: msg.from,
         to: msg.to,
@@ -174,7 +158,7 @@ const readMessages = async(data) => {
     const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
                     WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
                     SET c.unreadCount=0, m.read=true`;
-    await session.run(cypher, data);
+    await driver.session().run(cypher, data);
 };
 
 // Users that are online
