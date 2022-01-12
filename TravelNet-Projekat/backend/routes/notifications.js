@@ -1,9 +1,5 @@
 const driver = require("../neo4jdriver");
 const express = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const storage = require("../storage");
 const { int } = require("neo4j-driver");
 
 const session = driver.session();
@@ -15,21 +11,21 @@ router.get("/:userId/:startIndex/:count", async(req, res) => {
         const cypher = `MATCH (u:User)-[:HAS]->(n:Notification)
                         WHERE id(u)=$userId
                         RETURN n
-                        ORDER BY n.timeSent
+                        ORDER BY n.timeSent DESC
                         SKIP $startIndex
                         LIMIT $count`;
         const params = {
             userId: int(req.params.userId),
-            startIndex: int(startIndex),
-            count: int(count),
+            startIndex: int(req.params.startIndex),
+            count: int(req.params.count),
         };
         const result = await session.run(cypher, params);
-        res.send({
-            notifications: result.records.map((x) => ({
-                id: x.get("identity").low,
-                ...x.get("n"),
-            })),
-        });
+        res.send(
+            result.records.map((x) => ({
+                id: x.get("n").identity.low,
+                ...x.get("n").properties,
+            }))
+        );
     } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");

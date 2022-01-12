@@ -2,7 +2,6 @@ require("dotenv").config();
 const redis = require("redis");
 
 let client = null;
-let duplicate = null;
 
 const getConnection = async() => {
     if (!client) {
@@ -50,29 +49,8 @@ const lSetMessage = async(chatId, index, value) => {
 };
 
 const getDuplicatedClient = async() => {
-    /* if (!duplicate) {
-        const redisClient = await getConnection();
-        duplicate = await redisClient.duplicate();
-        console.log('ovde');
-        await duplicate.connect();
-
-        duplicate.on("unsubscribe", (channel, message) => {
-            console.log("Message: " + message + "on channel " + channel);
-        });
-        duplicate.on("subscribe", (channel, message) => {
-            console.log("Message: " + message + "on channel " + channel);
-        });
-        duplicate.on("message", (channel, message) => {
-            console.log("Message: " + message + "on channel " + channel);
-        });
-    }
-    console.log(duplicate); */
-
-    const redisClient = await getConnection();
-    duplicate = await redisClient.duplicate();
-    console.log('ovde');
+    const duplicate = await (await getConnection()).duplicate();
     await duplicate.connect();
-
     return duplicate;
 };
 

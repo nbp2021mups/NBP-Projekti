@@ -15,6 +15,12 @@
     padding: 1em;
 }
 
+img {
+    width: 10%;
+    height: 10%;
+    margin: 0.5em;
+}
+
 .container>h3,
 .container>h4 {
     color: rgb(160, 160, 160);
@@ -68,4 +74,10 @@ label+div {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgb(130, 130, 130);
+}
+
+button {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    padding: 0.5em;
+    border-radius: 1em;
 }

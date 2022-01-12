@@ -3,7 +3,7 @@ export const NOTIFICATION_TRANSLATION = {
   'post-comment': 'komentariše Vašu objavu!',
   'sent-friend-request': 'šalje zahtev za prijateljstvo!',
   'accepted-friend-request': 'i Vi ste postali prijatelji!',
-  'new-post-on-location': 'ima novu objavu!'
+  'new-post-on-location': 'ima novu objavu!',
 };
 
 export enum NOTIFICATION_TRIGGERS {
@@ -13,6 +13,7 @@ export enum NOTIFICATION_TRIGGERS {
   SENT_FRIEND_REQUEST = 'sent-friend-request',
   ACCEPT_FRIEND_REQUEST = 'accept-friend-request',
   ACCEPTED_FRIEND_REQUEST = 'accepted-friend-request',
+  NEW_POST_ON_LOCATION = 'new-post-on-location',
 }
 
 export class Notification {

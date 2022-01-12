@@ -22,7 +22,6 @@ router.post("", async(req, res) => {
         const result = await session.run(cypher, params);
         const from = result.records[0].get("u.username");
         const to = result.records[0].get("toUser.username");
-        console.log("from", from, "to", to);
         getConnection().then((redisClient) =>
             redisClient.publish(
                 "notifications:" + to,
@@ -103,7 +102,6 @@ router.get("/post/:postId/:startIndex/:count", async(req, res) => {
             startIndex: int(req.params.startIndex),
             count: int(req.params.count),
         };
-        console.log(params);
         const result = await session.run(cypher, params);
         const rez = {
             users: result.records.map((x) => ({

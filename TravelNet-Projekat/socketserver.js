@@ -80,26 +80,30 @@ const subscribeToUpdates = async(socket) => {
         }
     );
 
-    await redisDuplicate.subscribe(`followed-location:${socket.username}`, async (loc) => {
-        console.log(socket.username)
-        await redisDuplicate.subscribe("location:" + loc, (message) => {
-            notifyUpdates({
-                id: 0,
-                from: message,
-                to: socket.username,
-                content: locId,
-                timeSent: new Date().toString(),
-                type: "new-post-on-location",
+    await redisDuplicate.subscribe(
+        `followed-location:${socket.username}`,
+        async(loc) => {
+            console.log(socket.username);
+            await redisDuplicate.subscribe("location:" + loc, (message) => {
+                notifyUpdates({
+                    id: 0,
+                    from: message,
+                    to: socket.username,
+                    content: locId,
+                    timeSent: new Date().toString(),
+                    type: "new-post-on-location",
+                });
             });
-        });
-    });
+        }
+    );
 
-    await redisDuplicate.subscribe(`unfollow-location:${socket.username}`, async (loc) => {
-      console.log(socket.username)
-      await redisDuplicate.unsubscribe("location:" + loc);
-
-
-  });
+    await redisDuplicate.subscribe(
+        `unfollow-location:${socket.username}`,
+        async(loc) => {
+            console.log(socket.username);
+            await redisDuplicate.unsubscribe("location:" + loc);
+        }
+    );
 
     const chyper = `MATCH (l:Location)<-[:FOLLOWS]-(u:User)
           WHERE u.username=$username
@@ -109,7 +113,7 @@ const subscribeToUpdates = async(socket) => {
         username: socket.username,
     });
     if (locations.records.length > 0) {
-        locations.records.forEach(async (record) => {
+        locations.records.forEach(async(record) => {
             const locId = record.get("ID(l)").low;
             await redisDuplicate.subscribe("location:" + locId, (message) => {
                 notifyUpdates({
@@ -163,6 +167,15 @@ const readMessages = async(data) => {
                     WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
                     SET c.unreadCount=0, m.read=true`;
     await driver.session().run(cypher, data);
+};
+
+const close = async(socket, redisDup) => {
+    if (socket.username) {
+        online[socket.username] = null;
+        socket.username = null;
+        socket.view = null;
+        await redisDup.disconnect();
+    }
 };
 
 // Users that are online
@@ -220,33 +233,15 @@ io.on("connection", (socket) => {
 
         socket.on("logout", async() => {
             try {
-                if (socket.username) {
-                    online[socket.username] = null;
-                    socket.username = null;
-                    socket.view = null;
-                    //redisDup.quit();
-                    await redisDup.disconnect();
-                    // redisDup.unsubscribe(null, (message) => {
-                    //     console.log(message);
-                    // });
-                }
+                close(socket, redisDup);
             } catch (ex) {
                 socket.emit("error", { message: ex, content: {} });
             }
         });
 
-        socket.on("disconnect", async () => {
+        socket.on("disconnect", async() => {
             try {
-                if (socket.username) {
-                    online[socket.username] = null;
-                    socket.username = null;
-                    socket.view = null;
-                    //redisDup.quit();
-                    await redisDup.disconnect();
-                    // redisDup.unsubscribe(null, (message) => {
-                    //     console.log(message);
-                    // });
-                }
+                close(socket, redisDup);
             } catch (ex) {
                 socket.emit("error", { message: ex, content: {} });
             }
@@ -299,16 +294,6 @@ io.on("connection", (socket) => {
                                     content: data,
                                 });
                             }
-                            // lRangeMessage(data["chatId"], -data["unreadCount"], 0).then(
-                            //     (res) => {
-                            //         res.forEach((x) => {
-                            //             lSetMessage(x["chatId"], x["id"], {
-                            //                 ...x,
-                            //                 timeRead: data["timeRead"],
-                            //             });
-                            //         });
-                            //     }
-                            // );
                             readMessages(data);
                         }
                     } else {
