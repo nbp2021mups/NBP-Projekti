@@ -6,9 +6,10 @@ export class PostsService {
 
     constructor(private http: HttpClient) {}
 
-    deletePost(postId: number) {
+    deletePost(postId: number, imagePath: string) {
         return this.http.delete('http://localhost:3000/posts/' + postId,
         {
+            body: {imagePath: imagePath},
             responseType: 'text'
         });
     }
@@ -30,7 +31,14 @@ export class PostsService {
         );
     }
 
-    /* unlikePost(userId: number, postId: number) {
-        return this.http.delete('http://localhost:3000/likes/' + userId + '/' + postId);
-    } */
+    unlikePost(userId: number, postId: number) {
+        return this.http.delete('http://localhost:3000/likes/' + userId + '/' + postId,
+        {
+            body: {
+                userId: userId,
+                postId: postId
+            },
+            responseType: 'text'
+        });
+    }
 }

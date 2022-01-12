@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PostHomePageModel } from 'src/app/models/post_models/post-homepage.model';
+import { AuthService } from 'src/app/services/authentication/auth.service';
 import { PostsService } from 'src/app/services/posts.service';
 
 @Component({
@@ -13,7 +14,6 @@ export class PostComponent implements OnInit {
   @Input()
   post: PostHomePageModel;
 
-  @Input()
   isPersonal: boolean = false;
 
   @Output()
@@ -22,12 +22,20 @@ export class PostComponent implements OnInit {
   editDesc: boolean = false;
   form: FormGroup;
 
-  constructor(private postsService: PostsService) { }
+  constructor(private postsService: PostsService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
       desc: new FormControl('', Validators.required)});
     this.form.get('desc').setValue(this.post.desc);
+
+    this.authService.user.subscribe(user => {
+      if (user.id == this.post.person.id){
+        this.isPersonal = true;
+      } else {
+        this.isPersonal = false;
+      }
+    }).unsubscribe();
   }
 
   getColor(): string {
@@ -38,7 +46,7 @@ export class PostComponent implements OnInit {
   }
 
   onDeletePost() {
-    this.postsService.deletePost(this.post.id).subscribe({
+    this.postsService.deletePost(this.post.id, this.post.imagePath).subscribe({
       next: resp => {
         alert(resp);
         this.postDeleted.emit(this.post.id);
@@ -53,12 +61,26 @@ export class PostComponent implements OnInit {
 
   onLikeClicked(): void {
     if(!this.post.liked) {
-      return;
+      this.authService.user.subscribe(user => {
+        this.postsService.likePost(user.id, this.post.id).subscribe({
+          next: resp => {
+            alert(resp);
+            this.post.liked = !this.post.liked;
+          },
+          error: err => {console.log(err);}
+        });
+      }).unsubscribe();
     } else {
-      return;
+      this.authService.user.subscribe(user => {
+        this.postsService.unlikePost(user.id, this.post.id).subscribe({
+          next: resp => {
+            alert(resp);
+            this.post.liked = !this.post.liked;
+          },
+          error: err => {console.log(err);}
+        });
+      }).unsubscribe();
     }
-
-    this.post.liked = !this.post.liked;
   }
 
   onSubmit() {

@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const storage = require("../storage");
+const fs = require("fs");
 
 const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
@@ -65,6 +66,12 @@ router.post(
 
             return res.send("Uspesno registrovan");
         } catch (ex) {
+            fs.unlink(req.file.path, (err) => {
+                if (err)
+                    return res
+                        .status(409)
+                        .send("Niste uneli validne podatke, proverite ponovo.");
+            });
             console.log(ex);
             if (ex.message.includes("email"))
                 return res
@@ -100,21 +107,21 @@ router.post("/login", async(req, res) => {
             );
 
             /*  const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
-                                                                                                                                                  WHERE u.username=$username
-                                                                                                                                                  RETURN ID(l)`
+                                                                                                                                                        WHERE u.username=$username
+                                                                                                                                                        RETURN ID(l)`
 
-                                                                                                                                    const locations=await session.run(chyper, {username:req.body.username})
-                                                                                                                                    console.log(locations.records.length)
-                                                                                                                                    if(locations.records.length>0){
-                                                                                                                                      const subscriber = await redis.getDuplicatedClient()
-                                                                                                                                      locations.records.forEach(record=>{
-                                                                                                                                        subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
-                                                                                                                                          console.log("Message: " + message + "on channel " + channel);
-                                                                                                                                        })
-                                                                                                                                      })
-                                                                                                                                      console.log("users", subscriber)
+                                                                                                                                          const locations=await session.run(chyper, {username:req.body.username})
+                                                                                                                                          console.log(locations.records.length)
+                                                                                                                                          if(locations.records.length>0){
+                                                                                                                                            const subscriber = await redis.getDuplicatedClient()
+                                                                                                                                            locations.records.forEach(record=>{
+                                                                                                                                              subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
+                                                                                                                                                console.log("Message: " + message + "on channel " + channel);
+                                                                                                                                              })
+                                                                                                                                            })
+                                                                                                                                            console.log("users", subscriber)
 
-                                                                                                                                    } */
+                                                                                                                                          } */
 
             return res.send({
                 id: userId,

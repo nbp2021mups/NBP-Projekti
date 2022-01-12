@@ -11,8 +11,6 @@ export class PostListComponent implements OnInit {
   @Input()
   posts: PostHomePageModel[] = [];
   @Input()
-  isPersonal: boolean = false;
-  @Input()
   profilePosts: boolean = false;
 
   constructor() { }

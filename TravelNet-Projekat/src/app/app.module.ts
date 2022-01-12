@@ -27,6 +27,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { HttpClientModule } from '@angular/common/http';
 import { ChatComponent } from './chat/chat.component';
 import { NotificationsComponent } from './notifications/notifications.component';
+import { LocationPageComponent } from './location-page/location-page.component';
 
 @NgModule({
   declarations: [
@@ -45,6 +46,7 @@ import { NotificationsComponent } from './notifications/notifications.component'
     AddPostComponent,
     ChatComponent,
     NotificationsComponent,
+    LocationPageComponent,
   ],
   imports: [
     BrowserModule,
