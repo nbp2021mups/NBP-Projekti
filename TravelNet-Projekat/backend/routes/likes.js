@@ -13,26 +13,32 @@ router.post("", async(req, res) => {
                       WHERE id(u) = $userId AND id(p) = $postId
                       SET p.likeNo=p.likeNo+1
                       MERGE (u)-[r:LIKED{time: $time}]->(p)
-                      RETURN u.username, toUser.username`;
+                      MERGE (toUser)-[:HAS]->(n:Notification{
+                          from: u.username,
+                          to: toUser.username,
+                          timeSent: $time,
+                          read: $read,
+                          content: $content,
+                          type: $type
+                      })
+                      RETURN n`;
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
             time: new Date().toString(),
+            read: false,
+            content: "like",
+            type: "post-like",
         };
         const result = await session.run(cypher, params);
-        const from = result.records[0].get("u.username");
-        const to = result.records[0].get("toUser.username");
+        const notification = {
+            id: result.records[0].get("n").identity.low,
+            ...result.records[0].get("n").properties,
+        };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + to,
-                JSON.stringify({
-                    id: 0,
-                    from: from,
-                    to: to,
-                    type: "post-like",
-                    content: req.body.postId,
-                    timeSent: new Date(),
-                })
+                "notifications:" + notification.to,
+                JSON.stringify(notification)
             )
         );
 

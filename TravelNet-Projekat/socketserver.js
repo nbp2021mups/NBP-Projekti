@@ -27,43 +27,21 @@ const io = new socketIO.Server(server, {
 
 const notifyUpdates = async(data) => {
     try {
-        const cypher = `MATCH (u:User{username:$to})
-                        MERGE (u)-[r:HAS]->(n:Notification{
-                            from: $from,
-                            to: $to,
-                            timeSent: $timeSent,
-                            read: $read,
-                            content: $content,
-                            type: $type
-                        })
-                        RETURN n`;
-        await driver
-            .session()
-            .run(cypher, {
-                read: false,
-                ...data,
-            })
-            .then((result) => {
-                const parsedResult = {
-                    id: result.records[0].get("n").identity.low,
-                    ...result.records[0].get("n").properties,
-                };
-                let forUser = online[data["to"]];
-                if (forUser) {
-                    switch (forUser.view) {
-                        case "notification-tab":
-                            forUser.emit("new-notification-in-notifications", {
-                                content: parsedResult,
-                            });
-                            break;
-                        default:
-                            forUser.emit("new-notification-pop-up", {
-                                content: parsedResult,
-                            });
-                            break;
-                    }
-                }
-            });
+        let forUser = online[data["to"]];
+        if (forUser) {
+            switch (forUser.view) {
+                case "notification-tab":
+                    forUser.emit("new-notification-in-notifications", {
+                        content: data,
+                    });
+                    break;
+                default:
+                    forUser.emit("new-notification-pop-up", {
+                        content: data,
+                    });
+                    break;
+            }
+        }
     } catch (ex) {
         console.log(ex);
     }
@@ -116,6 +94,7 @@ const subscribeToUpdates = async(socket) => {
         locations.records.forEach(async(record) => {
             const locId = record.get("ID(l)").low;
             await redisDuplicate.subscribe("location:" + locId, (message) => {
+                console.log("Here");
                 notifyUpdates({
                     id: 0,
                     from: message,

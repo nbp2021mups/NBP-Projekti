@@ -13,25 +13,32 @@ router.post("/request", async(req, res) => {
         const cypher = `MATCH (u1:User), (u2:User)
                         WHERE u1.username=$u1 AND u2.username=$u2
                         MERGE (u1)-[r:SENT_REQUEST{time: $time}]->(u2)
-                        RETURN ID(r)`;
+                        MERGE (u2)-[:HAS]->(n:Notification{
+                            from: u1.username,
+                            to: u2.username,
+                            timeSent: $time,
+                            read: $read,
+                            content: $content,
+                            type: $type
+                        })
+                        RETURN n`;
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
             time: new Date().toString(),
+            read: false,
+            content: "friend request",
+            type: "sent-friend-request",
         };
         const result = await session.run(cypher, params);
-
+        const notification = {
+            id: result.records[0].get("n").identity.low,
+            ...result.records[0].get("n").properties,
+        };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + req.body.username2,
-                JSON.stringify({
-                    id: 0,
-                    from: req.body.username1,
-                    to: req.body.username2,
-                    type: "sent-friend-request",
-                    content: result.records[0].get("ID(r)").low,
-                    timeSent: new Date().toString(),
-                })
+                "notifications:" + notification.to,
+                JSON.stringify(notification)
             )
         );
 
@@ -49,8 +56,8 @@ router.delete("/request", async(req, res) => {
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
         /* MATCH (n:Notification)
-                                                                            WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                                            DETACH DELETE n */
+                                                                                                        WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                                                                        DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -77,31 +84,39 @@ router.post("/accept", async(req, res) => {
                             topMessageTimeSent: $since,
                             topMessageContent: $content
                         })<-[r5:HAS]-(u2)
+                        MERGE (u1)-[:HAS]->(n:Notification{
+                            from: u2.username,
+                            to: u1.username,
+                            timeSent: $since,
+                            read: $read,
+                            content: $content,
+                            type: $type
+                        })
                         DELETE r3
-                        RETURN u1.username, u2.username`;
+                        RETURN n`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
             since: new Date().toString(),
             chatId: getChatId(req.body.id1, req.body.id2),
             from: "NoOne",
-            content: "",
+            content: "Novi prijatelj!",
+            read: false,
+            type: "accepted-friend-request",
         };
         const result = await session.run(cypher, params);
 
+        const notification = {
+            id: result.records[0].get("n").identity.low,
+            ...result.records[0].get("n").properties,
+        };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + result.records[0].get("u1.username"),
-                JSON.stringify({
-                    id: 0,
-                    from: result.records[0].get("u2.username"),
-                    to: result.records[0].get("u1.username"),
-                    type: "accepted-friend-request",
-                    content: "",
-                    timeSent: new Date().toString(),
-                })
+                "notifications:" + notification.to,
+                JSON.stringify(notification)
             )
         );
+
         return res.send("Zahtev je prihvacen");
     } catch (ex) {
         console.log(ex);

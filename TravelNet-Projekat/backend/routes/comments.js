@@ -13,30 +13,35 @@ router.post("", async(req, res) => {
                         WHERE id(u)=$userId AND id(p)=$postId
                         SET p.commentNo=p.commentNo+1
                         MERGE (u)-[r:COMMENTED{comment: $comment, time: $time}]->(p)
-                        RETURN u.username, toUser.username`;
+                        MERGE (toUser)-[:HAS]->(n:Notification{
+                            from: u.username,
+                            to: toUser.username,
+                            timeSent: $time,
+                            read: $read,
+                            content: $comment,
+                            type: $type
+                        })
+                        RETURN n`;
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
             comment: req.body.comment,
             time: new Date().toString(),
+            read: false,
+            type: "post-comment",
         };
         const result = await session.run(cypher, params);
-        const from = result.records[0].get("u.username");
-        const to = result.records[0].get("toUser.username");
-
+        const notification = {
+            id: result.records[0].get("n").identity.low,
+            ...result.records[0].get("n").properties,
+        };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + to,
-                JSON.stringify({
-                    id: 0,
-                    from: from,
-                    to: to,
-                    type: "post-comment",
-                    content: req.body.comment,
-                    timeSent: new Date(),
-                })
+                "notifications:" + notification.to,
+                JSON.stringify(notification)
             )
         );
+
         return res.send("comment postavljen uspesno");
     } catch (ex) {
         console.log(ex);
