@@ -26,7 +26,7 @@ router.post("/follow", async(req, res) => {
         if (result.records.length > 0)
             redisClient.getConnection().then((conn) => {
                 conn.publish(
-                    `followed-location:${result.records[0].properties.username}`,
+                    `followed-location:${result.records[0].get('username')}`,
                     locationId
                 );
             });

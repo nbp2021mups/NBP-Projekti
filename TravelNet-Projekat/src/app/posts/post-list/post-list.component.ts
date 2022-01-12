@@ -13,10 +13,20 @@ export class PostListComponent implements OnInit {
   @Input()
   profilePosts: boolean = false;
 
+  post: PostHomePageModel = null;
+  startY : number;
+
   constructor() { }
 
   ngOnInit(): void {
     
+  }
+
+  onPostClicked(post, event) {
+    this.post = post;
+    let pos = event.pageY - screen.height / 2;
+    this.startY = pos >= 0 ? pos : 0;
+    console.log(this.startY);
   }
 
   onPostDeleted(event: number) {

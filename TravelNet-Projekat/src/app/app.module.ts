@@ -28,6 +28,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { ChatComponent } from './chat/chat.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { LocationPageComponent } from './location-page/location-page.component';
+import { PostViewComponent } from './post-view/post-view.component';
+import { CommentComponent } from './comment/comment.component';
+import { CommentListComponent } from './comment-list/comment-list.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +50,9 @@ import { LocationPageComponent } from './location-page/location-page.component';
     ChatComponent,
     NotificationsComponent,
     LocationPageComponent,
+    PostViewComponent,
+    CommentComponent,
+    CommentListComponent,
   ],
   imports: [
     BrowserModule,
