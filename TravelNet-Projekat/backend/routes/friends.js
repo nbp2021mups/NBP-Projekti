@@ -19,16 +19,21 @@ router.post("/request", async(req, res) => {
             u2: req.body.username2,
             time: new Date().toString(),
         };
-        const result=await session.run(cypher, params);
+        const result = await session.run(cypher, params);
 
-        getConnection().then(redisClient=>redisClient.publish("sent-friend-request:" + to, JSON.stringify({
-          id: 0,
-          from: req.body.username1,
-          to: req.body.username2,
-          type: "sent-friend-request",
-          content: result.records[0].get('ID(r)'),
-          timeSent: new Date()
-          })));
+        getConnection().then((redisClient) =>
+            redisClient.publish(
+                "sent-friend-request:" + req.body.username2,
+                JSON.stringify({
+                    id: 0,
+                    from: req.body.username1,
+                    to: req.body.username2,
+                    type: "sent-friend-request",
+                    content: result.records[0].get("ID(r)"),
+                    timeSent: new Date().toString(),
+                })
+            )
+        );
 
         return res.send("Zahtev je poslat uspešno.");
     } catch (ex) {
@@ -43,9 +48,9 @@ router.delete("/request", async(req, res) => {
         const cypher = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User)
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
-                        /* MATCH (n:Notification)
-                        WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                        DETACH DELETE n */
+        /* MATCH (n:Notification)
+                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                    DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -66,7 +71,12 @@ router.post("/accept", async(req, res) => {
                         SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
                         MERGE (u1)<-[r1:IS_FRIEND{since: $since, chatId: $chatId}]-(u2)
                         MERGE (u1)-[r2:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)
-                        MERGE (u1)-[r3:HAS]->(c:Chat)<-[r4:HAS]-(u2)
+                        MERGE (u1)-[r4:HAS]->(c:Chat{
+                            unreadCount:0,
+                            topMessageFrom: 'NoOne',
+                            topMessageTimeSent: $since,
+                            topMessageContent:''
+                        })<-[r5:HAS]-(u2)
                         DELETE r3
                         RETURN u1.username, u2.username`;
         const params = {
@@ -75,16 +85,21 @@ router.post("/accept", async(req, res) => {
             since: new Date().toString(),
             chatId: getChatId(req.body.id1, req.body.id2),
         };
-        const result=await session.run(cypher, params);
+        const result = await session.run(cypher, params);
 
-        getConnection().then(redisClient=>redisClient.publish("accepted-friend-request:" + to, JSON.stringify({
-          id: 0,
-          from: result.records[0].get('u2.username'),
-          to: result.records[0].get('u1.username'),
-          type: "accepted-friend-request",
-          content: '',
-          timeSent: new Date()
-          })));
+        getConnection().then((redisClient) =>
+            redisClient.publish(
+                "accepted-friend-request:" + result.records[0].get("u1.username"),
+                JSON.stringify({
+                    id: 0,
+                    from: result.records[0].get("u2.username"),
+                    to: result.records[0].get("u1.username"),
+                    type: "accepted-friend-request",
+                    content: "",
+                    timeSent: new Date().toString(),
+                })
+            )
+        );
         return res.send("Zahtev je prihvacen");
     } catch (ex) {
         console.log(ex);

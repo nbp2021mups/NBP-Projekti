@@ -54,25 +54,32 @@ const notifyUpdates = async(data) => {
                             type: $type
                         })
                         RETURN n`;
-        session.run(cypher, data).then((result) => {
-            const parsedResult = {
-                id: result.records[0].get("identity").low,
-                ...result.records[0].get("n"),
-            };
-            let forUser = online[data["to"]];
-            if (forUser) {
-                switch (forUser.view) {
-                    case "notification-tab":
-                        forUser.emit("new-notification-in-notifications", {
-                            content: parsedResult,
-                        });
-                        break;
-                    default:
-                        forUser.emit("new-notification-pop-up", { content: parsedResult });
-                        break;
+        session
+            .run(cypher, {
+                read: false,
+                ...data,
+            })
+            .then((result) => {
+                const parsedResult = {
+                    id: result.records[0].get("n").identity.low,
+                    ...result.records[0].get("n").properties,
+                };
+                let forUser = online[data["to"]];
+                if (forUser) {
+                    switch (forUser.view) {
+                        case "notification-tab":
+                            forUser.emit("new-notification-in-notifications", {
+                                content: parsedResult,
+                            });
+                            break;
+                        default:
+                            forUser.emit("new-notification-pop-up", {
+                                content: parsedResult,
+                            });
+                            break;
+                    }
                 }
-            }
-        });
+            });
     } catch (ex) {
         console.log(ex);
     }
