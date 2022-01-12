@@ -69,4 +69,8 @@ export class SocketService {
   createNotification(n: Notification) {
     SocketService.getSocket().emit(n.type, n);
   }
+
+  logout() {
+    SocketService.getSocket().emit('logout');
+  }
 }

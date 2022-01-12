@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/authentication/auth.service';
 import { PopUpService } from '../services/pop-up/pop-up.service';
+import { SocketService } from '../services/socket/socket.service';
 
 @Component({
   selector: 'app-header',
@@ -16,7 +17,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private popUpService: PopUpService
+    private popUpService: PopUpService,
+    private socketSer: SocketService
   ) {}
 
   ngOnInit(): void {
@@ -38,6 +40,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
+    this.socketSer.logout();
   }
 
   ngOnDestroy(): void {

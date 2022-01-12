@@ -50,9 +50,10 @@ const lSetMessage = async(chatId, index, value) => {
 };
 
 const getDuplicatedClient = async() => {
-    if (!duplicate) {
+    /* if (!duplicate) {
         const redisClient = await getConnection();
         duplicate = await redisClient.duplicate();
+        console.log('ovde');
         await duplicate.connect();
 
         duplicate.on("unsubscribe", (channel, message) => {
@@ -65,6 +66,12 @@ const getDuplicatedClient = async() => {
             console.log("Message: " + message + "on channel " + channel);
         });
     }
+    console.log(duplicate); */
+
+    const redisClient = await getConnection();
+    duplicate = await redisClient.duplicate();
+    console.log('ovde');
+    await duplicate.connect();
 
     return duplicate;
 };

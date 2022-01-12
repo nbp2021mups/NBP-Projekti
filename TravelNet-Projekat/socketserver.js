@@ -4,7 +4,7 @@ const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
 const driver = require("./backend/neo4jdriver");
-const { int } = require("neo4j-driver");
+
 const {
     validateSentMessage,
     validateReadMessages,
@@ -72,7 +72,7 @@ const notifyUpdates = async(data) => {
 const subscribeToUpdates = async(socket) => {
     const redisDuplicate = await getDuplicatedClient();
 
-    redisDuplicate.subscribe(
+    await redisDuplicate.subscribe(
         `notifications:${socket.username}`,
         async(message) => {
             console.log("Notification", message);
@@ -80,8 +80,8 @@ const subscribeToUpdates = async(socket) => {
         }
     );
 
-    redisDuplicate.subscribe(`followed-location:${socket.username}`, (loc) => {
-        redisDuplicate.subscribe("location:" + loc, (message) => {
+    await redisDuplicate.subscribe(`followed-location:${socket.username}`, async (loc) => {
+        await redisDuplicate.subscribe("location:" + loc, (message) => {
             notifyUpdates({
                 id: 0,
                 from: message,
@@ -101,9 +101,9 @@ const subscribeToUpdates = async(socket) => {
         username: socket.username,
     });
     if (locations.records.length > 0) {
-        locations.records.forEach((record) => {
-            const locId = int(record.get("ID(l)").low);
-            redisDuplicate.subscribe("location:" + locId, (message) => {
+        locations.records.forEach(async (record) => {
+            const locId = record.get("ID(l)").low;
+            await redisDuplicate.subscribe("location:" + locId, (message) => {
                 notifyUpdates({
                     id: 0,
                     from: message,
@@ -210,13 +210,31 @@ io.on("connection", (socket) => {
             }
         });
 
-        socket.on("disconnect", () => {
+        socket.on("logout", async() => {
             try {
                 if (socket.username) {
                     online[socket.username] = null;
                     socket.username = null;
                     socket.view = null;
-                    redisDup.quit();
+                    //redisDup.quit();
+                    await redisDup.disconnect();
+                    // redisDup.unsubscribe(null, (message) => {
+                    //     console.log(message);
+                    // });
+                }
+            } catch (ex) {
+                socket.emit("error", { message: ex, content: {} });
+            }
+        });
+
+        socket.on("disconnect", async () => {
+            try {
+                if (socket.username) {
+                    online[socket.username] = null;
+                    socket.username = null;
+                    socket.view = null;
+                    //redisDup.quit();
+                    await redisDup.disconnect();
                     // redisDup.unsubscribe(null, (message) => {
                     //     console.log(message);
                     // });
