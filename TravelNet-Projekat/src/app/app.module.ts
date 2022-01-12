@@ -31,6 +31,8 @@ import { LocationPageComponent } from './location-page/location-page.component';
 import { PostViewComponent } from './post-view/post-view.component';
 import { CommentComponent } from './comment/comment.component';
 import { CommentListComponent } from './comment-list/comment-list.component';
+import { LocationCardComponent } from './location-card/location-card.component';
+import { LocationCardListComponent } from './location-card-list/location-card-list.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,8 @@ import { CommentListComponent } from './comment-list/comment-list.component';
     PostViewComponent,
     CommentComponent,
     CommentListComponent,
+    LocationCardComponent,
+    LocationCardListComponent,
   ],
   imports: [
     BrowserModule,

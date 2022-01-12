@@ -23,13 +23,17 @@ router.post("/follow", async(req, res) => {
             time: new Date().toString(),
         });
 
-        if (result.records.length > 0)
+        if (result.records.length > 0){
+          console.log(result.records[0].get('u.username'),"ovde2")
             redisClient.getConnection().then((conn) => {
                 conn.publish(
-                    `followed-location:${result.records[0].get('username')}`,
-                    locationId
+                    `followed-location:${result.records[0].get('u.username')}`,
+                    String(locationId)
                 );
             });
+
+
+        }
 
         return res.send("Lokacija je zapraćena");
     } catch (ex) {
@@ -44,14 +48,19 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         const cypher = `MATCH (u:User)-[r:FOLLOWS]->(l:Location)
         WHERE id(u)=$userId AND id(l)=$locationId
         SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
-        DELETE r`;
+        DELETE r
+        RETURN u.username`;
         const locationId = int(req.params.locationId);
-        await session.run(cypher, {
+        const result=await session.run(cypher, {
             userId: int(req.params.userId),
             locationId: locationId,
         });
-        const subscriber = await redisClient.getDuplicatedClient();
-        subscriber.unsubscribe("location:" + req.params.locationId);
+        redisClient.getConnection().then((conn) => {
+          conn.publish(
+              `unfollow-location:${result.records[0].get('u.username')}`, String(locationId)
+            );
+        });
+
         return res.send("Lokacija je otpraćena");
     } catch (ex) {
         console.log(ex);

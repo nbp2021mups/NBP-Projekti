@@ -81,6 +81,7 @@ const subscribeToUpdates = async(socket) => {
     );
 
     await redisDuplicate.subscribe(`followed-location:${socket.username}`, async (loc) => {
+        console.log(socket.username)
         await redisDuplicate.subscribe("location:" + loc, (message) => {
             notifyUpdates({
                 id: 0,
@@ -92,6 +93,13 @@ const subscribeToUpdates = async(socket) => {
             });
         });
     });
+
+    await redisDuplicate.subscribe(`unfollow-location:${socket.username}`, async (loc) => {
+      console.log(socket.username)
+      await redisDuplicate.unsubscribe("location:" + loc);
+
+
+  });
 
     const chyper = `MATCH (l:Location)<-[:FOLLOWS]-(u:User)
           WHERE u.username=$username
