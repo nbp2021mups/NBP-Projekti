@@ -92,6 +92,9 @@
             </h2>
           </div>
           <div class="chat-messages-div">
+            <h2 *ngIf="!selectedConversation.topMessage.content">
+              Nemate poruka
+            </h2>
             <div *ngFor="let message of selectedConversation.messages">
               <div
                 *ngIf="
@@ -110,11 +113,7 @@
                       {{ getTime(message.timeSent) }}
                     </label>
                     <div
-                      *ngIf="
-                        message.timeRead != null;
-                        then readCheck;
-                        else sentCheck
-                      "
+                      *ngIf="message.read; then readCheck; else sentCheck"
                     ></div>
                     <ng-template #readCheck>
                       <svg

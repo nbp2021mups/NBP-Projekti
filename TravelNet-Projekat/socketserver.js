@@ -3,20 +3,12 @@ const path = require("path");
 const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
-const driver = require("./backend/neo4jdriver");
-const session = driver.session();
 const { int } = require("neo4j-driver");
 const {
     validateSentMessage,
     validateReadMessages,
 } = require("./backend/validation/socketValidations");
-const {
-    rPushMessage,
-    lRangeMessage,
-    lSetMessage,
-    getDuplicatedClient,
-    getConnection,
-} = require("./backend/redisclient");
+const { getDuplicatedClient, getConnection } = require("./backend/redisclient");
 const { ms } = require("date-fns/locale");
 
 const app = express();
@@ -32,9 +24,26 @@ const io = new socketIO.Server(server, {
     },
 });
 
+require("dotenv").config();
+const neo4j = require("neo4j-driver");
+
+const uri = process.env.NEO4J_URL;
+const username = process.env.NEO4J_USERNAME;
+const password = process.env.NEO4J_PASSWORD;
+
+let driver = null;
+
+const getDriver = () => {
+    if (driver) return driver;
+
+    driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
+    return driver;
+};
+
+session = getDriver().session();
+
 const notifyUpdates = async(data) => {
     try {
-        console.log("Notification", data);
         const cypher = `MATCH (u:User{username:$to})
                         MERGE (u)-[r:HAS]->(n:Notification{
                             from: $from,
@@ -46,12 +55,10 @@ const notifyUpdates = async(data) => {
                         })
                         RETURN n`;
         session.run(cypher, data).then((result) => {
-            console.log(result);
             const parsedResult = {
                 id: result.records[0].get("identity").low,
                 ...result.records[0].get("n"),
             };
-            console.log("Parsed data", parsedResult);
             let forUser = online[data["to"]];
             if (forUser) {
                 switch (forUser.view) {
@@ -64,8 +71,6 @@ const notifyUpdates = async(data) => {
                         forUser.emit("new-notification-pop-up", { content: parsedResult });
                         break;
                 }
-            } else {
-                console.log("User is offline!");
             }
         });
     } catch (ex) {
@@ -122,8 +127,10 @@ const storeMessage = async(msg) => {
                         from: $from,
                         to: $to,
                         content: $content,
-                        timeSent: $timeSent
-                        ${msg.timeRead != null ? ", timeRead: $timeRead" : ""}})
+                        timeSent: $timeSent,
+                        read: $read
+                    })
+                    SET c.topMessageFrom=$from, c.topMessageTimeSent=$timeSent, c.topMessageContent=$content, c.unreadCount=c.unreadCount+1
                     RETURN id(m)`;
     const result = await session.run(cypher, {
         chatId: msg.chatId,
@@ -131,7 +138,7 @@ const storeMessage = async(msg) => {
         to: msg.to,
         content: msg.content,
         timeSent: msg.timeSent,
-        timeRead: msg.timeRead,
+        read: msg.read,
     });
     if (result.records.length > 0) {
         msg["id"] = result.records[0].get(0).low;
@@ -143,26 +150,30 @@ const storeMessage = async(msg) => {
     return msg;
 };
 
+const readMessages = async(data) => {
+    const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
+                    WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
+                    SET c.unreadCount=0, m.read=true`;
+    await session.run(cypher, data);
+};
+
 // Users that are online
 const online = {};
 
 io.on("connection", (socket) => {
     try {
         let redisDup = null;
-        console.log(`Client ${socket.id} connected`);
         socket.emit("connected", { content: socket.id });
 
         socket.on("join", async(data) => {
             try {
                 if (data["username"] && data["view"]) {
                     if (socket.username) {
-                        console.log("Disconnect", socket.username);
                         online[socket.username] = null;
                     }
 
                     socket.username = data["username"];
                     socket.view = data["view"];
-                    console.log("Join", socket.username);
                     online[socket.username] = socket;
                     socket.emit("joined", { content: data });
 
@@ -170,7 +181,6 @@ io.on("connection", (socket) => {
                         (redisDuplicate) => (redisDup = redisDuplicate)
                     );
                 } else {
-                    console.log("Invalid parameters!");
                     socket.emit("error", {
                         message: "Invalid parameters!",
                         content: data,
@@ -186,16 +196,13 @@ io.on("connection", (socket) => {
                 if (data["view"]) {
                     if (socket.username) {
                         socket.view = data["view"];
-                        console.log("Change-view", socket.username, socket.view);
                     } else {
-                        console.log("User not logged in!");
                         socket.emit("error", {
                             message: "User not logged in!",
                             content: data,
                         });
                     }
                 } else {
-                    console.log("Invalid view!");
                     socket.emit("error", { message: "View not defined!", content: data });
                 }
             } catch (ex) {
@@ -206,12 +213,9 @@ io.on("connection", (socket) => {
         socket.on("disconnect", () => {
             try {
                 if (socket.username) {
-                    console.log("Disconnect", socket.username);
                     online[socket.username] = null;
                     socket.username = null;
                     socket.view = null;
-                    //redisDup.unsubscribe();
-                    //redisDup = null;
                 }
             } catch (ex) {
                 socket.emit("error", { message: ex, content: data });
@@ -222,7 +226,6 @@ io.on("connection", (socket) => {
             try {
                 if (socket.username) {
                     if (validateSentMessage(data)) {
-                        console.log("Send-message", data);
                         storeMessage(data).then((result) => {
                             let forUser = online[result["to"]];
                             if (forUser) {
@@ -236,19 +239,15 @@ io.on("connection", (socket) => {
                                         forUser.emit("new-message-pop-up", { content: result });
                                         break;
                                 }
-                            } else {
-                                console.log("User is offline!");
                             }
                         });
                     } else {
-                        console.log("Invalid message format!", data);
                         socket.emit("error", {
                             message: "Incorrect message format!",
                             content: data,
                         });
                     }
                 } else {
-                    console.log("User not logged in!");
                     socket.emit("error", {
                         message: "User not logged in!",
                         content: data,
@@ -261,38 +260,34 @@ io.on("connection", (socket) => {
 
         socket.on("read-messages", (data) => {
             try {
-                console.log(socket.username, data);
                 if (socket.username) {
-                    console.log(data);
                     if (validateReadMessages(data)) {
-                        console.log("Read-messages", data);
-                        let fromUser = online[data["from"]];
-                        if (fromUser) {
-                            fromUser.emit("read-messages", {
-                                content: data,
-                            });
-                        } else {
-                            console.log("User is offline!");
-                        }
-                        lRangeMessage(data["chatId"], -data["unreadCount"], 0).then(
-                            (res) => {
-                                res.forEach((x) => {
-                                    lSetMessage(x["chatId"], x["id"], {
-                                        ...x,
-                                        timeRead: data["timeRead"],
-                                    });
+                        if (data["unreadCount"] > 0) {
+                            let fromUser = online[data["from"]];
+                            if (fromUser) {
+                                fromUser.emit("read-messages", {
+                                    content: data,
                                 });
                             }
-                        );
+                            // lRangeMessage(data["chatId"], -data["unreadCount"], 0).then(
+                            //     (res) => {
+                            //         res.forEach((x) => {
+                            //             lSetMessage(x["chatId"], x["id"], {
+                            //                 ...x,
+                            //                 timeRead: data["timeRead"],
+                            //             });
+                            //         });
+                            //     }
+                            // );
+                            readMessages(data);
+                        }
                     } else {
-                        console.log("Invalid message format!");
                         socket.emit("error", {
                             message: "Invalid message format!",
                             content: data,
                         });
                     }
                 } else {
-                    console.log("User not logged in!");
                     socket.emit("error", {
                         message: "User not logged in!",
                         content: data,

@@ -1,6 +1,5 @@
 export interface MessageReadReceipt {
   chatId: number;
-  timeRead: Date;
   from: string;
   unreadCount: number;
 }
@@ -12,7 +11,7 @@ export class Message {
   public chatId: number;
   public content: string;
   public timeSent: Date;
-  public timeRead: Date;
+  public read: boolean;
 
   constructor(
     id: number,
@@ -21,7 +20,7 @@ export class Message {
     chatId: number,
     content: string,
     timeSent: Date,
-    timeRead: Date
+    read: boolean = false
   ) {
     this.id = id;
     this.from = from;
@@ -29,6 +28,6 @@ export class Message {
     this.chatId = chatId;
     this.content = content;
     this.timeSent = timeSent;
-    this.timeRead = timeRead;
+    this.read = read;
   }
 }

@@ -8,24 +8,38 @@ export class Conversation {
   public myUnread: number;
   public friend: string;
   public friendImage: string;
+  public loaded: boolean;
+  public more: boolean;
 
-  public constructor(id: number, friend: string, friendImage: string) {
+  public constructor(
+    id: number,
+    friend: string,
+    friendImage: string,
+    topMessage: Message,
+    myUnread: number
+  ) {
     this.id = id;
     this.friend = friend;
     this.friendImage = friendImage;
     this.messages = new Array<Message>();
-    this.topMessage = null;
-    this.myUnread = 0;
-    this.onInit();
+    this.topMessage = topMessage;
+    this.myUnread = myUnread;
+    this.loaded = false;
   }
 
-  async onInit() {
-    axios.get(`http://localhost:3000/messages/${this.id}/0/20`).then((res) => {
-      res.data.forEach((m) => {
-        this.messages = [m, ...this.messages];
-        this.topMessage = m;
-        if (m.from == this.friend && m.timeRead == null) this.myUnread += 1;
+  async loadMessages(start: number = 0, count: number = 20) {
+    this.loaded = true;
+    axios
+      .get(`http://localhost:3000/messages/${this.id}/${start}/${count}`)
+      .then((res) => {
+        res.data.forEach((m) => {
+          m.chatId = this.id;
+          this.messages.push(m); // = [m, ...this.messages];
+        });
+        this.topMessage =
+          this.messages.length > 0 ? this.messages[0] : this.topMessage;
+
+        this.more = res.data.lenght == 20;
       });
-    });
   }
 }

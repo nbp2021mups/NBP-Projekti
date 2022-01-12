@@ -9,9 +9,7 @@ const validateSentMessage = (data) => {
 };
 
 const validateReadMessages = (data) => {
-    return (
-        data["from"] && data["timeRead"] && data["chatId"] && data["unreadCount"]
-    );
+    return data["from"] && data["chatId"];
 };
 
 const validateNotification = (data) => {

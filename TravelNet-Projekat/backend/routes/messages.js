@@ -16,7 +16,7 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
         const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
                         WHERE id(c) = $chatId
                         RETURN m
-                        ORDER BY m.timeSent
+                        ORDER BY m.timeSent DESC
                         SKIP $startIndex
                         LIMIT $count`;
         const params = {
@@ -26,12 +26,12 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
         };
 
         const result = await session.run(cypher, params);
-        res.send({
-            messages: result.records.map((x) => ({
-                id: x.get("identity").low,
-                ...x.get("m"),
-            })),
-        });
+        res.send(
+            result.records.map((x) => ({
+                id: x.get("m").identity.low,
+                ...x.get("m").properties,
+            }))
+        );
     } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");
@@ -49,7 +49,7 @@ router.post("/", async(req, res) => {
             req.body.to,
             req.body.content,
             req.body.timeSent,
-            req.body.timeRead
+            req.body.read
         );
 
         res.send(result);

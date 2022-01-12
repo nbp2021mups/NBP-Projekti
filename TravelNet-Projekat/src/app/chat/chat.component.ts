@@ -2,7 +2,6 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import axios from 'axios';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
-import { FullUser } from '../models/full-user-model/full-user.model';
 import { Message } from '../models/message-model/message.model';
 import {
   MESSAGE_EVENTS,
@@ -37,10 +36,11 @@ export class ChatComponent implements OnInit, OnDestroy {
   public selectedConversation: Conversation = null;
   public selectedIndex!: number;
   public filter: string = '';
-  public loggedUser: FullUser = null;
+  public loggedUser: { username: string; id: number } = null;
   public newMessage: string = '';
   public readMsgSubscription: Subscription;
   public receivedMsgSubscription: Subscription;
+
   constructor(private socketService: SocketService) {}
 
   ngOnDestroy(): void {
@@ -50,51 +50,17 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    axios
-      .get(
-        `http://localhost:3000/users/profile/${
-          JSON.parse(window.localStorage.getItem('logged-user'))['username']
-        }`
-      )
-      .then((res) => {
-        const data = res.data;
-        this.loggedUser = new FullUser(
-          data.id,
-          data.username,
-          data.firstName,
-          data.lastName,
-          data.image,
-          data.bio,
-          data.joined,
-          data.friendsNo,
-          data.followedLocationsNo,
-          data.postsNo
-        );
+    this.loggedUser = JSON.parse(window.localStorage.getItem('logged-user'));
+    this.loadConversations();
 
-        axios
-          .get(
-            `http://localhost:3000/users/conversations/${this.loggedUser.id}/0/${this.loggedUser.friendsNo}`
-          )
-          .then((result) => {
-            result.data.forEach((c) => {
-              this.conversations.push(
-                new Conversation(c.chatId, c.username, c.image)
-              );
-            });
-            this.filteredConversations = this.conversations;
-          });
-      });
     this.readMsgSubscription = this.socketService
       .getMessagesObservable(MESSAGE_EVENTS.READ_MESSAGES)
       .subscribe((data) => {
-        console.log(data);
         if (
           this.selectedConversation &&
           this.selectedConversation.id == data.chatId
         ) {
-          this.selectedConversation.messages.forEach(
-            (m) => (m.timeRead = new Date(data.timeRead))
-          );
+          this.selectedConversation.messages.forEach((m) => (m.read = true));
         }
       });
     this.receivedMsgSubscription = this.socketService
@@ -121,10 +87,9 @@ export class ChatComponent implements OnInit, OnDestroy {
             this.selectedConversation &&
             this.selectedConversation.id == this.conversations[0].id
           ) {
-            msg.timeRead = new Date();
+            msg.read = true;
             this.socketService.readMessages({
               chatId: msg.chatId,
-              timeRead: msg.timeRead,
               from: msg.from,
               unreadCount: 1,
             });
@@ -134,8 +99,44 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.socketService.changeView('messages-tab');
   }
 
-  goToProfile(username) {
+  loadConversations(start: number = 0, count: number = 20) {
+    axios
+      .get(
+        `http://localhost:3000/users/conversations/${this.loggedUser.id}/${start}/${count}`
+      )
+      .then((result) => {
+        result.data.forEach((c) => {
+          console.log(c);
+          this.conversations.push(
+            new Conversation(
+              c.id,
+              c.friendUsername,
+              c.friendImage,
+              new Message(
+                0,
+                c.topMessageFrom,
+                c.topMessageTo,
+                c.id,
+                c.topMessageContent,
+                c.topMessageTimeSent,
+                c.topMessageRead
+              ),
+              c.topMessageFrom != this.loggedUser.username
+                ? c.unreadMessagesCount
+                : 0
+            )
+          );
+        });
+        this.filteredConversations = this.conversations;
+      });
+  }
+
+  goToProfile(username: string): void {
     window.location.href = `/profile/${username}`;
+  }
+
+  goToLocation(locationId: number): void {
+    window.location.href = `/location/${locationId}`;
   }
 
   getDay(dateCal): string {
@@ -228,7 +229,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.selectedConversation.id,
         this.newMessage,
         new Date(),
-        null
+        false
       );
       this.newMessage = '';
 
@@ -258,12 +259,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.selectedConversation = this.filteredConversations[i];
     this.selectedIndex = i;
 
+    if (!this.selectedConversation.loaded) {
+      this.selectedConversation.loadMessages(0, 20);
+    }
+
     this.selectedConversation.messages.forEach((m) => {
-      if (!m.timeRead) m.timeRead = new Date();
+      if (!m.read) m.read = true;
     });
     this.socketService.readMessages({
       chatId: this.selectedConversation.id,
-      timeRead: new Date(),
       from: this.selectedConversation.friend,
       unreadCount: this.selectedConversation.myUnread,
     });
