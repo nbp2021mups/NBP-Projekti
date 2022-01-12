@@ -20,6 +20,10 @@ export class PostComponent implements OnInit {
   postDeleted: EventEmitter<number> = new EventEmitter<number>();
 
   editDesc: boolean = false;
+
+  @Input()
+  showImage: boolean = false;
+
   form: FormGroup;
 
   constructor(private postsService: PostsService, private authService: AuthService) { }

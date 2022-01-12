@@ -1,0 +1,33 @@
+.backdrop{
+    left: 0;
+    top: 0;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+}
+.panel{
+    left: 10vw;
+    width: 80vw;
+    height: 80vh;
+    position: absolute;
+    z-index: 70;
+    background-color: rgb(202, 202, 202);
+}
+.close {
+    left: 87vw;
+    width: 40px;
+    height: 30px;
+    position: absolute;
+    z-index: 100;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+mat-icon{
+    color: #3b3a3a;
+}
+mat-icon:hover{
+    color: black;
+}

@@ -2,10 +2,11 @@
     <mat-card-header>
         <img mat-card-avatar src= "{{post.person.imagePath}}">
         <mat-card-title [routerLink]="['/profile', this.post.person.username]" class="mb-1">{{post.person.firstName +  " " + post.person.lastName}}</mat-card-title>
-        <mat-card-subtitle routerLink="/location" class="mt-1 mb-1">{{post.location.country + ", " + post.location.city}}</mat-card-subtitle>
+        <mat-card-subtitle [routerLink]="['/location', this.post.location.id]" class="mt-1 mb-1">{{post.location.country + ", " + post.location.city}}</mat-card-subtitle>
     </mat-card-header>
 
-    <img mat-card-image src="{{post.imagePath}}" class="mt-1 mb-1 post-img">
+    <img mat-card-image src="{{post.imagePath}}" class="mt-1 mb-1 post-img"
+    [ngStyle]="{height: !this.showImage ? '250px' : '350px'}">
 
     <mat-card-content class="post-desc mt-1 mb-2" *ngIf="!editDesc">{{post.desc}}</mat-card-content>
 
@@ -21,7 +22,7 @@
             >
             <mat-error *ngIf="form.get('desc').invalid">Morate uneti neki opis!</mat-error>
             <button class="post-button" mat-icon button matSuffix (click)="onSubmit"><mat-icon>done</mat-icon></button>
-            <button class="post-button" mat-icon button matSuffix (click)="this.editDesc = false;"><mat-icon>cancel</mat-icon></button>
+            <button class="post-button" mat-icon button matSuffix (click)="this.editDesc = false;"><mat-icon>close</mat-icon></button>
         </mat-form-field>
       </form>
 
@@ -29,7 +30,7 @@
         <button mat-button class = "post-button p-1 me-1" (click)="onLikeClicked()">
             <mat-icon [color]="getColor()">favorite</mat-icon>
           </button>
-        <button mat-button class = "post-button p-1 ms-1" (click)="onCommentsClicked()">
+        <button mat-button class = "post-button p-1 ms-1" (click)="onCommentsClicked()" *ngIf = "!showImage">
             <mat-icon>add_comment</mat-icon>
         </button>
         <button mat-button *ngIf="isPersonal" class = "post-button p-1 float-r" (click)="onDeletePost()">
@@ -39,5 +40,4 @@
             <mat-icon>edit</mat-icon>
         </button>
     </mat-card-actions>
-
 </mat-card>

@@ -1,10 +1,7 @@
-mat-card-title, mat-card-subtitle:hover{
+mat-card-title, mat-card-subtitle, img:hover{
     cursor: pointer;
 }
 
-.post-img{
-    height: 250px;
-}
 .float-r{
     float: right;
 }
