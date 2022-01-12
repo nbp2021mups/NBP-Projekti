@@ -145,20 +145,24 @@ router.get("/all-locations", async(req, res) => {
     }
 });
 
-router.get("/:locationId/posts/:userId", async(req, res) => {
+router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
     try {
-        const cypher = `MATCH (loc:Location)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
-                  WITH loc,post,u,s
+      //(loc:Location)<-[f:FOLLOWS]-(logUser:User)
+        const cypher = `MATCH (loc:Location)
                   WHERE ID(loc)=$idL
+                  OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
+                  OPTIONAL MATCH (loc)<-[f:FOLLOWS]-(logUser:User)
+                  WHERE ID(logUser)=$idU
+                  WITH loc,post,u,s,f
                   ORDER BY s.time DESC
                   LIMIT $limit
                   CALL{
-                    WITH post
+                    WITH post, loc
                     MATCH (post)<-[like:LIKED]-(logUser:User)
                     WHERE ID(logUser)=$idU
                     RETURN count(like)>0 AS liked
                   }
-                  RETURN loc, collect([post, id(u), u.username, u.firstName, u.lastName, u.image, liked]) AS posts`;
+                  RETURN loc, count(f)>0 AS follow, collect([post, id(u), u.username, u.firstName, u.lastName, u.image, liked]) AS posts`;
 
         const params = {
             idL: int(req.params.locationId),
@@ -167,18 +171,21 @@ router.get("/:locationId/posts/:userId", async(req, res) => {
         };
 
         const result = await session.run(cypher, params);
-        const location = result.records[0].get("loc");
+        console.log(result.records[0])
+         const location = result.records[0].get('loc')
 
-        const response = {
+         const response = {
             locationId: location.identity.low,
             country: location.properties.country,
             city: location.properties.city,
             followersNo: location.properties.followersNo.low,
             postsNo: location.properties.followersNo.low,
+            followByUser : result.records[0].get("follow"),
             posts: [],
         };
 
-        result.records[0].get("posts").forEach((post) => {
+        if (response.followersNo>0){
+          result.records[0].get("posts").forEach((post) => {
             const currentPost = post[0];
             response.posts.push({
                 post: {
@@ -199,7 +206,8 @@ router.get("/:locationId/posts/:userId", async(req, res) => {
             });
         });
 
-        return res.send(response);
+        }
+        return res.send(response)
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
