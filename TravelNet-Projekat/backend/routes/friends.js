@@ -29,7 +29,7 @@ router.post("/request", async(req, res) => {
                     from: req.body.username1,
                     to: req.body.username2,
                     type: "sent-friend-request",
-                    content: result.records[0].get("ID(r)"),
+                    content: result.records[0].get("ID(r)").low,
                     timeSent: new Date().toString(),
                 })
             )
@@ -49,8 +49,8 @@ router.delete("/request", async(req, res) => {
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
         /* MATCH (n:Notification)
-                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                    DETACH DELETE n */
+                                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                                    DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -73,9 +73,9 @@ router.post("/accept", async(req, res) => {
                         MERGE (u1)-[r2:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)
                         MERGE (u1)-[r4:HAS]->(c:Chat{
                             unreadCount:0,
-                            topMessageFrom: 'NoOne',
+                            topMessageFrom: $from,
                             topMessageTimeSent: $since,
-                            topMessageContent:''
+                            topMessageContent: $content
                         })<-[r5:HAS]-(u2)
                         DELETE r3
                         RETURN u1.username, u2.username`;
@@ -84,6 +84,8 @@ router.post("/accept", async(req, res) => {
             id2: req.body.id2,
             since: new Date().toString(),
             chatId: getChatId(req.body.id1, req.body.id2),
+            from: "NoOne",
+            content: "",
         };
         const result = await session.run(cypher, params);
 
