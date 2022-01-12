@@ -26,6 +26,7 @@ const io = new socketIO.Server(server, {
 });
 
 const notifyUpdates = async(data) => {
+    console.log(data);
     try {
         const cypher = `MATCH (u:User{username:$to})
                         MERGE (u)-[r:HAS]->(n:Notification{
@@ -37,7 +38,7 @@ const notifyUpdates = async(data) => {
                             type: $type
                         })
                         RETURN n`;
-        driver
+        await driver
             .session()
             .run(cypher, {
                 read: false,
@@ -72,17 +73,9 @@ const notifyUpdates = async(data) => {
 const subscribeToUpdates = async(socket) => {
     const redisDuplicate = await getDuplicatedClient();
 
-    redisDuplicate.subscribe(
-        [
-            `post-like:${socket.username}`,
-            `post-comment:${socket.username}`,
-            `sent-friend-request:${socket.username}`,
-            `accepted-friend-request:${socket.username}`,
-        ],
-        (message) => {
-            notifyUpdates(JSON.parse(message));
-        }
-    );
+    redisDuplicate.subscribe(`notifications:${socket.username}`, (message) => {
+        notifyUpdates(JSON.parse(message));
+    });
 
     redisDuplicate.subscribe(`followed-location:${socket.username}`, (loc) => {
         redisDuplicate.subscribe("location:" + loc, (message) => {

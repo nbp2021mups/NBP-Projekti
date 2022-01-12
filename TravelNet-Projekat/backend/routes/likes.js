@@ -1,12 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const driver = require('../neo4jdriver');
-const { int } = require('neo4j-driver');
+const driver = require("../neo4jdriver");
+const { int } = require("neo4j-driver");
 const session = driver.session();
 
-const {getConnection} = require('../redisclient');
-
+const { getConnection } = require("../redisclient");
 
 router.post("", async(req, res) => {
     try {
@@ -18,20 +17,25 @@ router.post("", async(req, res) => {
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
-            time: new Date().toString()
+            time: new Date().toString(),
         };
-        const result=await session.run(cypher, params);
-        const from=result.records[0].get('u.username');
-        const to= result.records[0].get('toUser.username');
-        console.log("from",from,"to",to)
-        getConnection().then(redisClient=>redisClient.publish("post-like:" + to, JSON.stringify({
-          id: 0,
-          from: from,
-          to: to,
-          type: "post-like",
-          content: req.body.postId,
-          timeSent: new Date()
-          })));
+        const result = await session.run(cypher, params);
+        const from = result.records[0].get("u.username");
+        const to = result.records[0].get("toUser.username");
+        console.log("from", from, "to", to);
+        getConnection().then((redisClient) =>
+            redisClient.publish(
+                "notifications:" + to,
+                JSON.stringify({
+                    id: 0,
+                    from: from,
+                    to: to,
+                    type: "post-like",
+                    content: req.body.postId,
+                    timeSent: new Date(),
+                })
+            )
+        );
 
         return res.send("Lajk!");
     } catch (ex) {
@@ -48,12 +52,12 @@ router.delete("/:userId/:postId", async(req, res) => {
                         DELETE r`;
         const params = {
             userId: int(req.params.userId),
-            postId: int(req.params.postId)
+            postId: int(req.params.postId),
         };
         await session.run(cypher, params);
         return res.send("Lajk obrisan uspesno");
     } catch (ex) {
-        console.log(ex)
+        console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
 });
@@ -69,14 +73,14 @@ router.get("/user/:username/:startIndex/:count", async(req, res) => {
         const params = {
             username: req.params.username,
             startIndex: 0 || int(req.params.startIndex),
-            count: 20 || int(req.params.count)
+            count: 20 || int(req.params.count),
         };
         const result = await session.run(cypher, params);
         const rez = {
-            posts: result.records.map(x => ({
+            posts: result.records.map((x) => ({
                 id: x.get("p").identity.low,
-                ...x.get("p").properties
-            }))
+                ...x.get("p").properties,
+            })),
         };
         res.send(rez);
     } catch (ex) {
@@ -97,15 +101,15 @@ router.get("/post/:postId/:startIndex/:count", async(req, res) => {
         const params = {
             postId: int(req.params.postId),
             startIndex: int(req.params.startIndex),
-            count: int(req.params.count)
+            count: int(req.params.count),
         };
-        console.log(params)
+        console.log(params);
         const result = await session.run(cypher, params);
         const rez = {
-            users: result.records.map(x => ({
+            users: result.records.map((x) => ({
                 id: x.get("u").identity.low,
-                ...x.get("u").properties
-            }))
+                ...x.get("u").properties,
+            })),
         };
         res.send(rez);
     } catch (ex) {

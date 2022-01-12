@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 
-const { int } = require('neo4j-driver');
-const driver = require('../neo4jdriver');
+const { int } = require("neo4j-driver");
+const driver = require("../neo4jdriver");
 const session = driver.session();
 
-const {getConnection} = require('../redisclient');
+const { getConnection } = require("../redisclient");
 
 router.post("", async(req, res) => {
     try {
@@ -18,23 +18,28 @@ router.post("", async(req, res) => {
             userId: req.body.userId,
             postId: req.body.postId,
             comment: req.body.comment,
-            time: new Date().toString()
+            time: new Date().toString(),
         };
-        const result=await session.run(cypher, params);
-        const from=result.records[0].get('u.username');
-        const to= result.records[0].get('toUser.username');
+        const result = await session.run(cypher, params);
+        const from = result.records[0].get("u.username");
+        const to = result.records[0].get("toUser.username");
 
-        getConnection().then(redisClient=>redisClient.publish("post-comment:" + to, JSON.stringify({
-          id: 0,
-          from: from,
-          to: to,
-          type: "post-comment",
-          content: req.body.comment,
-          timeSent: new Date()
-          })));
+        getConnection().then((redisClient) =>
+            redisClient.publish(
+                "notifications:" + to,
+                JSON.stringify({
+                    id: 0,
+                    from: from,
+                    to: to,
+                    type: "post-comment",
+                    content: req.body.comment,
+                    timeSent: new Date(),
+                })
+            )
+        );
         return res.send("comment postavljen uspesno");
     } catch (ex) {
-        console.log(ex)
+        console.log(ex);
         return res.status(401).send("Došlo je do greške");
     }
 });
@@ -51,15 +56,15 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
         const params = {
             postId: int(req.params.postId),
             startIndex: int(req.params.startIndex),
-            count: int(req.params.count)
+            count: int(req.params.count),
         };
         const result = await session.run(cypher, params);
         return res.send({
-            comments: result.records.map(c => ({
+            comments: result.records.map((c) => ({
                 id: c.get("r").identity.low,
                 username: c.get("u").properties.username,
-                ...c.get("r").properties
-            }))
+                ...c.get("r").properties,
+            })),
         });
     } catch (ex) {
         console.log(ex);

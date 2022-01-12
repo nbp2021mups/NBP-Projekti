@@ -23,7 +23,7 @@ router.post("/request", async(req, res) => {
 
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "sent-friend-request:" + req.body.username2,
+                "notifications:" + req.body.username2,
                 JSON.stringify({
                     id: 0,
                     from: req.body.username1,
@@ -49,8 +49,8 @@ router.delete("/request", async(req, res) => {
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
         /* MATCH (n:Notification)
-                                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                                    DETACH DELETE n */
+                                                                            WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                                            DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -91,7 +91,7 @@ router.post("/accept", async(req, res) => {
 
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "accepted-friend-request:" + result.records[0].get("u1.username"),
+                "notifications:" + result.records[0].get("u1.username"),
                 JSON.stringify({
                     id: 0,
                     from: result.records[0].get("u2.username"),
