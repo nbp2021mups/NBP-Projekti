@@ -53,4 +53,6 @@
     </div>
   </div>
 </nav>
-<app-notifications *ngIf="displayNotifications"></app-notifications>
+<app-notifications
+  *ngIf="displayNotifications && isLoggedIn"
+></app-notifications>

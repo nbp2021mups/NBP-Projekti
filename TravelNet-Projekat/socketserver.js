@@ -149,7 +149,7 @@ const storeMessage = async(msg) => {
         from: msg.from,
         to: msg.to,
         content: msg.content,
-        timeSent: msg.timeSent,
+        timeSent: new Date(msg.timeSent).toString(),
         read: msg.read,
     });
     if (result.records.length > 0) {

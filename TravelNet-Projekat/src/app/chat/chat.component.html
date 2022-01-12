@@ -72,6 +72,9 @@
             </div>
           </ng-template>
         </div>
+        <button *ngIf="hasMore" (click)="loadMore()" class="load-more">
+          Učitaj još
+        </button>
       </div>
     </div>
     <div class="chat">
@@ -91,7 +94,7 @@
               @{{ selectedConversation.friend }}
             </h2>
           </div>
-          <div class="chat-messages-div">
+          <div id="chat-messages-div">
             <h2 *ngIf="!selectedConversation.topMessage.content">
               Nemate poruka
             </h2>
@@ -158,6 +161,13 @@
                 </div>
               </ng-template>
             </div>
+            <button
+              *ngIf="selectedConversation.hasMore"
+              (click)="selectedConversation.loadMore()"
+              class="load-more"
+            >
+              Učitaj još
+            </button>
           </div>
           <div class="chat-send-message-div">
             <input

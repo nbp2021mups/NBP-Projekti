@@ -1,5 +1,14 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewChecked,
+  AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
 import { Message } from '../models/message-model/message.model';
@@ -104,17 +113,19 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   loadMore() {
-    this.loadConversations(this.conversations.length, 20);
+    this.loadConversations(this.conversations.length);
   }
 
-  loadConversations(start: number = 0, count: number = 20) {
+  loadConversations(start: number = 0, count: number = 10) {
     this.httpService
       .get(
         `http://localhost:3000/users/conversations/${this.loggedUser.id}/${start}/${count}`
       )
       .subscribe((result: Array<any>) => {
+        console.log(result);
         this.hasMore = result.length == count;
         result.forEach((c) => {
+          console.log(c.unreadCount);
           this.conversations.push(
             new Conversation(
               c.id,
@@ -129,9 +140,7 @@ export class ChatComponent implements OnInit, OnDestroy {
                 c.topMessageTimeSent,
                 c.topMessageRead
               ),
-              c.topMessageFrom != this.loggedUser.username
-                ? c.unreadMessagesCount
-                : 0
+              c.topMessageFrom != this.loggedUser.username ? c.unreadCount : 0
             )
           );
         });
@@ -268,7 +277,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.selectedIndex = i;
 
     if (!this.selectedConversation.loaded) {
-      this.selectedConversation.loadMessages(0, 20);
+      this.selectedConversation.loadMore();
     }
 
     this.selectedConversation.messages.forEach((m) => {

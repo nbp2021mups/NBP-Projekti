@@ -206,7 +206,7 @@ svg {
     align-self: center;
 }
 
-.chat-messages-div {
+#chat-messages-div {
     display: flex;
     flex-direction: column-reverse;
     flex: 2 0 70%;
@@ -275,6 +275,16 @@ input {
     width: 85%;
     max-width: 85%;
     max-height: fit-content;
+}
+
+.load-more {
+    display: flex;
+    flex: 1 0 10%;
+    justify-content: center;
+    align-self: center;
+    width: 90%;
+    text-align: center;
+    padding: 0.5em;
 }
 
 #send-message {

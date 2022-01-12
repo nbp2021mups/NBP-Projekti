@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import axios from 'axios';
 import { Message } from '../message-model/message.model';
 
@@ -9,7 +10,7 @@ export class Conversation {
   public friend: string;
   public friendImage: string;
   public loaded: boolean;
-  public more: boolean;
+  public hasMore: boolean = false;
 
   public constructor(
     id: number,
@@ -27,19 +28,22 @@ export class Conversation {
     this.loaded = false;
   }
 
-  async loadMessages(start: number = 0, count: number = 20) {
+  public loadMore() {
+    this.loadMessages(this.messages.length, 20);
+  }
+
+  public async loadMessages(start: number = 0, count: number = 20) {
     this.loaded = true;
     axios
       .get(`http://localhost:3000/messages/${this.id}/${start}/${count}`)
       .then((res) => {
+        this.hasMore = count == res.data.length;
         res.data.forEach((m) => {
           m.chatId = this.id;
-          this.messages.push(m); // = [m, ...this.messages];
+          this.messages.push(m);
         });
         this.topMessage =
           this.messages.length > 0 ? this.messages[0] : this.topMessage;
-
-        this.more = res.data.lenght == 20;
       });
   }
 }

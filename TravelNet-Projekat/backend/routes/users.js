@@ -107,21 +107,21 @@ router.post("/login", async(req, res) => {
             );
 
             /*  const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
-                                                                                                                                                              WHERE u.username=$username
-                                                                                                                                                              RETURN ID(l)`
+                                                                                                                                                                          WHERE u.username=$username
+                                                                                                                                                                          RETURN ID(l)`
 
-                                                                                                                                                const locations=await session.run(chyper, {username:req.body.username})
-                                                                                                                                                console.log(locations.records.length)
-                                                                                                                                                if(locations.records.length>0){
-                                                                                                                                                  const subscriber = await redis.getDuplicatedClient()
-                                                                                                                                                  locations.records.forEach(record=>{
-                                                                                                                                                    subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
-                                                                                                                                                      console.log("Message: " + message + "on channel " + channel);
-                                                                                                                                                    })
-                                                                                                                                                  })
-                                                                                                                                                  console.log("users", subscriber)
+                                                                                                                                                            const locations=await session.run(chyper, {username:req.body.username})
+                                                                                                                                                            console.log(locations.records.length)
+                                                                                                                                                            if(locations.records.length>0){
+                                                                                                                                                              const subscriber = await redis.getDuplicatedClient()
+                                                                                                                                                              locations.records.forEach(record=>{
+                                                                                                                                                                subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
+                                                                                                                                                                  console.log("Message: " + message + "on channel " + channel);
+                                                                                                                                                                })
+                                                                                                                                                              })
+                                                                                                                                                              console.log("users", subscriber)
 
-                                                                                                                                                } */
+                                                                                                                                                            } */
 
             return res.send({
                 id: userId,
@@ -391,6 +391,7 @@ router.get("/conversations/:userId/:startIndex/:count", async(req, res) => {
             friendImage: x.get(1),
             id: x.get(2).identity.low,
             ...x.get(2).properties,
+            unreadCount: x.get(2).properties.unreadCount.low,
         }));
 
         return res.status(200).send(parsedRes);
