@@ -3,17 +3,44 @@
   <h4 *ngIf="notifications.length == 0">Nemate obaveštenja</h4>
   <div *ngFor="let notification of notifications">
     <div
-      class="card text-center hoverable marginable"
-      (click)="goTo(notification.from)"
-    >
-      <label>{{ getDate(notification.timeSent) }}</label>
-      <div class="card-body">
-        <h5 class="card-title">{{ TYPE[notification.type] }}</h5>
-        <p class="card-text">
-          Korisnik <b>@{{ notification.from }}</b>
-          {{ getDescription(notification) }}
-        </p>
+      *ngIf="
+        notification.type != 'new-post-on-location';
+        then user;
+        else location
+      "
+    ></div>
+    <ng-template #location>
+      <div
+        class="card text-center hoverable marginable"
+        (click)="goToLocation(notification.content)"
+      >
+        <label>{{ getDate(notification.timeSent) }}</label>
+        <div class="card-body">
+          <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
+          <p class="card-text">
+            <b>{{ notification.from }}</b>
+            {{ getDescription(notification) }}
+          </p>
+        </div>
       </div>
-    </div>
+    </ng-template>
+    <ng-template #user>
+      <div
+        class="card text-center hoverable marginable"
+        (click)="goToProfile(notification.from)"
+      >
+        <label>{{ getDate(notification.timeSent) }}</label>
+        <div class="card-body">
+          <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
+          <p class="card-text">
+            Korisnik <b>@{{ notification.from }}</b>
+            {{ getDescription(notification) }}
+          </p>
+        </div>
+      </div>
+    </ng-template>
   </div>
+  <button *ngIf="hasMore" class="hoverable marginable" (click)="loadMore()">
+    Učitajte još
+  </button>
 </div>

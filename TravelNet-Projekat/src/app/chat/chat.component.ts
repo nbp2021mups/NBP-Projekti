@@ -1,5 +1,5 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import axios from 'axios';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
 import { Message } from '../models/message-model/message.model';
@@ -40,8 +40,12 @@ export class ChatComponent implements OnInit, OnDestroy {
   public newMessage: string = '';
   public readMsgSubscription: Subscription;
   public receivedMsgSubscription: Subscription;
+  public hasMore: boolean = false;
 
-  constructor(private socketService: SocketService) {}
+  constructor(
+    private socketService: SocketService,
+    private httpService: HttpClient
+  ) {}
 
   ngOnDestroy(): void {
     this.readMsgSubscription.unsubscribe();
@@ -99,14 +103,18 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.socketService.changeView('messages-tab');
   }
 
+  loadMore() {
+    this.loadConversations(this.conversations.length, 20);
+  }
+
   loadConversations(start: number = 0, count: number = 20) {
-    axios
+    this.httpService
       .get(
         `http://localhost:3000/users/conversations/${this.loggedUser.id}/${start}/${count}`
       )
-      .then((result) => {
-        result.data.forEach((c) => {
-          console.log(c);
+      .subscribe((result: Array<any>) => {
+        this.hasMore = result.length == count;
+        result.forEach((c) => {
           this.conversations.push(
             new Conversation(
               c.id,

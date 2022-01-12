@@ -23,16 +23,13 @@ router.post("/follow", async(req, res) => {
             time: new Date().toString(),
         });
 
-        if (result.records.length > 0){
-          console.log(result.records[0].get('u.username'),"ovde2")
+        if (result.records.length > 0) {
             redisClient.getConnection().then((conn) => {
                 conn.publish(
-                    `followed-location:${result.records[0].get('u.username')}`,
+                    `followed-location:${result.records[0].get("u.username")}`,
                     String(locationId)
                 );
             });
-
-
         }
 
         return res.send("Lokacija je zapraćena");
@@ -51,13 +48,14 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         DELETE r
         RETURN u.username`;
         const locationId = int(req.params.locationId);
-        const result=await session.run(cypher, {
+        const result = await session.run(cypher, {
             userId: int(req.params.userId),
             locationId: locationId,
         });
         redisClient.getConnection().then((conn) => {
-          conn.publish(
-              `unfollow-location:${result.records[0].get('u.username')}`, String(locationId)
+            conn.publish(
+                `unfollow-location:${result.records[0].get("u.username")}`,
+                String(locationId)
             );
         });
 

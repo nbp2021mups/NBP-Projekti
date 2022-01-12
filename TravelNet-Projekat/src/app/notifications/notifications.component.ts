@@ -1,6 +1,5 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Route, Router, Routes } from '@angular/router';
-import axios from 'axios';
 import {
   NOTIFICATION_EVENTS,
   SocketService,
@@ -34,29 +33,23 @@ const MONTH = [
 export class NotificationsComponent implements OnInit, OnDestroy {
   public loggedUser: { username: string; id: number };
   public notifications: Array<Notification> = new Array<Notification>();
-  public TYPE = {
-    'post-like': 'Novi lajk',
-    'post-comment': 'Novi komentar',
-    'sent-friend-request': 'Novi zahtev za prijateljstvo',
-    'accepted-friend-request': 'Novi prijatelj',
-  };
+  public hasMore: boolean = false;
 
-  constructor(private socketService: SocketService) {}
+  constructor(
+    private socketService: SocketService,
+    private httpService: HttpClient
+  ) {}
 
   ngOnInit(): void {
+    const localSotrageUser = JSON.parse(
+      window.localStorage.getItem('logged-user')
+    );
     this.loggedUser = {
-      username: window.localStorage.getItem('logged-user')['username'],
-      id: window.localStorage.getItem('logged-user')['id'],
+      id: localSotrageUser['id'],
+      username: localSotrageUser['username'],
     };
     this.socketService.changeView('notification-tab');
-    // axios
-    //   .get(`http://localhost:3000/notifications/${this.loggedUser.id}`)
-    //   .then((res) => {
-    //     res.data.forEach((noti) => {
-    //       this.notifications.push(noti);
-    //     });
-    //   });
-
+    this.loadMore();
     this.socketService
       .getNotificationsObservable(
         NOTIFICATION_EVENTS.NOTIFICATION_IN_NOTIFICATIONS
@@ -68,6 +61,23 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.socketService.changeView('default');
+  }
+
+  loadMore() {
+    this.loadConversations(this.notifications.length, 20);
+  }
+
+  loadConversations(start: number = 0, count: number = 20) {
+    this.httpService
+      .get(
+        `http://localhost:3000/notifications/${this.loggedUser.id}/${start}/${count}`
+      )
+      .subscribe((data: Array<Notification>) => {
+        this.hasMore = count == data.length;
+        data.forEach((n) => {
+          this.notifications.push(n);
+        });
+      });
   }
 
   getDescription(n: Notification) {
@@ -82,7 +92,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     return `${day < 10 ? '0' : ''}${day} ${MONTH[month]}`;
   }
 
-  goTo(username: string) {
+  goToProfile(username: string) {
     window.location.href = `/profile/${username}`;
+  }
+
+  goToLocation(id) {
+    window.location.href = `locations/${id}`;
   }
 }
