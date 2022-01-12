@@ -79,7 +79,7 @@ router.get("/follows/:username/:startIndex/:count", async(req, res) => {
         res.send(rez);
     } catch (ex) {
         console.log(ex);
-        res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Došlo je do greške");
     }
 });
 
@@ -106,7 +106,7 @@ router.get("/postedOn/:username/:startIndex/:count", async(req, res) => {
         res.send(rez);
     } catch (ex) {
         console.log(ex);
-        res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Došlo je do greške");
     }
 });
 
@@ -135,5 +135,65 @@ router.get("/all-locations", async(req, res) => {
         return res.status(501).send("Doslo je do greske!");
     }
 });
+
+router.get("/:locationId/posts/:userId", async (req, res)=>{
+  try{
+    const cypher=`MATCH (loc:Location)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
+                  WITH loc,post,u,s
+                  WHERE ID(loc)=$idL
+                  ORDER BY s.time DESC
+                  LIMIT $limit
+                  CALL{
+                    WITH post
+                    MATCH (post)<-[like:LIKED]-(logUser:User)
+                    WHERE ID(logUser)=$idU
+                    RETURN count(like)>0 AS liked
+                  }
+                  RETURN loc, collect([post, id(u), u.username, u.firstName, u.lastName, u.image, liked]) AS posts`
+
+    const params= {idL:int(req.params.locationId),
+                  idU:int(req.params.userId),
+                  limit: int(req.params.limit)}
+
+    const result = await session.run(cypher, params);
+    const location=result.records[0].get('loc');
+
+    const response = {
+      locationId: location.identity.low,
+      country : location.properties.country,
+      city : location.properties.city,
+      followersNo : location.properties.followersNo.low,
+      postsNo : location.properties.followersNo.low,
+      posts: []
+    }
+
+    result.records[0].get('posts').forEach((post)=>{
+    const currentPost=post[0];
+    response.posts.push({
+      post:{
+        id:currentPost.identity.low,
+        image:currentPost.properties.image,
+        commentNo : currentPost.properties.commentNo.low,
+        likeNo : currentPost.properties.likeNo.low,
+        description : currentPost.properties.description
+      },
+      user: {
+        id: post[1].low,
+        username: post[2],
+        firstName: post[3],
+        lastName: post[4],
+        image: post[5]
+      },
+      liked: post[6]
+    })
+  })
+
+    return res.send(response)
+  }
+  catch (ex) {
+    console.log(ex);
+    return res.status(401).send("Došlo je do greške");
+}
+})
 
 module.exports = router;
