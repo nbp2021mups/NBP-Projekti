@@ -18,8 +18,8 @@ router.post("", async(req, res) => {
                           to: toUser.username,
                           timeSent: $time,
                           read: $read,
-                          content: $content,
-                          type: $type
+                          content: id(p),
+                          type: 'post-like'
                       })
                       RETURN n`;
         const params = {
@@ -27,8 +27,6 @@ router.post("", async(req, res) => {
             postId: req.body.postId,
             time: new Date().toString(),
             read: false,
-            content: "like",
-            type: "post-like",
         };
         const result = await session.run(cypher, params);
         const notification = {

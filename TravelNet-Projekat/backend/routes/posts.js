@@ -125,11 +125,11 @@ router.post(
                                 city: $city
                             })
                             MERGE (u)-[:HAS]->(n:Notification{
-                                from: $from,
+                                from: $loc,
                                 to: u.username,
                                 timeSent: $time,
                                 read: $read,
-                                content: $locationId,
+                                content: id(l),
                                 type: 'new-post-on-location'
                             })`;
                         await session.run(followedUsersCypher, {
@@ -137,8 +137,7 @@ router.post(
                             city: params.city,
                             time: new Date().toString(),
                             read: false,
-                            from: message,
-                            locationId,
+                            loc: message,
                         });
                         await client.publish("location:" + locationId, message);
                     } catch (ex) {

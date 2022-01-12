@@ -18,8 +18,8 @@ router.post("", async(req, res) => {
                             to: toUser.username,
                             timeSent: $time,
                             read: $read,
-                            content: $comment,
-                            type: $type
+                            content: id(r),
+                            type: 'post-comment'
                         })
                         RETURN n`;
         const params = {
@@ -28,7 +28,6 @@ router.post("", async(req, res) => {
             comment: req.body.comment,
             time: new Date().toString(),
             read: false,
-            type: "post-comment",
         };
         const result = await session.run(cypher, params);
         const notification = {

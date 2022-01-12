@@ -18,8 +18,8 @@ router.post("/request", async(req, res) => {
                             to: u2.username,
                             timeSent: $time,
                             read: $read,
-                            content: $content,
-                            type: $type
+                            content: id(r),
+                            type: 'sent-friend-request'
                         })
                         RETURN n`;
         const params = {
@@ -27,8 +27,6 @@ router.post("/request", async(req, res) => {
             u2: req.body.username2,
             time: new Date().toString(),
             read: false,
-            content: "friend request",
-            type: "sent-friend-request",
         };
         const result = await session.run(cypher, params);
         const notification = {
@@ -56,8 +54,8 @@ router.delete("/request", async(req, res) => {
                         WHERE u1.username=$u1 AND u2.username=$u2
                         DELETE r`;
         /* MATCH (n:Notification)
-                                                                                                        WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                                                                        DETACH DELETE n */
+                                                                                                                                                            WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
+                                                                                                                                                            DETACH DELETE n */
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -73,24 +71,24 @@ router.delete("/request", async(req, res) => {
 //prihvatanje zahteva za prijateljstvo(u2 prihvata u1)
 router.post("/accept", async(req, res) => {
     try {
-        const cypher = `MATCH (u1:User), (u2:User), (u1:User)-[r3:SENT_REQUEST]->(u2:User)
+        const cypher = `MATCH (u1:User), (u2:User), (u1:User)-[r1:SENT_REQUEST]->(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo+1, u2.friendsNo=u2.friendsNo+1
-                        MERGE (u1)<-[r1:IS_FRIEND{since: $since, chatId: $chatId}]-(u2)
-                        MERGE (u1)-[r2:IS_FRIEND{since: $since, chatId: $chatId}]->(u2)
-                        MERGE (u1)-[r4:HAS]->(c:Chat{
-                            unreadCount:0,
+                        MERGE (u1)-[r2:HAS]->(c:Chat{
+                            unreadCount: 0,
                             topMessageFrom: $from,
                             topMessageTimeSent: $since,
-                            topMessageContent: $content
-                        })<-[r5:HAS]-(u2)
-                        MERGE (u1)-[:HAS]->(n:Notification{
+                            topMessageContent: $msgContent
+                        })<-[r3:HAS]-(u2)
+                        MERGE (u1)<-[r4:IS_FRIEND{since: $since, chatId: id(c)}]-(u2)
+                        MERGE (u1)-[r5:IS_FRIEND{since: $since, chatId: id(c)}]->(u2)
+                        MERGE (u1)-[r6:HAS]->(n:Notification{
                             from: u2.username,
                             to: u1.username,
                             timeSent: $since,
                             read: $read,
-                            content: $content,
-                            type: $type
+                            content: id(r4),
+                            type: 'accepted-friend-request'
                         })
                         DELETE r3
                         RETURN n`;
@@ -98,11 +96,9 @@ router.post("/accept", async(req, res) => {
             id1: req.body.id1,
             id2: req.body.id2,
             since: new Date().toString(),
-            chatId: getChatId(req.body.id1, req.body.id2),
-            from: "NoOne",
-            content: "Novi prijatelj!",
+            from: "System",
+            msgContent: "Novi prijatelji! <3",
             read: false,
-            type: "accepted-friend-request",
         };
         const result = await session.run(cypher, params);
 
