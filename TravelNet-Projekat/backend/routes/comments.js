@@ -36,8 +36,8 @@ router.post("", async(req, res) => {
         };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + notification.to,
-                JSON.stringify(notification)
+                "user-updates:" + notification.to,
+                JSON.stringify({ type: "new-notification", payload: notification })
             )
         );
 

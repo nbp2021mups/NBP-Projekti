@@ -35,8 +35,8 @@ router.post("/request", async(req, res) => {
         };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + notification.to,
-                JSON.stringify(notification)
+                "user-updates:" + notification.to,
+                JSON.stringify({ type: "new-notification", payload: notification })
             )
         );
 
@@ -121,8 +121,8 @@ router.post("/accept", async(req, res) => {
         };
         getConnection().then((redisClient) =>
             redisClient.publish(
-                "notifications:" + notification.to,
-                JSON.stringify(notification)
+                "user-updates:" + notification.to,
+                JSON.stringify({ type: "new-notification", payload: notification })
             )
         );
 

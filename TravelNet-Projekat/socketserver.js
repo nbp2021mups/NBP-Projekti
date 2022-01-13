@@ -22,21 +22,23 @@ const io = new socketIO.Server(server, {
     },
 });
 
-const notifyUpdates = async(data) => {
+const notifyUpdates = (data) => {
     try {
-        let forUser = online[data["to"]];
-        if (forUser) {
-            switch (forUser.view.notifications) {
-                case "notification-tab":
-                    forUser.emit("new-notification-in-notifications", {
-                        content: data,
-                    });
-                    break;
-                default:
-                    forUser.emit("new-notification-pop-up", {
-                        content: data,
-                    });
-                    break;
+        if (data.to != data.from) {
+            let forUser = online[data["to"]];
+            if (forUser) {
+                switch (forUser.view.notifications) {
+                    case "notification-tab":
+                        forUser.emit("new-notification-in-notifications", {
+                            content: data,
+                        });
+                        break;
+                    default:
+                        forUser.emit("new-notification-pop-up", {
+                            content: data,
+                        });
+                        break;
+                }
             }
         }
     } catch (ex) {
@@ -44,46 +46,48 @@ const notifyUpdates = async(data) => {
     }
 };
 
+const sendMessage = (data) => {
+    let forUser = online[data["to"]];
+    if (forUser) {
+        switch (forUser.view.messages) {
+            case "messages-tab":
+                forUser.emit("new-message-in-messages", {
+                    content: data,
+                });
+                break;
+            default:
+                forUser.emit("new-message-pop-up", { content: data });
+                break;
+        }
+    }
+};
+
+const readMessages = (data) => {
+    let fromUser = online[data["from"]];
+    if (fromUser) {
+        fromUser.emit("read-messages", {
+            content: data,
+        });
+    }
+};
+
 const subscribeToUpdates = async(socket) => {
     const redisDuplicate = await getDuplicatedClient();
 
     await redisDuplicate.subscribe(
-        `notifications:${socket.username}`,
-        async(message) => {
-            const m = JSON.parse(message);
-            if (m.from != m.to) await notifyUpdates(m);
-        }
-    );
-
-    await redisDuplicate.subscribe(
-        `send-messages:${socket.username}`,
-        async(message) => {
-            const m = JSON.parse(message);
-            let forUser = online[m["to"]];
-            if (forUser) {
-                switch (forUser.view.messages) {
-                    case "messages-tab":
-                        forUser.emit("new-message-in-messages", {
-                            content: m,
-                        });
-                        break;
-                    default:
-                        forUser.emit("new-message-pop-up", { content: m });
-                        break;
-                }
-            }
-        }
-    );
-
-    await redisDuplicate.subscribe(
-        `read-messages:${socket.username}`,
-        async(msg) => {
-            data = JSON.parse(msg);
-            let fromUser = online[data["from"]];
-            if (fromUser) {
-                fromUser.emit("read-messages", {
-                    content: data,
-                });
+        `user-updates:${socket.username}`,
+        async(update) => {
+            const u = JSON.parse(update);
+            switch (u.type) {
+                case "new-notification":
+                    notifyUpdates(u.payload);
+                    break;
+                case "new-message":
+                    sendMessage(u.payload);
+                    break;
+                case "read-messages":
+                    readMessages(u.payload);
+                    break;
             }
         }
     );
@@ -91,10 +95,10 @@ const subscribeToUpdates = async(socket) => {
     await redisDuplicate.subscribe(
         `followed-location:${socket.username}`,
         async(loc) => {
-            await redisDuplicate.subscribe("location:" + loc, async(message) => {
+            await redisDuplicate.subscribe("location:" + loc, (message) => {
                 const m = JSON.parse(message);
                 if (socket.username != m.from) {
-                    await notifyUpdates({
+                    notifyUpdates({
                         id: 0,
                         from: m.text,
                         to: socket.username,
@@ -167,18 +171,24 @@ const storeMessage = async(msg) => {
         msg["id"] = result.records[0].get(0).low;
 
         getConnection().then((redis) => {
-            redis.publish(`send-messages:${msg.to}`, JSON.stringify(msg));
+            redis.publish(
+                `user-updates:${msg.to}`,
+                JSON.stringify({ type: "new-message", payload: msg })
+            );
         });
     }
 };
 
-const readMessages = async(data) => {
+const updateMessages = async(data) => {
     const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
                     WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
                     SET c.unreadCount=0, m.read=true`;
     await driver.session().run(cypher, data);
     getConnection().then((redis) =>
-        redis.publish(`read-messages:${data.from}`, JSON.stringify(data))
+        redis.publish(
+            `user-updates:${data.from}`,
+            JSON.stringify({ type: "read-messages", payload: data })
+        )
     );
 };
 
@@ -290,7 +300,7 @@ io.on("connection", (socket) => {
                 if (socket.username) {
                     if (validateReadMessages(data)) {
                         if (data["unreadCount"] > 0) {
-                            readMessages(data);
+                            updateMessages(data);
                         }
                     } else {
                         socket.emit("error", {
