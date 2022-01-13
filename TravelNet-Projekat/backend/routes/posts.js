@@ -10,7 +10,6 @@ const session = driver.session();
 
 const redisClient = require("../redisclient");
 
-
 //dodavanje objave od strane korisnika ciji je id proslednjen
 router.post(
     "",
@@ -41,7 +40,8 @@ router.post(
             ) {
                 if (req.body.newCountry) {
                     const exist = await session.run(
-                        `MATCH (l:Location{country: $newCountry}) RETURN l`, { newCountry: req.body.newCountry }
+                        `MATCH (l:Location{country: $newCountry})
+                        RETURN l`, { newCountry: req.body.newCountry }
                     );
                     if (exist.records.length > 0) {
                         fs.unlink(req.file.path, (err) => {
@@ -66,10 +66,11 @@ router.post(
                 params.city = req.body.city ? req.body.city : req.body.newCity;
 
                 cypher = `MATCH (u:User)
-            WHERE id(u)=$idU
-            SET u.postsNo=u.postsNo+1
-            CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
-            RETURN id(l), l.followersNo`;
+                        WHERE id(u)=$idU
+                        SET u.postsNo=u.postsNo+1
+                        CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
+                        WITH l, u
+                        RETURN id(l), l.followersNo, u.username`;
             } else {
                 fs.unlink(req.file.path, (err) => {
                     if (err)
@@ -86,9 +87,7 @@ router.post(
                 const result = await session.run(cypher, params);
                 const locationId = String(result.records[0].get("id(l)").low);
                 const from = result.records[0].get("u.username");
-                const followersNo = parseInt(
-                    result.records[0].get("l.followersNo").low
-                );
+                const followersNo = result.records[0].get("l.followersNo");
                 const client = await redisClient.getConnection();
 
                 if (req.body.country && req.body.city) {
@@ -119,9 +118,13 @@ router.post(
                     ]);
                 }
 
-                if (followersNo > 0) {
+                if (followersNo && followersNo.low > 0) {
                     try {
-                        const message = {text:`Lokacija ${params.country}, ${params.city}`, from: from};
+                        const message = {
+                            text: `Lokacija ${params.country}, ${params.city}`,
+                            from: from,
+                            locationId,
+                        };
                         const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
                                 country: $country,
                                 city: $city
@@ -142,8 +145,10 @@ router.post(
                             loc: message.text,
                         });
 
-                        await client.publish("location:" + locationId, JSON.stringify(message));
-
+                        await client.publish(
+                            "location:" + locationId,
+                            JSON.stringify(message)
+                        );
                     } catch (ex) {
                         console.log(ex);
                     }
@@ -224,11 +229,8 @@ router.delete("/:postId", async(req, res) => {
     }
 });
 
-
-
-
 router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
-    try{
+    try {
         const cypher = `MATCH (otherU:User{username: $otherU})-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc: Location)
         OPTIONAL MATCH (p)<-[l:LIKED]-(logU:User{username: $loggedU})
         WITH count(l) > 0 as liked, otherU, p, loc, s
@@ -240,18 +242,18 @@ router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
             otherU: req.params.otherU,
             loggedU: req.params.loggedU,
             skip: int(req.params.skip),
-            limit: int(req.params.limit)
+            limit: int(req.params.limit),
         };
 
         const result = await session.run(cypher, params);
 
-        if(result.records.length == 0){
+        if (result.records.length == 0) {
             return res.send([]);
         }
 
         const parsedRes = [];
         const posts = result.records[0].get(0);
-        posts.forEach(post => {
+        posts.forEach((post) => {
             parsedRes.push({
                 id: post.post.identity.low,
                 image: post.post.properties.image,
@@ -261,20 +263,20 @@ router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
                 loc: {
                     id: post.loc.id.low,
                     city: post.loc.city,
-                    country: post.loc.country
+                    country: post.loc.country,
                 },
-                liked: post.liked
+                liked: post.liked,
             });
         });
 
         return res.send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
-        return res.status(501).send("Doslo je do greske prilikom ucitavanja objava!");
+        return res
+            .status(501)
+            .send("Doslo je do greske prilikom ucitavanja objava!");
     }
 });
-
 
 //vracanje ukupnog broja komentara i lajkova za konkretnu objavu
 /* router.get("/:postId/reactions", async(req, res) => {

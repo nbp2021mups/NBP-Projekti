@@ -26,8 +26,11 @@ router.post("/follow", async(req, res) => {
         if (result.records.length > 0) {
             redisClient.getConnection().then((conn) => {
                 conn.publish(
-                    `followed-location:${result.records[0].get("u.username")}`,
-                    String(locationId)
+                    `user-updates:${result.records[0].get("u.username")}`,
+                    JSON.stringify({
+                        type: "follow-location",
+                        payload: String(locationId),
+                    })
                 );
             });
         }
@@ -54,8 +57,11 @@ router.delete("/:userId/:locationId/unfollow", async(req, res) => {
         });
         redisClient.getConnection().then((conn) => {
             conn.publish(
-                `unfollow-location:${result.records[0].get("u.username")}`,
-                String(locationId)
+                `user-updates:${result.records[0].get("u.username")}`,
+                JSON.stringify({
+                    type: "unfollow-location",
+                    payload: String(locationId),
+                })
             );
         });
 
@@ -147,7 +153,7 @@ router.get("/all-locations", async(req, res) => {
 
 router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
     try {
-      //(loc:Location)<-[f:FOLLOWS]-(logUser:User)
+        //(loc:Location)<-[f:FOLLOWS]-(logUser:User)
         const cypher = `MATCH (loc:Location)
                   WHERE ID(loc)=$idL
                   OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
@@ -171,43 +177,42 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
         };
 
         const result = await session.run(cypher, params);
-        console.log(result.records[0])
-         const location = result.records[0].get('loc')
+        console.log(result.records[0]);
+        const location = result.records[0].get("loc");
 
-         const response = {
+        const response = {
             locationId: location.identity.low,
             country: location.properties.country,
             city: location.properties.city,
             followersNo: location.properties.followersNo.low,
             postsNo: location.properties.followersNo.low,
-            followByUser : result.records[0].get("follow"),
+            followByUser: result.records[0].get("follow"),
             posts: [],
         };
 
-        if (response.followersNo>0){
-          result.records[0].get("posts").forEach((post) => {
-            const currentPost = post[0];
-            response.posts.push({
-                post: {
-                    id: currentPost.identity.low,
-                    image: currentPost.properties.image,
-                    commentNo: currentPost.properties.commentNo.low,
-                    likeNo: currentPost.properties.likeNo.low,
-                    description: currentPost.properties.description,
-                },
-                user: {
-                    id: post[1].low,
-                    username: post[2],
-                    firstName: post[3],
-                    lastName: post[4],
-                    image: post[5],
-                },
-                liked: post[6],
+        if (response.followersNo > 0) {
+            result.records[0].get("posts").forEach((post) => {
+                const currentPost = post[0];
+                response.posts.push({
+                    post: {
+                        id: currentPost.identity.low,
+                        image: currentPost.properties.image,
+                        commentNo: currentPost.properties.commentNo.low,
+                        likeNo: currentPost.properties.likeNo.low,
+                        description: currentPost.properties.description,
+                    },
+                    user: {
+                        id: post[1].low,
+                        username: post[2],
+                        firstName: post[3],
+                        lastName: post[4],
+                        image: post[5],
+                    },
+                    liked: post[6],
+                });
             });
-        });
-
         }
-        return res.send(response)
+        return res.send(response);
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
