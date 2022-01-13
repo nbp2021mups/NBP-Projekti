@@ -28,26 +28,30 @@ img {
     text-align: center;
 }
 
+.time-close-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1 0 5%;
+    max-height: 5%;
+}
+
+.time-close-div>button {
+    width: 10%;
+    height: 10%;
+    border: 0;
+    background-color: rgba(255, 255, 255, 0);
+}
+
 .hoverable:hover {
-    background-color: rgb(200, 200, 200);
+    background-color: rgba(180, 180, 180);
+    border: 1% solid black;
     cursor: pointer;
 }
 
 .marginable {
     margin-bottom: 0.1em;
-}
-
-label {
-    margin: 0;
-    margin-left: 80%;
-    max-width: 15%;
-    text-align: right;
-    justify-self: right;
-}
-
-label+div {
-    margin: 0;
-    padding-top: 0;
 }
 
 .content-div:hover {

@@ -4,16 +4,13 @@ const http = require("http");
 const express = require("express");
 const socketIO = require("socket.io");
 const driver = require("./backend/neo4jdriver");
-
 const {
     validateSentMessage,
     validateReadMessages,
 } = require("./backend/validation/socketValidations");
 const { getDuplicatedClient, getConnection } = require("./backend/redisclient");
-const { ms } = require("date-fns/locale");
 
 const app = express();
-app.use(express.static(path.join("backend/public")));
 
 const hostname = process.env.SOCKET_SERVER_HOSTNAME;
 const port = process.env.SOCKET_SERVER_PORT;
@@ -29,7 +26,7 @@ const notifyUpdates = async(data) => {
     try {
         let forUser = online[data["to"]];
         if (forUser) {
-            switch (forUser.view) {
+            switch (forUser.view.notifications) {
                 case "notification-tab":
                     forUser.emit("new-notification-in-notifications", {
                         content: data,
@@ -53,7 +50,6 @@ const subscribeToUpdates = async(socket) => {
     await redisDuplicate.subscribe(
         `notifications:${socket.username}`,
         async(message) => {
-            console.log("Notification", message);
             await notifyUpdates(JSON.parse(message));
         }
     );
@@ -61,7 +57,6 @@ const subscribeToUpdates = async(socket) => {
     await redisDuplicate.subscribe(
         `followed-location:${socket.username}`,
         async(loc) => {
-            console.log(socket.username);
             await redisDuplicate.subscribe("location:" + loc, (message) => {
                 notifyUpdates({
                     id: 0,
@@ -78,7 +73,6 @@ const subscribeToUpdates = async(socket) => {
     await redisDuplicate.subscribe(
         `unfollow-location:${socket.username}`,
         async(loc) => {
-            console.log(socket.username);
             await redisDuplicate.unsubscribe("location:" + loc);
         }
     );
@@ -94,7 +88,6 @@ const subscribeToUpdates = async(socket) => {
         locations.records.forEach(async(record) => {
             const locId = record.get("ID(l)").low;
             await redisDuplicate.subscribe("location:" + locId, (message) => {
-                console.log("Here");
                 notifyUpdates({
                     id: 0,
                     from: message,
@@ -193,9 +186,12 @@ io.on("connection", (socket) => {
 
         socket.on("change-view", (data) => {
             try {
-                if (data["view"]) {
+                if (data.view) {
                     if (socket.username) {
-                        socket.view = data["view"];
+                        if (data.view.notifications != null)
+                            socket.view.notifications = data.view.notifications;
+                        if (data.view.messages != null)
+                            socket.view.messages = data.view.messages;
                     } else {
                         socket.emit("error", {
                             message: "User not logged in!",
@@ -233,7 +229,7 @@ io.on("connection", (socket) => {
                         storeMessage(data).then((result) => {
                             let forUser = online[result["to"]];
                             if (forUser) {
-                                switch (forUser.view) {
+                                switch (forUser.view.messages) {
                                     case "messages-tab":
                                         forUser.emit("new-message-in-messages", {
                                             content: result,
