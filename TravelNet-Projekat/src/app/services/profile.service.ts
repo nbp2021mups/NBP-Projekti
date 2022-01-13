@@ -11,8 +11,8 @@ export class ProfileService{
 
     constructor(private http: HttpClient) {}
 
-    getLoggedUserProfileInfo(username: string) {
-        return this.http.get<any>('http://localhost:3000/users/profile/' + username)
+    getLoggedUserProfileInfo(username: string, limit: number) {
+        return this.http.get<any>('http://localhost:3000/users/profile/' + username + '/' + limit)
         .pipe(map(respData => {
             const person = new PersonFull(respData.id, respData.firstName, respData.lastName, respData.image, respData.username,
                 respData.email, respData.bio, respData.friendsNo, respData.postsNo, respData.followedLocationsNo);
@@ -21,7 +21,7 @@ export class ProfileService{
                 respData.posts.forEach(post => {
                     person.addPost(new PostHomePageModel(post.id, new PersonBasic(respData.id, respData.firstName, respData.lastName,
                         respData.image, respData.username), new LocationBasic(post.location.id, post.location.country, post.location.city), post.image,
-                        post.description, post.likeNo, post.commentNo, false));
+                        post.description, post.likeNo, post.commentNo, post.liked));
                 });
             }
             return person;

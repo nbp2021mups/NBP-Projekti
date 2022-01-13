@@ -1,11 +1,16 @@
-<div class="container border border-rounded my-2 p-2">
+<div class="container border border-rounded my-2 p-2" *ngIf="this.location">
     <div class="text-center">
         <h2>{{this.location.city + " - " + this.location.country}}</h2>
         <h4>{{ "Broj objava na ovoj lokaciji : " + this.location.postsNo}}</h4>
     </div>
     <div class="row justify-content-around">
-        <button class="btn btn-primary col-5">Prati lokaciju</button>
-        <button class="btn btn-info col-5">Otkazi pracenje</button>
+        <button class="btn btn-primary col-5" *ngIf="!this.location.followed" (click)="onFollowLoc()">Prati lokaciju</button>
+        <button class="btn btn-info col-5" *ngIf="this.location.followed" (click)="onUnfollowLoc()">Otkazi pracenje</button>
         <button class="btn btn-primary col-5">{{"Pratioci : " + this.location.followersNo}}</button>
     </div>
 </div>
+
+<app-post-list
+    [profilePosts]="true"
+    [posts]="this.location && this.location.posts">
+</app-post-list>

@@ -5,6 +5,7 @@ import { Notification, NOTIFICATION_TRIGGERS } from '../models/notification-mode
 import { PersonFull } from '../models/person_models/person-full.model';
 import { AuthService } from '../services/authentication/auth.service';
 import { FriendsService } from '../services/friends.service';
+import { PostsService } from '../services/posts.service';
 import { ProfileService } from '../services/profile.service';
 import { SocketService } from '../services/socket/socket.service';
 
@@ -29,9 +30,11 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loggedID: number;
   loggedUsername: string;
   profileType: ProfileType;
+  allRead: boolean = false;
 
   constructor(private authService: AuthService, private route: ActivatedRoute, 
-    private profileService: ProfileService, private friendService: FriendsService, private socketService: SocketService) { }
+    private profileService: ProfileService, private friendService: FriendsService, 
+    private socketService: SocketService, private postService: PostsService) { }
 
   ngOnInit(): void {
     this.route.params.subscribe({
@@ -43,11 +46,11 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
           this.loggedUsername = user.username;
           if(username == this.loggedUsername) {
             this.profileType = ProfileType.personal;
-            this.profileService.getLoggedUserProfileInfo(this.loggedUsername).subscribe(user => {
+            this.profileService.getLoggedUserProfileInfo(this.loggedUsername, 3).subscribe(user => {
               this.person = user;
             })
           } else {
-            this.profileService.getOtherUserProfileInfo(user.username, username, 10).subscribe(userData =>{
+            this.profileService.getOtherUserProfileInfo(user.username, username, 3).subscribe(userData =>{
               if(userData.relation == null){
                 this.profileType = ProfileType.non_friend;
               } else if(userData.relation == "friend"){
@@ -82,6 +85,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       next: resp => {
         alert(resp);
         this.profileType = ProfileType.non_friend;
+        this.person.posts = null;
       },
       error: err => {console.log(err);}
     });
@@ -119,6 +123,32 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  loadMore(event) {
+    this.authService.user.subscribe(user => {
+      const loggedU = user.username;
+      this.postService.loadMoreProfilePosts(this.person.username, loggedU, this.person.posts.length, 3).subscribe({
+        next: resp => {
+          if(resp.length == 0){
+            this.allRead = true;
+            return;
+          }
+          resp.forEach(post => {
+            post.setPerson(this.person);
+          });
+          this.person.posts = this.person.posts.concat(resp);
+          setTimeout(() => {
+            window.scrollTo({
+              top: event.clientY + 550,
+              left: 0,
+              behavior: 'smooth'
+            })
+          }, 1);
+        },
+        error: err => {console.log(err);}
+      });
+    }).unsubscribe();
+  }
 
 
   ngOnDestroy(): void {

@@ -12,4 +12,8 @@ export class PostHomePageModel extends PostModel{
         this.person = person;
         this.location = loc;
     }
+
+    setPerson(person: PersonBasic){
+        this.person = person;
+    }
 }
