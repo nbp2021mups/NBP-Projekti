@@ -24,9 +24,8 @@ export class PostListComponent implements OnInit {
 
   onPostClicked(post, event) {
     this.post = post;
-    let pos = event.pageY - screen.height / 2;
+    let pos = event - screen.height / 2;
     this.startY = pos >= 0 ? pos : 0;
-    console.log(this.startY);
   }
 
   onPostDeleted(event: number) {

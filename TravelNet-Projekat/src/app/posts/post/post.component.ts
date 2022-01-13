@@ -24,6 +24,9 @@ export class PostComponent implements OnInit {
   @Input()
   showImage: boolean = false;
 
+  @Output()
+  imageClicked: EventEmitter<number> = new EventEmitter<number>();
+
   form: FormGroup;
 
   constructor(private postsService: PostsService, private authService: AuthService) { }
@@ -102,6 +105,12 @@ export class PostComponent implements OnInit {
       error: err => {console.log(err);}
     });
   }
+
+
+  onImageClick(event) {
+    this.imageClicked.emit(event.pageY);
+  }
+
 
   onCommentsClicked(): void{
     alert("radi");

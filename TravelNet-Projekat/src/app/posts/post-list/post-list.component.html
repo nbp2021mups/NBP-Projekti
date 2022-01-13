@@ -7,7 +7,7 @@
 <div class="container px-0" *ngIf="this.profilePosts">
     <div class="row">
         <div class="col-12 col-sm-4 mb-2 px-1" *ngFor="let post of this.posts;">
-            <app-post [post]="post" [isPersonal]="this.isPersonal" (postDeleted)="onPostDeleted($event)" (click)="onPostClicked(post, $event)"></app-post>
+            <app-post [post]="post" [isPersonal]="this.isPersonal" (postDeleted)="onPostDeleted($event)" (imageClicked)="onPostClicked(post, $event)"></app-post>
         </div>
     </div>
 </div>

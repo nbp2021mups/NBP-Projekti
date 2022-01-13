@@ -106,23 +106,6 @@ router.post("/login", async(req, res) => {
                 "token", { expiresIn: "1h" }
             );
 
-            /*  const chyper=`MATCH (l:Location)<-[:FOLLOWS]-(u:User)
-                                                                                                                                                                                            WHERE u.username=$username
-                                                                                                                                                                                            RETURN ID(l)`
-
-                                                                                                                                                                              const locations=await session.run(chyper, {username:req.body.username})
-                                                                                                                                                                              console.log(locations.records.length)
-                                                                                                                                                                              if(locations.records.length>0){
-                                                                                                                                                                                const subscriber = await redis.getDuplicatedClient()
-                                                                                                                                                                                locations.records.forEach(record=>{
-                                                                                                                                                                                  subscriber.subscribe("location:"+record.get('ID(l)').low, (message, channel)=>{
-                                                                                                                                                                                    console.log("Message: " + message + "on channel " + channel);
-                                                                                                                                                                                  })
-                                                                                                                                                                                })
-                                                                                                                                                                                console.log("users", subscriber)
-
-                                                                                                                                                                              } */
-
             return res.send({
                 id: userId,
                 username: req.body.username,
@@ -148,7 +131,7 @@ router.patch(
             params.id = int(req.params.id);
 
             if (req.body.image) {
-                params.username = req.body.image;
+                params.image = req.body.image;
                 chyper = "u.image = $image";
             }
             if (req.body.username) {
@@ -299,15 +282,19 @@ router.get("/profile/:loggedUser/:profileUser/:limit", async(req, res) => {
 });
 
 //pribavljanje informacija o profilu korisnika koji je ulogovan
-router.get("/profile/:username", async(req, res) => {
+router.get("/profile/:username/:limit", async(req, res) => {
     try {
-        const cypher = `MATCH (u: User) WHERE u.username=$username CALL {WITH u MATCH (u:User)-[:SHARED]->(p: Post)-[:LOCATED_AT]->(loc:Location)
-            WHERE u.username=$username
-            WITH u, loc, p LIMIT 10 RETURN collect({post:p, loc:{id:id(loc), country: loc.country, city: loc.city}}) as posts}
-            RETURN id(u), u.firstName,
-            u.lastName, u.username, u.image, u.email, u.bio,
-            u.followedLocationsNo, u.friendsNo,u.postsNo, posts`;
-        const result = await session.run(cypher, { username: req.params.username });
+        const cypher = `MATCH (u:User{username: $username})
+        OPTIONAL MATCH (u)-[s:SHARED]->(post:Post)-[:LOCATED_AT]->(loc:Location)
+        WITH u,s, post, loc
+        ORDER BY s.time DESC
+        LIMIT $limit
+        OPTIONAL MATCH(post:Post)<-[l:LIKED]-(u)
+        WITH u, s, post, loc, count(l) > 0 as liked
+        RETURN id(u), u.firstName, u.lastName, u.username, u.image, u.email, u.bio,
+        u.followedLocationsNo, u.friendsNo, u.postsNo,
+        collect({post: post, loc: {id: id(loc), city: loc.city, country: loc.country}, liked: liked}) as posts`;
+        const result = await session.run(cypher, { username: req.params.username, limit: int(req.params.limit) });
 
         const parsedRes = {
             id: result.records[0].get("id(u)").low,
@@ -327,19 +314,22 @@ router.get("/profile/:username", async(req, res) => {
 
         const parsedPosts = [];
         posts.forEach((postWithLoc) => {
-            let parsedPost = {
-                id: postWithLoc.post.identity.low,
-                description: postWithLoc.post.properties.description,
-                image: postWithLoc.post.properties.image,
-                likeNo: postWithLoc.post.properties.likeNo.low,
-                commentNo: postWithLoc.post.properties.commentNo.low,
-                location: {
-                    id: postWithLoc.loc.id.low,
-                    country: postWithLoc.loc.country,
-                    city: postWithLoc.loc.city,
-                },
-            };
-            parsedPosts.push(parsedPost);
+            if(postWithLoc.post != null){
+                let parsedPost = {
+                    id: postWithLoc.post.identity.low,
+                    description: postWithLoc.post.properties.description,
+                    image: postWithLoc.post.properties.image,
+                    likeNo: postWithLoc.post.properties.likeNo.low,
+                    commentNo: postWithLoc.post.properties.commentNo.low,
+                    location: {
+                        id: postWithLoc.loc.id.low,
+                        country: postWithLoc.loc.country,
+                        city: postWithLoc.loc.city,
+                    },
+                    liked: postWithLoc.liked
+                };
+                parsedPosts.push(parsedPost);
+            }
         });
         parsedRes.posts = parsedPosts;
 

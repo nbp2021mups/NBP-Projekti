@@ -2,3 +2,12 @@
     font-size: 150%;
     margin: 0%;
 }
+.load-more{
+    color: #555555;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+.load-more:hover{
+    color: black;
+}

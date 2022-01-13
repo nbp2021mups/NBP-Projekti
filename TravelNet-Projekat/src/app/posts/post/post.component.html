@@ -6,7 +6,7 @@
     </mat-card-header>
 
     <img mat-card-image src="{{post.imagePath}}" class="mt-1 mb-1 post-img"
-    [ngStyle]="{height: !this.showImage ? '250px' : '350px'}">
+    [ngStyle]="{height: !this.showImage ? '250px' : '350px'}" (click)="onImageClick($event)">
 
     <mat-card-content class="post-desc mt-1 mb-2" *ngIf="!editDesc">{{post.desc}}</mat-card-content>
 

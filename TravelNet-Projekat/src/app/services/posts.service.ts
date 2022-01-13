@@ -1,5 +1,9 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { map } from "rxjs/operators";
+import { LocationBasic } from "../models/location_models/location-basic.model";
+import { PersonBasic } from "../models/person_models/person-basic.model";
+import { PostHomePageModel } from "../models/post_models/post-homepage.model";
 
 @Injectable({providedIn: 'root'})
 export class PostsService {
@@ -40,5 +44,18 @@ export class PostsService {
             },
             responseType: 'text'
         });
+    }
+
+
+    loadMoreProfilePosts(otherUser: string, loggedUser: string, skip: number, limit: number) {
+        return this.http.get<any>('http://localhost:3000/posts/loadPosts/' + otherUser + '/' + loggedUser + '/' + skip + '/' + limit)
+        .pipe(map(posts => {
+            const parsedPosts = [];
+            posts.forEach(post => {
+                parsedPosts.push(new PostHomePageModel(post.id, null, new LocationBasic(post.loc.id, post.loc.country,
+                    post.loc.city), post.image, post.desc, post.likeNo, post.commentNo, post.liked));
+            });
+            return parsedPosts;
+        }));
     }
 }
