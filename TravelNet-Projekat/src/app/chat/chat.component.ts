@@ -59,7 +59,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.readMsgSubscription.unsubscribe();
     this.receivedMsgSubscription.unsubscribe();
-    this.socketService.changeView('default');
+    this.socketService.changeView({ messages: 'home', notifications: null });
   }
 
   ngOnInit(): void {
@@ -109,7 +109,10 @@ export class ChatComponent implements OnInit, OnDestroy {
           } else this.conversations[0].myUnread += 1;
         }
       });
-    this.socketService.changeView('messages-tab');
+    this.socketService.changeView({
+      messages: 'messages-tab',
+      notifications: null,
+    });
   }
 
   loadMore() {

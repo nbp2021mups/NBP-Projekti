@@ -34,7 +34,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  onNotificationsClicked(): void {
+  toggleNotifications(): void {
     this.displayNotifications = !this.displayNotifications;
   }
 

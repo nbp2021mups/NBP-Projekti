@@ -18,7 +18,7 @@ router.post("", async(req, res) => {
                           to: toUser.username,
                           timeSent: $time,
                           read: $read,
-                          content: id(p),
+                          content: id(r),
                           type: 'post-like'
                       })
                       RETURN n`;

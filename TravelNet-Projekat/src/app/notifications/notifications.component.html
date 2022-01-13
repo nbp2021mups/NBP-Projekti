@@ -1,7 +1,7 @@
 <div class="container">
   <h3>Obaveštenja</h3>
   <h4 *ngIf="notifications.length == 0">Nemate obaveštenja</h4>
-  <div *ngFor="let notification of notifications">
+  <div *ngFor="let notification of notifications; index as i">
     <div
       *ngIf="
         notification.type != 'new-post-on-location';
@@ -10,12 +10,15 @@
       "
     ></div>
     <ng-template #location>
-      <div
-        class="card text-center hoverable marginable"
-        (click)="goToLocation(notification.content)"
-      >
-        <label>{{ getDate(notification.timeSent) }}</label>
-        <div class="card-body">
+      <div class="card text-center marginable">
+        <div class="time-close-div">
+          <label>{{ getDate(notification.timeSent) }}</label>
+          <button class="hoverable" (click)="deleteNotification(i)">X</button>
+        </div>
+        <div
+          class="card-body hoverable"
+          (click)="goToLocation(notification.content)"
+        >
           <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
           <p class="card-text">
             <b>{{ notification.from }}</b>
@@ -25,12 +28,15 @@
       </div>
     </ng-template>
     <ng-template #user>
-      <div
-        class="card text-center hoverable marginable"
-        (click)="goToProfile(notification.from)"
-      >
-        <label>{{ getDate(notification.timeSent) }}</label>
-        <div class="card-body">
+      <div class="card text-center marginable">
+        <div class="time-close-div">
+          <label>{{ getDate(notification.timeSent) }}</label>
+          <button class="hoverable" (click)="deleteNotification(i)">X</button>
+        </div>
+        <div
+          class="card-body hoverable"
+          (click)="goToProfile(notification.from)"
+        >
           <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
           <p class="card-text">
             Korisnik <b>@{{ notification.from }}</b>

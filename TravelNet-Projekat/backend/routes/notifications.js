@@ -53,8 +53,15 @@ router.patch("/", async(req, res) => {
     }
 });
 
-router.delete("/", async(req, res) => {
-    try {} catch (error) {
+router.delete("/:id", async(req, res) => {
+    try {
+        console.log(req.params.id);
+        const cypher = `MATCH (n:Notification)
+                WHERE id(n)=$id
+                DETACH DELETE n`;
+        await session.run(cypher, { id: int(req.params.id) });
+        res.send({ msg: "Obrisano" });
+    } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");
     }

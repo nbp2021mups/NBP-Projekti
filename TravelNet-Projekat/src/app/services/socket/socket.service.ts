@@ -17,6 +17,11 @@ export enum NOTIFICATION_EVENTS {
   NOTIFICATION_IN_NOTIFICATIONS = 'new-notification-in-notifications',
 }
 
+export interface View {
+  notifications: string;
+  messages: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,7 +37,10 @@ export class SocketService {
     return SocketService.socket;
   }
 
-  join(username: string, view: string = 'home') {
+  join(
+    username: string,
+    view: View = { messages: 'home', notifications: 'home' }
+  ) {
     SocketService.getSocket().emit('join', { username, view });
   }
 
@@ -62,7 +70,7 @@ export class SocketService {
     SocketService.getSocket().emit('read-messages', receipt);
   }
 
-  changeView(view: string) {
+  changeView(view: View) {
     SocketService.getSocket().emit('change-view', { view });
   }
 
