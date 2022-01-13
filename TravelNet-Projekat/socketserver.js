@@ -56,7 +56,7 @@ const subscribeToUpdates = async(socket) => {
     );
 
     await redisDuplicate.subscribe(
-        `messages:${socket.username}`,
+        `send-messages:${socket.username}`,
         async(message) => {
             const m = JSON.parse(message);
             let forUser = online[m["to"]];
@@ -71,6 +71,19 @@ const subscribeToUpdates = async(socket) => {
                         forUser.emit("new-message-pop-up", { content: m });
                         break;
                 }
+            }
+        }
+    );
+
+    await redisDuplicate.subscribe(
+        `read-messages:${socket.username}`,
+        async(msg) => {
+            data = JSON.parse(msg);
+            let fromUser = online[data["from"]];
+            if (fromUser) {
+                fromUser.emit("read-messages", {
+                    content: data,
+                });
             }
         }
     );
@@ -154,7 +167,7 @@ const storeMessage = async(msg) => {
         msg["id"] = result.records[0].get(0).low;
 
         getConnection().then((redis) => {
-            redis.publish(`messages:${msg.to}`, JSON.stringify(msg));
+            redis.publish(`send-messages:${msg.to}`, JSON.stringify(msg));
         });
     }
 };
@@ -164,6 +177,9 @@ const readMessages = async(data) => {
                     WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
                     SET c.unreadCount=0, m.read=true`;
     await driver.session().run(cypher, data);
+    getConnection().then((redis) =>
+        redis.publish(`read-messages:${data.from}`, JSON.stringify(data))
+    );
 };
 
 const close = async(socket, redisDup) => {
@@ -274,12 +290,6 @@ io.on("connection", (socket) => {
                 if (socket.username) {
                     if (validateReadMessages(data)) {
                         if (data["unreadCount"] > 0) {
-                            let fromUser = online[data["from"]];
-                            if (fromUser) {
-                                fromUser.emit("read-messages", {
-                                    content: data,
-                                });
-                            }
                             readMessages(data);
                         }
                     } else {
