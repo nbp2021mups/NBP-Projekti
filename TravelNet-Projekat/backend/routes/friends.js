@@ -52,10 +52,11 @@ router.delete("/request", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User)-[r:SENT_REQUEST]->(u2:User)
                         WHERE u1.username=$u1 AND u2.username=$u2
-                        DELETE r`;
-        /* MATCH (n:Notification)
-                                                                                                                                                                    WHERE n.from=$u1 AND n.to=$u2 AND n.type="sent-friend-request"
-                                                                                                                                                                    DETACH DELETE n */
+                        WITH r
+                        OPTIONAL MATCH (n:Notification)
+                        WHERE n.content=id(r)
+                        DELETE r
+                        DETACH DELETE n`;
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
@@ -82,7 +83,7 @@ router.post("/accept", async(req, res) => {
                         })<-[r3:HAS]-(u2)
                         MERGE (u1)<-[r4:IS_FRIEND{since: $since, chatId: id(c)}]-(u2)
                         MERGE (u1)-[r5:IS_FRIEND{since: $since, chatId: id(c)}]->(u2)
-                        MERGE (u1)-[r6:HAS]->(n:Notification{
+                        MERGE (u1)-[r6:HAS]->(n1:Notification{
                             from: u2.username,
                             to: u1.username,
                             timeSent: $since,
@@ -90,21 +91,33 @@ router.post("/accept", async(req, res) => {
                             content: id(r4),
                             type: 'accepted-friend-request'
                         })
+                        MERGE (u2)-[r7:HAS]->(n2:Notification{
+                            from: u1.username,
+                            to: u2.username,
+                            timeSent: $since,
+                            read: $read,
+                            content: id(r5),
+                            type: 'accepted-friend-request'
+                        })
+                        WITH r1, n1
+                        OPTIONAL MATCH (nDel:Notification)
+                        WHERE nDel.content=id(r1)
+                        DETACH DELETE nDel
                         DELETE r1
-                        RETURN n`;
+                        RETURN n1`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
             since: new Date().toString(),
             from: "System",
-            msgContent: "Novi prijatelji! <3",
+            msgContent: "Novi prijatelj!",
             read: false,
         };
         const result = await session.run(cypher, params);
 
         const notification = {
-            id: result.records[0].get("n").identity.low,
-            ...result.records[0].get("n").properties,
+            id: result.records[0].get("n1").identity.low,
+            ...result.records[0].get("n1").properties,
         };
         getConnection().then((redisClient) =>
             redisClient.publish(
@@ -126,7 +139,11 @@ router.delete("", async(req, res) => {
         const cypher = `MATCH (u1:User)-[r1:IS_FRIEND]->(u2:User), (u1:User)<-[r2:IS_FRIEND]-(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo-1, u2.friendsNo=u2.friendsNo-1
-                        DELETE r1, r2`;
+                        WITH r1, r2
+                        OPTIONAL MATCH (n:Notification)
+                        WHERE n.content=id(r1) OR n.content=id(r2)
+                        DELETE r1, r2
+                        DETACH DELETE n`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,

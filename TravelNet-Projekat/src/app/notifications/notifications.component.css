@@ -28,22 +28,6 @@ img {
     text-align: center;
 }
 
-.time-close-div {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1 0 5%;
-    max-height: 5%;
-}
-
-.time-close-div>button {
-    width: 10%;
-    height: 10%;
-    border: 0;
-    background-color: rgba(255, 255, 255, 0);
-}
-
 .hoverable:hover {
     background-color: rgba(180, 180, 180);
     border: 1% solid black;
@@ -84,4 +68,22 @@ button {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     padding: 0.5em;
     border-radius: 1em;
+}
+
+.time-close-div {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1 0 10%;
+    max-height: 2.5%;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+.time-close-div>button {
+    width: 5%;
+    height: 5%;
+    border: 0;
+    background-color: rgba(255, 255, 255, 0.122);
 }

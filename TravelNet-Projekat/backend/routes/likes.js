@@ -51,8 +51,12 @@ router.delete("/:userId/:postId", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:LIKED]-(p:Post)
                         WHERE id(u)=$userId AND id(p)=$postId
+                        WITH u, r, p
+                        OPTIONAL MATCH (n:Notification)
+                        WHERE n.content=id(r)
                         SET p.likeNo=p.likeNo-1
-                        DELETE r`;
+                        DELETE r
+                        DETACH DELETE n`;
         const params = {
             userId: int(req.params.userId),
             postId: int(req.params.postId),

@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
+import { DAYS, MILLISECONDS_PER_DAY } from '../chat/chat.component';
 import {
   NOTIFICATION_EVENTS,
   SocketService,
@@ -116,11 +117,30 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   getDate(dateStr) {
-    const date = new Date(dateStr);
-    const month = date.getMonth();
-    const day = date.getDate();
+    if (!dateStr) return '';
+    let date = new Date(dateStr);
+    const currentDate = new Date();
+    const diff = currentDate.getTime() - date.getTime();
+    if (diff < MILLISECONDS_PER_DAY) {
+      if (currentDate.getHours() >= date.getHours()) {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        return `${hours < 10 ? '0' : ''}${hours}:${
+          minutes < 10 ? '0' : ''
+        }${minutes}h`;
+      } else return 'Juče';
+    } else if (
+      diff < 2 * MILLISECONDS_PER_DAY &&
+      currentDate.getHours() >= date.getHours()
+    )
+      return 'Juče';
 
-    return `${day < 10 ? '0' : ''}${day} ${MONTH[month]}`;
+    if (diff < 7 * MILLISECONDS_PER_DAY) return DAYS[date.getDay()];
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate() + 1;
+
+    return `${month < 10 ? '0' : ''}${month}.${day < 10 ? '0' : ''}${day}`;
   }
 
   goToProfile(username: string) {
