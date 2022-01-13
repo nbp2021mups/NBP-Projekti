@@ -9,7 +9,7 @@ import { Integer } from 'neo4j-driver';
 export class LocationCardComponent implements OnInit {
 
   constructor() { }
-  @Input() cardLocation:{city:String,country:String,postsNo:Integer}
+  @Input() cardLocation:{city:String,country:String,postsNo:Integer,followed:boolean}
   ngOnInit(): void {
   }
 

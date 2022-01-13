@@ -1,6 +1,8 @@
-<div class="location-container">
+<mat-card class="location-container">
     
-    <div><p>{{cardLocation.city}}</p></div>
-    <div><p>{{cardLocation.country}}</p></div>
-    <div><p>{{cardLocation.postsNo}}</p></div>
-</div>
+    <div class="col-2"><p>{{cardLocation.city}}</p></div>
+    <div class="col-2"><p>{{cardLocation.country}}</p></div>
+    <div class="col-2"><p>{{cardLocation.postsNo}}</p></div>
+    <button class="btn btn-light" *ngIf="cardLocation.followed">Otprati</button>
+    <button class="btn btn-light"  *ngIf="!cardLocation.followed">Zaprati</button>
+</mat-card>
