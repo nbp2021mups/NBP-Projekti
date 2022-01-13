@@ -27,7 +27,7 @@
         >
         <button
           class="post-button nav-link"
-          (click)="onNotificationsClicked()"
+          (click)="toggleNotifications()"
           *ngIf="isLoggedIn"
         >
           <mat-icon>notifications</mat-icon>
@@ -54,5 +54,6 @@
   </div>
 </nav>
 <app-notifications
+  (destroy)="toggleNotifications()"
   *ngIf="displayNotifications && isLoggedIn"
 ></app-notifications>

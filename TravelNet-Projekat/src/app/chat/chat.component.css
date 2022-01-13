@@ -23,14 +23,11 @@ svg {
     display: flex;
     flex: 1 0 100%;
     max-width: 100%;
-    /* max-height: 92%;
-    height: 92%; */
     height: 720px;
     flex-direction: row;
     margin: 0;
     padding: 0;
     border: 0;
-    /* background-color: rgba(39, 39, 31, 0.651); */
     justify-content: center;
     align-content: center;
     align-items: center;
@@ -52,11 +49,13 @@ svg {
 .message-info-div>svg {
     width: 30%;
     height: 30%;
+    margin-left: 5%;
 }
 
 .message-info-div>label {
     width: 60%;
     height: 60%;
+    margin-right: 5%;
 }
 
 .outline {

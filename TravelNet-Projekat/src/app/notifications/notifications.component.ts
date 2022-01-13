@@ -1,5 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   NOTIFICATION_EVENTS,
   SocketService,
@@ -31,14 +38,27 @@ const MONTH = [
   styleUrls: ['./notifications.component.css'],
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
+  @Output() destroy = new EventEmitter<boolean>();
   public loggedUser: { username: string; id: number };
   public notifications: Array<Notification> = new Array<Notification>();
   public hasMore: boolean = false;
+  private inside: boolean = true;
 
   constructor(
     private socketService: SocketService,
     private httpService: HttpClient
   ) {}
+
+  @HostListener('click')
+  clickInside() {
+    this.inside = true;
+  }
+
+  @HostListener('document:click')
+  clickOutside() {
+    if (!this.inside) this.destroy.emit(true);
+    this.inside = false;
+  }
 
   ngOnInit(): void {
     const localSotrageUser = JSON.parse(
@@ -48,7 +68,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       id: localSotrageUser['id'],
       username: localSotrageUser['username'],
     };
-    this.socketService.changeView('notification-tab');
+    this.socketService.changeView({
+      messages: null,
+      notifications: 'notification-tab',
+    });
     this.loadMore();
     this.socketService
       .getNotificationsObservable(
@@ -60,7 +83,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.socketService.changeView('default');
+    this.socketService.changeView({ notifications: 'home', messages: null });
+  }
+
+  deleteNotification(i: number) {
+    this.httpService
+      .delete(`http://localhost:3000/notifications/${this.notifications[i].id}`)
+      .subscribe(() => {
+        this.notifications = this.notifications.filter((val, ind) => ind != i);
+      });
   }
 
   loadMore() {

@@ -34,7 +34,7 @@ router.post(
                       WHERE id(u)=$idU AND l.country=$country AND l.city=$city
                       SET l.postsNo=l.postsNo+1, u.postsNo=u.postsNo+1
                       CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)
-                      RETURN id(l), l.followersNo`;
+                      RETURN id(l), l.followersNo, u.username`;
             } else if (
                 (req.body.country && req.body.newCity) ||
                 (req.body.newCountry && req.body.newCity)
@@ -85,6 +85,7 @@ router.post(
             try {
                 const result = await session.run(cypher, params);
                 const locationId = String(result.records[0].get("id(l)").low);
+                const from = result.records[0].get("u.username");
                 const followersNo = parseInt(
                     result.records[0].get("l.followersNo").low
                 );
@@ -120,7 +121,7 @@ router.post(
 
                 if (followersNo > 0) {
                     try {
-                        const message = `Lokacija ${params.country}, ${params.city}`;
+                        const message = {text:`Lokacija ${params.country}, ${params.city}`, from: from};
                         const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
                                 country: $country,
                                 city: $city
@@ -138,9 +139,11 @@ router.post(
                             city: params.city,
                             time: new Date().toString(),
                             read: false,
-                            loc: message,
+                            loc: message.text,
                         });
-                        await client.publish("location:" + locationId, message);
+
+                        await client.publish("location:" + locationId, JSON.stringify(message));
+
                     } catch (ex) {
                         console.log(ex);
                     }
