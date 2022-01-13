@@ -9,7 +9,7 @@ const driver = require("../neo4jdriver");
 const session = driver.session();
 
 const redisClient = require("../redisclient");
-const { captureRejections } = require("events");
+
 
 //dodavanje objave od strane korisnika ciji je id proslednjen
 router.post(
