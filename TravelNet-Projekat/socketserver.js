@@ -53,24 +53,29 @@ const subscribeToUpdates = async(socket) => {
     await redisDuplicate.subscribe(
         `notifications:${socket.username}`,
         async(message) => {
+            if(message.from!=message.to)
+              await notifyUpdates(JSON.parse(message));
             console.log("Notification", message);
-            await notifyUpdates(JSON.parse(message));
+
         }
     );
 
     await redisDuplicate.subscribe(
         `followed-location:${socket.username}`,
         async(loc) => {
-            console.log(socket.username);
-            await redisDuplicate.subscribe("location:" + loc, (message) => {
-                notifyUpdates({
+            await redisDuplicate.subscribe("location:" + loc, async (message) => {
+                const m=JSON.parse(message);
+                if (socket.username!=m.from){
+                  await notifyUpdates({
                     id: 0,
-                    from: message,
+                    from: m.text,
                     to: socket.username,
                     content: locId,
                     timeSent: new Date().toString(),
                     type: "new-post-on-location",
                 });
+              }
+
             });
         }
     );
@@ -94,15 +99,16 @@ const subscribeToUpdates = async(socket) => {
         locations.records.forEach(async(record) => {
             const locId = record.get("ID(l)").low;
             await redisDuplicate.subscribe("location:" + locId, (message) => {
-                console.log("Here");
-                notifyUpdates({
-                    id: 0,
-                    from: message,
-                    to: socket.username,
-                    content: locId,
-                    timeSent: new Date().toString(),
-                    type: "new-post-on-location",
-                });
+                const m=JSON.parse(message);
+                if(socket.username!=m.from)
+                  notifyUpdates({
+                      id: 0,
+                      from: m.text,
+                      to: socket.username,
+                      content: locId,
+                      timeSent: new Date().toString(),
+                      type: "new-post-on-location",
+                  });
             });
         });
     }
