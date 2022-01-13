@@ -28,22 +28,22 @@ export class Conversation {
     this.loaded = false;
   }
 
-  public loadMore() {
-    this.loadMessages(this.messages.length, 20);
+  public async loadMore() {
+    await this.loadMessages(this.messages.length, 20);
   }
 
   public async loadMessages(start: number = 0, count: number = 20) {
     this.loaded = true;
-    axios
-      .get(`http://localhost:3000/messages/${this.id}/${start}/${count}`)
-      .then((res) => {
-        this.hasMore = count == res.data.length;
-        res.data.forEach((m) => {
-          m.chatId = this.id;
-          this.messages.push(m);
-        });
-        this.topMessage =
-          this.messages.length > 0 ? this.messages[0] : this.topMessage;
-      });
+    const res = await axios.get(
+      `http://localhost:3000/messages/${this.id}/${start}/${count}`
+    );
+
+    this.hasMore = count == res.data.length;
+    res.data.forEach((m) => {
+      m.chatId = this.id;
+      this.messages.push(m);
+    });
+    this.topMessage =
+      this.messages.length > 0 ? this.messages[0] : this.topMessage;
   }
 }

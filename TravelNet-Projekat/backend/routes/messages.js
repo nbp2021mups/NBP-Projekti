@@ -5,6 +5,7 @@ const {
     lRangeMessage,
     rPushMessage,
     lSetMessage,
+    getConnection,
 } = require("./../redisclient");
 const { validateNewMessage } = require("./../validation/messageValidation");
 
@@ -13,6 +14,21 @@ const session = driver.session();
 // Routes
 router.get("/:chatId/:startIndex/:count", async(req, res) => {
     try {
+        req.params.count = parseInt(req.params.count);
+        req.params.startIndex = parseInt(req.params.startIndex);
+
+        const redisClient = await getConnection();
+        let result = await redisClient.lRange(
+            `unread-messages:chat:${req.params.chatId}`, -req.params.count - req.params.startIndex, -req.params.startIndex - 1
+        );
+
+        if (result) {
+            result = result.map((x) => JSON.parse(x));
+            if (result.length == req.params.count) {
+                return res.send(result);
+            }
+            req.params.count -= result.length;
+        } else result = [];
         const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
                         WHERE id(c) = $chatId
                         RETURN m
@@ -25,34 +41,24 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
             count: int(req.params.count),
         };
 
-        const result = await session.run(cypher, params);
-        res.send(
-            result.records.map((x) => ({
-                id: x.get("m").identity.low,
-                ...x.get("m").properties,
-            }))
-        );
+        const unparsedResult = await session.run(cypher, params);
+        unparsedResult.records.forEach((r) => {
+            result.push({
+                id: r.get("m").identity.low,
+                ...r.get("m").properties,
+                chatId: r.get("m").properties.chatId.low,
+            });
+        });
+        return res.send(result);
     } catch (error) {
         console.log(error);
-        res.status(401).send("Došlo je do greške");
+        return res.status(401).send("Došlo je do greške");
     }
 });
 
 router.post("/", async(req, res) => {
     try {
-        if (!validateNewMessage(req.body))
-            return res.status(401).send("Nevalidna struktura poruke!");
-
-        const result = await rPushMessage(
-            req.body.chatId,
-            req.body.from,
-            req.body.to,
-            req.body.content,
-            req.body.timeSent,
-            req.body.read
-        );
-
-        res.send(result);
+        return res.send("OK");
     } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");
@@ -61,18 +67,7 @@ router.post("/", async(req, res) => {
 
 router.put("/", async(req, res) => {
     try {
-        if (!req.body.id || req.body.chatId)
-            return res.status(401).send("Došlo je do greške");
-
-        lRangeMessage(req.body.chatId, req.body.id, 1).then((result) => {
-            lSetMessage(result.chatId, result.id, {
-                ...result,
-                content: req.body.content ? req.body.content : result.content,
-                timeRead: req.body.timeRead ? req.body.timeRead : result.timeRead,
-            }).then(() => {
-                res.send("Ažurirano");
-            });
-        });
+        return res.send("ok");
     } catch (error) {
         console.log(error);
         res.status(401).send("Došlo je do greške");

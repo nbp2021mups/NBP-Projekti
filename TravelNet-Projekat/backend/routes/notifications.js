@@ -20,7 +20,7 @@ router.get("/:userId/:startIndex/:count", async(req, res) => {
             count: int(req.params.count),
         };
         const result = await session.run(cypher, params);
-        res.send(
+        return res.send(
             result.records.map((x) => ({
                 id: x.get("n").identity.low,
                 ...x.get("n").properties,

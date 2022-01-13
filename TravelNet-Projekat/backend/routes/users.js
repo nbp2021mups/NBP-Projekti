@@ -285,16 +285,19 @@ router.get("/profile/:loggedUser/:profileUser/:limit", async(req, res) => {
 router.get("/profile/:username/:limit", async(req, res) => {
     try {
         const cypher = `MATCH (u:User{username: $username})
-        OPTIONAL MATCH (u)-[s:SHARED]->(post:Post)-[:LOCATED_AT]->(loc:Location)
-        WITH u,s, post, loc
-        ORDER BY s.time DESC
-        LIMIT $limit
-        OPTIONAL MATCH(post:Post)<-[l:LIKED]-(u)
-        WITH u, s, post, loc, count(l) > 0 as liked
-        RETURN id(u), u.firstName, u.lastName, u.username, u.image, u.email, u.bio,
-        u.followedLocationsNo, u.friendsNo, u.postsNo,
-        collect({post: post, loc: {id: id(loc), city: loc.city, country: loc.country}, liked: liked}) as posts`;
-        const result = await session.run(cypher, { username: req.params.username, limit: int(req.params.limit) });
+                        OPTIONAL MATCH (u)-[s:SHARED]->(post:Post)-[:LOCATED_AT]->(loc:Location)
+                        WITH u,s, post, loc
+                        ORDER BY s.time DESC
+                        LIMIT $limit
+                        OPTIONAL MATCH(post:Post)<-[l:LIKED]-(u)
+                        WITH u, s, post, loc, count(l) > 0 as liked
+                        RETURN id(u), u.firstName, u.lastName, u.username, u.image, u.email, u.bio,
+                        u.followedLocationsNo, u.friendsNo, u.postsNo,
+                        collect({post: post, loc: {id: id(loc), city: loc.city, country: loc.country}, liked: liked}) as posts`;
+        const result = await session.run(cypher, {
+            username: req.params.username,
+            limit: int(req.params.limit),
+        });
 
         const parsedRes = {
             id: result.records[0].get("id(u)").low,
@@ -314,7 +317,7 @@ router.get("/profile/:username/:limit", async(req, res) => {
 
         const parsedPosts = [];
         posts.forEach((postWithLoc) => {
-            if(postWithLoc.post != null){
+            if (postWithLoc.post != null) {
                 let parsedPost = {
                     id: postWithLoc.post.identity.low,
                     description: postWithLoc.post.properties.description,
@@ -326,7 +329,7 @@ router.get("/profile/:username/:limit", async(req, res) => {
                         country: postWithLoc.loc.country,
                         city: postWithLoc.loc.city,
                     },
-                    liked: postWithLoc.liked
+                    liked: postWithLoc.liked,
                 };
                 parsedPosts.push(parsedPost);
             }
@@ -343,8 +346,8 @@ router.get("/profile/:username/:limit", async(req, res) => {
 router.get("/light/:username", async(req, res) => {
     try {
         const cypher = `MATCH (u: User {username:$username})
-            RETURN u.firstName,
-            u.lastName, u.username, u.image`;
+                        RETURN u.firstName, u.lastName, 
+                        u.username, u.image`;
         const result = await session.run(cypher, { username: req.params.username });
 
         const parsedRes = {

@@ -24,8 +24,8 @@
             <div
               [class]="
                 selectedConversation == conversation
-                  ? selected - conversation - div
-                  : hoverable
+                  ? 'selected-conversation-div'
+                  : 'hoverable'
               "
               class="conversation-preview-div unread-conversation-div"
               (click)="selectConversation(i)"

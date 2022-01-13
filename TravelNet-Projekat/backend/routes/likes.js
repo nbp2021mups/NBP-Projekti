@@ -33,11 +33,10 @@ router.post("", async(req, res) => {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
         };
-        getConnection().then((redisClient) =>
-            redisClient.publish(
-                "user-updates:" + notification.to,
-                JSON.stringify({ type: "new-notification", payload: notification })
-            )
+        const redisClient = await getConnection();
+        await redisClient.publish(
+            "user-updates:" + notification.to,
+            JSON.stringify({ type: "new-notification", payload: notification })
         );
 
         return res.send("Lajk!");
@@ -117,7 +116,7 @@ router.get("/post/:postId/:startIndex/:count", async(req, res) => {
                 ...x.get("u").properties,
             })),
         };
-        res.send(rez);
+        return res.send(rez);
     } catch (ex) {
         console.log(ex);
         res.status(401).send("Došlo je do greške");

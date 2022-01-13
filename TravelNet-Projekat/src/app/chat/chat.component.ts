@@ -1,14 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import {
-  AfterViewChecked,
-  AfterViewInit,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
 import { Message } from '../models/message-model/message.model';
@@ -125,10 +116,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         `http://localhost:3000/users/conversations/${this.loggedUser.id}/${start}/${count}`
       )
       .subscribe((result: Array<any>) => {
-        console.log(result);
         this.hasMore = result.length == count;
         result.forEach((c) => {
-          console.log(c.unreadCount);
           this.conversations.push(
             new Conversation(
               c.id,
@@ -275,12 +264,12 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectConversation(i: number) {
+  async selectConversation(i: number) {
     this.selectedConversation = this.filteredConversations[i];
     this.selectedIndex = i;
 
     if (!this.selectedConversation.loaded) {
-      this.selectedConversation.loadMore();
+      await this.selectedConversation.loadMore();
     }
 
     this.selectedConversation.messages.forEach((m) => {

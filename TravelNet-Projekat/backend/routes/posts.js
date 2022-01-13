@@ -201,9 +201,7 @@ router.delete("/:postId", async(req, res) => {
                         SET l.postsNo=l.postsNo-1, u.postsNo=u.postsNo-1
                         DETACH DELETE p
                         RETURN id(l)`;
-        console.log(
-            req.body.imagePath.substring(req.body.imagePath.indexOf("/images"))
-        );
+
         const result = await session.run(cypher, { id: int(req.params.postId) });
         const locationId = String(result.records[0].get("id(l)").low);
 
@@ -232,11 +230,11 @@ router.delete("/:postId", async(req, res) => {
 router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
     try {
         const cypher = `MATCH (otherU:User{username: $otherU})-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc: Location)
-        OPTIONAL MATCH (p)<-[l:LIKED]-(logU:User{username: $loggedU})
-        WITH count(l) > 0 as liked, otherU, p, loc, s
-        ORDER BY s.time DESC
-        SKIP $skip LIMIT $limit
-        RETURN collect({post: p, loc: {id: id(loc), city: loc.city, country: loc.country}, liked: liked}) as posts`;
+                        OPTIONAL MATCH (p)<-[l:LIKED]-(logU:User{username: $loggedU})
+                        WITH count(l) > 0 as liked, otherU, p, loc, s
+                        ORDER BY s.time DESC
+                        SKIP $skip LIMIT $limit
+                        RETURN collect({post: p, loc: {id: id(loc), city: loc.city, country: loc.country}, liked: liked}) as posts`;
 
         const params = {
             otherU: req.params.otherU,

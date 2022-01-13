@@ -33,11 +33,10 @@ router.post("/request", async(req, res) => {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
         };
-        getConnection().then((redisClient) =>
-            redisClient.publish(
-                "user-updates:" + notification.to,
-                JSON.stringify({ type: "new-notification", payload: notification })
-            )
+        const redisClient = await getConnection();
+        await redisClient.publish(
+            "user-updates:" + notification.to,
+            JSON.stringify({ type: "new-notification", payload: notification })
         );
 
         return res.send("Zahtev je poslat uspešno.");
@@ -119,11 +118,10 @@ router.post("/accept", async(req, res) => {
             id: result.records[0].get("n1").identity.low,
             ...result.records[0].get("n1").properties,
         };
-        getConnection().then((redisClient) =>
-            redisClient.publish(
-                "user-updates:" + notification.to,
-                JSON.stringify({ type: "new-notification", payload: notification })
-            )
+        const redisClient = await getConnection();
+        await redisClient.publish(
+            "user-updates:" + notification.to,
+            JSON.stringify({ type: "new-notification", payload: notification })
         );
 
         return res.send("Zahtev je prihvacen");

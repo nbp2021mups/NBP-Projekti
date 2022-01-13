@@ -6,16 +6,16 @@ const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
 const session = driver.session();
 
-const redisClient = require("../redisclient");
+const { getConnection } = require("../redisclient");
 
 //korisnik zapracuje lokaciju
 router.post("/follow", async(req, res) => {
     try {
         const cypher = `MATCH (u:User), (l:Location)
-        WHERE id(u) = $userId AND id(l) = $locationId
-        SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
-        MERGE (u)-[r:FOLLOWS{time: $time}]->(l)
-        RETURN u.username`;
+                        WHERE id(u) = $userId AND id(l) = $locationId
+                        SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
+                        MERGE (u)-[r:FOLLOWS{time: $time}]->(l)
+                        RETURN u.username`;
         const locationId = req.body.locationId;
         const result = await session.run(cypher, {
             userId: req.body.userId,
@@ -24,15 +24,14 @@ router.post("/follow", async(req, res) => {
         });
 
         if (result.records.length > 0) {
-            redisClient.getConnection().then((conn) => {
-                conn.publish(
-                    `user-updates:${result.records[0].get("u.username")}`,
-                    JSON.stringify({
-                        type: "follow-location",
-                        payload: String(locationId),
-                    })
-                );
-            });
+            const redisClient = await getConnection();
+            await redisClient.publish(
+                `user-updates:${result.records[0].get("u.username")}`,
+                JSON.stringify({
+                    type: "follow-location",
+                    payload: String(locationId),
+                })
+            );
         }
 
         return res.send("Lokacija je zapraćena");
@@ -46,25 +45,23 @@ router.post("/follow", async(req, res) => {
 router.delete("/:userId/:locationId/unfollow", async(req, res) => {
     try {
         const cypher = `MATCH (u:User)-[r:FOLLOWS]->(l:Location)
-        WHERE id(u)=$userId AND id(l)=$locationId
-        SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
-        DELETE r
-        RETURN u.username`;
+                        WHERE id(u)=$userId AND id(l)=$locationId
+                        SET l.followersNo=l.followersNo-1, u.followedLocationsNo=u.followedLocationsNo-1
+                        DELETE r
+                        RETURN u.username`;
         const locationId = int(req.params.locationId);
         const result = await session.run(cypher, {
             userId: int(req.params.userId),
             locationId: locationId,
         });
-        redisClient.getConnection().then((conn) => {
-            conn.publish(
-                `user-updates:${result.records[0].get("u.username")}`,
-                JSON.stringify({
-                    type: "unfollow-location",
-                    payload: String(locationId),
-                })
-            );
-        });
-
+        const redisClient = await getConnection();
+        await redisClient.publish(
+            `user-updates:${result.records[0].get("u.username")}`,
+            JSON.stringify({
+                type: "unfollow-location",
+                payload: String(locationId),
+            })
+        );
         return res.send("Lokacija je otpraćena");
     } catch (ex) {
         console.log(ex);
@@ -93,7 +90,7 @@ router.get("/follows/:username/:startIndex/:count", async(req, res) => {
                 ...x.get("l").properties,
             })),
         };
-        res.send(rez);
+        return res.send(rez);
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
@@ -120,7 +117,7 @@ router.get("/postedOn/:username/:startIndex/:count", async(req, res) => {
                 ...x.get("l").properties,
             })),
         };
-        res.send(rez);
+        return res.send(rez);
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
@@ -177,7 +174,6 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
         };
 
         const result = await session.run(cypher, params);
-        console.log(result.records[0]);
         const location = result.records[0].get("loc");
 
         const response = {

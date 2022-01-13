@@ -1,5 +1,6 @@
 const { getConnection, getDuplicatedClient } = require("./redisclient");
 const driver = require("./neo4jdriver");
+const { int } = require("neo4j-driver");
 
 const notifyUpdates = (data, socket) => {
     try {
@@ -109,48 +110,62 @@ const subscribeToUpdates = async(socket) => {
 };
 
 const storeMessage = async(msg) => {
+    const redisClient = await getConnection();
+    const msgString = JSON.stringify({
+        ...msg,
+        timeSent: new Date(msg.timeSent).toString(),
+    });
+    await redisClient.rPush(`unread-messages:chat:${msg.chatId}`, msgString);
+    await redisClient.publish(
+        `user-updates:${msg.to}`,
+        JSON.stringify({ type: "new-message", payload: msg })
+    );
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
-                    MERGE (c)-[:HAS]->(m:Message{
-                        chatId: $chatId,
-                        from: $from,
-                        to: $to,
-                        content: $content,
-                        timeSent: $timeSent,
-                        read: $read
-                    })
-                    SET c.topMessageFrom=$from, c.topMessageTimeSent=$timeSent, c.topMessageContent=$content, c.unreadCount=c.unreadCount+1
-                    RETURN id(m)`;
-    const result = await sesdriver.session().run(cypher, {
-        chatId: msg.chatId,
+                    SET c.topMessageFrom=$from,
+                    c.topMessageTimeSet=$timeSent,
+                    c.topMessageContent=$content,
+                    c.unreadCount=c.unreadCount+1`;
+    await driver.session().run(cypher, {
+        chatId: int(msg.chatId),
         from: msg.from,
-        to: msg.to,
-        content: msg.content,
         timeSent: new Date(msg.timeSent).toString(),
-        read: msg.read,
+        content: msg.content,
     });
-    if (result.records.length > 0) {
-        msg["id"] = result.records[0].get(0).low;
-
-        getConnection().then((redis) => {
-            redis.publish(
-                `user-updates:${msg.to}`,
-                JSON.stringify({ type: "new-message", payload: msg })
-            );
-        });
-    }
 };
 
 const updateMessages = async(data) => {
-    const cypher = `MATCH (c:Chat)-[:HAS]->(m:Message)
-                    WHERE id(c)=$chatId AND NOT m.read AND m.from=$from
-                    SET c.unreadCount=0, m.read=true`;
-    await driver.session().run(cypher, data);
-    getConnection().then((redis) =>
-        redis.publish(
-            `user-updates:${data.from}`,
-            JSON.stringify({ type: "read-messages", payload: data })
-        )
+    const redisClient = await getConnection();
+    const result = await redisClient.sendCommand([
+        "LPOP",
+        `unread-messages:chat:${data.chatId}`,
+        String(data["unreadCount"]),
+    ]);
+    const cypher = `MATCH (c:Chat)
+                    WHERE id(c)=$chatId
+                    SET c.unreadCount=0
+                    WITH c
+                    UNWIND $props AS map
+                    CREATE (c)-[:HAS]->(m:Message)
+                    SET m = map
+                    RETURN m`;
+    await driver.session().run(cypher, {
+        chatId: int(data["chatId"]),
+        props: result.map((x) => {
+            const parsed = JSON.parse(x);
+            return {
+                from: parsed.from,
+                to: parsed.to,
+                chatId: int(parsed.chatId),
+                content: parsed.content,
+                timeSent: parsed.timeSent,
+                read: true,
+            };
+        }),
+    });
+    await redisClient.publish(
+        `user-updates:${data.from}`,
+        JSON.stringify({ type: "read-messages", payload: data })
     );
 };
 

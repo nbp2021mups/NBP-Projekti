@@ -34,11 +34,10 @@ router.post("", async(req, res) => {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
         };
-        getConnection().then((redisClient) =>
-            redisClient.publish(
-                "user-updates:" + notification.to,
-                JSON.stringify({ type: "new-notification", payload: notification })
-            )
+        const redisClient = await getConnection();
+        await redisClient.publish(
+            "user-updates:" + notification.to,
+            JSON.stringify({ type: "new-notification", payload: notification })
         );
 
         return res.send("comment postavljen uspesno");
