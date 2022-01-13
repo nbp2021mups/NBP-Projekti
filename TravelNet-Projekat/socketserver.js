@@ -56,6 +56,26 @@ const subscribeToUpdates = async(socket) => {
     );
 
     await redisDuplicate.subscribe(
+        `messages:${socket.username}`,
+        async(message) => {
+            const m = JSON.parse(message);
+            let forUser = online[m["to"]];
+            if (forUser) {
+                switch (forUser.view.messages) {
+                    case "messages-tab":
+                        forUser.emit("new-message-in-messages", {
+                            content: m,
+                        });
+                        break;
+                    default:
+                        forUser.emit("new-message-pop-up", { content: m });
+                        break;
+                }
+            }
+        }
+    );
+
+    await redisDuplicate.subscribe(
         `followed-location:${socket.username}`,
         async(loc) => {
             await redisDuplicate.subscribe("location:" + loc, async(message) => {
@@ -134,10 +154,9 @@ const storeMessage = async(msg) => {
         msg["id"] = result.records[0].get(0).low;
 
         getConnection().then((redis) => {
-            redis.rPush(`chat:${msg["chatId"]}`, JSON.stringify(msg));
+            redis.publish(`messages:${msg.to}`, JSON.stringify(msg));
         });
     }
-    return msg;
 };
 
 const readMessages = async(data) => {
@@ -232,21 +251,7 @@ io.on("connection", (socket) => {
             try {
                 if (socket.username) {
                     if (validateSentMessage(data)) {
-                        storeMessage(data).then((result) => {
-                            let forUser = online[result["to"]];
-                            if (forUser) {
-                                switch (forUser.view.messages) {
-                                    case "messages-tab":
-                                        forUser.emit("new-message-in-messages", {
-                                            content: result,
-                                        });
-                                        break;
-                                    default:
-                                        forUser.emit("new-message-pop-up", { content: result });
-                                        break;
-                                }
-                            }
-                        });
+                        await storeMessage(data);
                     } else {
                         socket.emit("error", {
                             message: "Incorrect message format!",
