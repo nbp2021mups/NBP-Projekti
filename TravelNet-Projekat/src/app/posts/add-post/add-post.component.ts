@@ -20,7 +20,7 @@ export class AddPostComponent implements OnInit {
   drzava: string;
   grad: string;
 
-  constructor(private locService: LocationsService, private authService: AuthService, 
+  constructor(private locService: LocationsService, private authService: AuthService,
     private http: HttpClient, private router: Router) { }
 
   ngOnInit(): void {
@@ -42,19 +42,22 @@ export class AddPostComponent implements OnInit {
     const ret: FormData = new FormData();
 
     let drzava = this.form.get('drzava').value;
+    let grad = this.form.get('grad').value;
+    if(grad == 'ostalo' || drzava == 'ostalo'){
+      grad = this.form.get('noviGrad').value;
+      ret.append('newCity', grad);
+    } else {
+      ret.append('city', grad);
+    }
+
+
     if(drzava == 'ostalo'){
       drzava = this.form.get('novaDrzava').value;
       ret.append('newCountry', drzava);
     } else {
       ret.append('country', drzava);
     }
-    let grad = this.form.get('grad').value;
-    if(grad == 'ostalo'){
-      grad = this.form.get('noviGrad').value;
-      ret.append('newCity', grad);
-    } else {
-      ret.append('city', grad);
-    }
+
 
     ret.append('description', this.form.get('opis').value);
     ret.append('image', this.form.value.slika);
@@ -67,6 +70,10 @@ export class AddPostComponent implements OnInit {
     this.authService.user.subscribe(user => {
       username = user.username;
       postValues.append('userId', user.id.toString());
+      console.log(postValues.get('country'))
+      console.log(postValues.get('city'))
+      console.log(postValues.get('newCountry'))
+      console.log(postValues.get('newCity'))
       this.http.post('http://localhost:3000/posts', postValues, {responseType: 'text'}).subscribe(resp => {
         alert(resp);
         this.router.navigate(['/profile', username]);

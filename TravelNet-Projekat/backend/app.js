@@ -12,6 +12,7 @@ const locationsRoutes = require("./routes/locations");
 const leaderboardsRoutes = require("./routes/leaderboards");
 const homepageRoutes = require("./routes/homepage");
 const searchRoutes = require("./routes/search");
+const explorePageRoutes = require("./routes/explorepage");
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -42,5 +43,6 @@ app.use("/locations", locationsRoutes);
 app.use("/leaderboards", leaderboardsRoutes);
 app.use("/homepage", homepageRoutes);
 app.use("/search", searchRoutes);
+app.use("/explorepage", explorePageRoutes);
 
 module.exports = app;

@@ -45,10 +45,10 @@
         >
           <mat-icon>logout</mat-icon>
         </button>
+        <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Prijavi se</a>
         <a class="nav-link" routerLink="/registration" *ngIf="!isLoggedIn"
-          >Sign Up</a
+          >Registracija</a
         >
-        <a class="nav-link" routerLink="/login" *ngIf="!isLoggedIn">Log in</a>
       </div>
     </div>
   </div>

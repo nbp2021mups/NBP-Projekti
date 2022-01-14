@@ -1,41 +1,47 @@
+<div class="container login d-flex align-items-center">
 
-<mat-card class="container">
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
-      <mat-label>Korisničko ime</mat-label>
-      <input
-      matInput
-      type="text"
-      id="username"
-      name="username"
-      formControlName="username"
-      >
-      <mat-error *ngIf="form.get('username').invalid">Molimo Vas da unesete korisničko ime</mat-error>
-
-    </mat-form-field>
-    <mat-form-field class="input-group mb-3 lozinka form-group col-md-6" appearance="fill">
-      <mat-label>Lozinka</mat-label>
-      <input
-      matInput
-      [type]="hide ? 'password' : 'text'"
-      id="lozinka"
-      name="lozinka"
-      formControlName="lozinka"
-      >
-      <mat-error *ngIf="form.get('lozinka').invalid">Molimo Vas da unesete lozinku</mat-error>
-
-      <button class="post-button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
-      <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
-      </button>
-    </mat-form-field>
-
-    <div class="container">
-      <div class="col-md-12 text-center">
-        <a routerLink="/registration" class="nav-link ml-5">Nemate nalog?</a>
-        <button class="btn btn-outline-primary" type="submit" [disabled]="form.invalid">Prijavi se</button>
-      </div>
+  <mat-card class="container d-flex flex-row flex-wrap justify-content-around">
+    <div class="col-md-8 p-3">
+      <img src="./../../assets/resources/login-page-2.jpg" alt="" class="img-fluid rounded">
     </div>
-    </form>
-  </mat-card>
+    <form class ="col-md-4 py-3 px-2 d-flex flex-column justify-content-center"[formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+        <mat-label>Korisničko ime</mat-label>
+        <input
+        matInput
+        type="text"
+        id="username"
+        name="username"
+        formControlName="username"
+        >
+        <mat-error *ngIf="form.get('username').invalid">Molimo Vas da unesete korisničko ime</mat-error>
+
+      </mat-form-field>
+      <mat-form-field class="input-group mb-3 lozinka form-group col-md-6" appearance="fill">
+        <mat-label>Lozinka</mat-label>
+        <input
+        matInput
+        [type]="hide ? 'password' : 'text'"
+        id="lozinka"
+        name="lozinka"
+        formControlName="lozinka"
+        >
+        <mat-error *ngIf="form.get('lozinka').invalid">Molimo Vas da unesete lozinku</mat-error>
+
+        <button class="post-button" mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+        <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <div class="container">
+        <div class="col-md-12 text-center">
+          <a routerLink="/registration" class="nav-link ml-5">Nemate nalog?</a>
+          <button class="btn btn-outline-primary" type="submit" [disabled]="form.invalid">Prijavi se</button>
+        </div>
+      </div>
+      </form>
+    </mat-card>
+
+</div>
 
 

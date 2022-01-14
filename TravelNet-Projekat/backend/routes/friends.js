@@ -137,11 +137,14 @@ router.delete("", async(req, res) => {
         const cypher = `MATCH (u1:User)-[r1:IS_FRIEND]->(u2:User), (u1:User)<-[r2:IS_FRIEND]-(u2:User)
                         WHERE id(u1)=$id1 AND id(u2)=$id2
                         SET u1.friendsNo=u1.friendsNo-1, u2.friendsNo=u2.friendsNo-1
-                        WITH r1, r2
+                        WITH r1, r2, u1, u2
+                        MATCH (u1)-[:HAS]->(c:Chat)<-[:HAS]-(u2)
+                        WITH r1, r2, u1, u2, c
                         OPTIONAL MATCH (n:Notification)
                         WHERE n.content=id(r1) OR n.content=id(r2)
+                        OPTIONAL MATCH (c)-[:HAS]->(m:Message)
                         DELETE r1, r2
-                        DETACH DELETE n`;
+                        DETACH DELETE n,c,m`;
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
