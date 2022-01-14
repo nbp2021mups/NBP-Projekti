@@ -9,10 +9,11 @@ import { SocketService } from '../services/socket/socket.service';
   styleUrls: ['./comment-list.component.css'],
 })
 export class CommentListComponent implements OnInit {
-  @Input() postId: number;
+  @Input()
+  postId: number;
+  public loggedUser: { username: string; id: number };
   public comments: Array<Comment> = new Array<Comment>();
   public hasMore: boolean = false;
-  public loggedUser: { username: string; id: number };
   constructor(
     private httpService: HttpClient,
     private socketService: SocketService
@@ -52,9 +53,10 @@ export class CommentListComponent implements OnInit {
       .get(`http://localhost:3000/comments/${this.postId}/${start}/${count}`)
       .subscribe({
         next: (data: Array<Comment>) => {
-          console.log(data);
           this.hasMore = data.length == count;
-          data.forEach((c) => this.comments.push(c));
+          data.forEach((c) => {
+            this.comments.push(c);
+          });
         },
         error: (er) => console.log(er),
       });

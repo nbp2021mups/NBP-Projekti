@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { DAYS, MILLISECONDS_PER_DAY } from '../chat/chat.component';
 import { Comment } from './../models/comment/comment';
 
 @Component({
@@ -11,4 +12,30 @@ export class CommentComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}
+
+  getDate(dateStr) {
+    let date = new Date(dateStr);
+    const currentDate = new Date();
+    const diff = currentDate.getTime() - date.getTime();
+    if (diff < MILLISECONDS_PER_DAY) {
+      if (currentDate.getHours() >= date.getHours()) {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        return `${hours < 10 ? '0' : ''}${hours}:${
+          minutes < 10 ? '0' : ''
+        }${minutes}h`;
+      } else return 'Juče';
+    } else if (
+      diff < 2 * MILLISECONDS_PER_DAY &&
+      currentDate.getHours() >= date.getHours()
+    )
+      return 'Juče';
+
+    if (diff < 7 * MILLISECONDS_PER_DAY) return DAYS[date.getDay()];
+
+    const month = date.getMonth() + 1;
+    const day = date.getDate() + 1;
+
+    return `${month < 10 ? '0' : ''}${month}.${day < 10 ? '0' : ''}${day}`;
+  }
 }

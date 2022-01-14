@@ -17,6 +17,8 @@
     height: 45vh;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column-reverse;
 }
 
 ::-webkit-scrollbar {

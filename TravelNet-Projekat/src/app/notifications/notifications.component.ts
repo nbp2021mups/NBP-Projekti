@@ -142,12 +142,4 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     return `${month < 10 ? '0' : ''}${month}.${day < 10 ? '0' : ''}${day}`;
   }
-
-  goToProfile(username: string) {
-    window.location.href = `/profile/${username}`;
-  }
-
-  goToLocation(id) {
-    window.location.href = `locations/${id}`;
-  }
 }

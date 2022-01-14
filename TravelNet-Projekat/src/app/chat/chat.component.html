@@ -89,7 +89,7 @@
             />
             <h2
               class="hoverable"
-              (click)="goToProfile(selectedConversation.friend)"
+              [routerLink]="['/profile', selectedConversation.friend]"
             >
               @{{ selectedConversation.friend }}
             </h2>

@@ -1,3 +1,12 @@
 <mat-card class="comment-card">
-  <p>{{ comment.comment }}</p>
+  <div class="space">
+    <div class="content">
+      <b>@{{ comment.from }}: </b>
+
+      {{ comment.comment }}
+    </div>
+    <div class="time">
+      {{ getDate(comment.time) }}
+    </div>
+  </div>
 </mat-card>

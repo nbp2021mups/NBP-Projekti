@@ -140,14 +140,6 @@ export class ChatComponent implements OnInit, OnDestroy {
       });
   }
 
-  goToProfile(username: string): void {
-    window.location.href = `/profile/${username}`;
-  }
-
-  goToLocation(locationId: number): void {
-    window.location.href = `/location/${locationId}`;
-  }
-
   getDay(dateCal): string {
     if (!dateCal) return '';
     let date = new Date(dateCal);

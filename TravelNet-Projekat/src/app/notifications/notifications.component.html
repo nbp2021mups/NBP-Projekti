@@ -19,7 +19,7 @@
         </div>
         <div
           class="card-body hoverable"
-          (click)="goToLocation(notification.content)"
+          [routerLink]="['/location', notification.content]"
         >
           <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
           <p class="card-text">
@@ -39,7 +39,7 @@
         </div>
         <div
           class="card-body hoverable"
-          (click)="goToProfile(notification.from)"
+          [routerLink]="['/profile', notification.from]"
         >
           <img src="http://localhost:3000/images/{{ notification.type }}.svg" />
           <p class="card-text">
