@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ChatComponent } from './chat/chat.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { ExplorePageComponent } from './explore-page/explore-page.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { LocationPageComponent } from './location-page/location-page.component';
@@ -32,6 +33,7 @@ const routes: Routes = [
   { path: 'registration', component: RegistrationPageComponent },
   { path: 'login', component: LoginPageComponent },
   { path: 'add-post', component: AddPostComponent, canActivate: [AuthGuard]},
+  { path: 'edit-profile', component: EditProfileComponent, canActivate: [AuthGuard]},
   { path: '**', redirectTo: 'home' },
 ];
 

@@ -1,5 +1,5 @@
 .mat-form-field-appearance-fill .mat-form-field-flex {
-  background-color: rgb(13 104 136 / 13%);
+  background-color: rgba(208, 245, 75, 0.13);
 }
 
 input[type="file"] {
@@ -12,12 +12,9 @@ input[type="file"] {
   max-width: 230px;
   max-height: 230px;
 }
-/* .slika-conteiner {
-  display: flex;
-  flex-direction: row;
-}
- */
 
-.reg {
-  height: 90%;
+@media only screen and (min-width: 990px) {
+  .reg {
+    height: 90%;
+  }
 }
