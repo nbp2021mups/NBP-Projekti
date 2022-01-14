@@ -71,8 +71,8 @@ export class PostComponent implements OnInit {
       this.authService.user.subscribe(user => {
         this.postsService.likePost(user.id, this.post.id).subscribe({
           next: resp => {
-            alert(resp);
             this.post.liked = !this.post.liked;
+            this.post.likesNo++;
           },
           error: err => {console.log(err);}
         });
@@ -81,8 +81,8 @@ export class PostComponent implements OnInit {
       this.authService.user.subscribe(user => {
         this.postsService.unlikePost(user.id, this.post.id).subscribe({
           next: resp => {
-            alert(resp);
             this.post.liked = !this.post.liked;
+            this.post.likesNo--;
           },
           error: err => {console.log(err);}
         });
@@ -112,7 +112,7 @@ export class PostComponent implements OnInit {
   }
 
 
-  onCommentsClicked(): void{
-    alert("radi");
+  onCommentsClicked(event): void{
+    this.imageClicked.emit(event.pageY);
   }
 }

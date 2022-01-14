@@ -29,7 +29,7 @@ export class LocationsService{
                 locationData.postsNo, locationData.followByUser);
             locationData.posts.forEach(post => {
                 loc.addPost(new PostHomePageModel(post.post.id, new PersonBasic(post.user.id, post.user.firstName,
-                    post.user.lastName, post.user.image, post.user.username), new LocationBasic(locationData.id, locationData.country,
+                    post.user.lastName, post.user.image, post.user.username), new LocationBasic(locationData.locationId, locationData.country,
                         locationData.city), post.post.image, post.post.description, post.post.likeNo, post.post.commentNo, post.liked));
             });
             return loc;
@@ -51,5 +51,18 @@ export class LocationsService{
         {
             responseType: 'text'
         });
+    }
+
+
+    getMoreLocationPosts(locId: number, loggedUser: string, skip: number, limit: number) {
+        return this.http.get<any>('http://localhost:3000/posts/loadPostsLocation/' + locId + "/" + loggedUser + "/" + skip + "/" + limit)
+        .pipe(map(respData => {
+            const resp = [];
+            respData.forEach(post => {
+                resp.push(new PostHomePageModel(post.id, new PersonBasic(post.user.id, post.user.firstName, post.user.lastName,
+                    post.user.image, post.user.username), null, post.image, post.desc, post.likeNo, post.commentNo, post.liked));
+            });
+            return resp;
+        }));
     }
 }

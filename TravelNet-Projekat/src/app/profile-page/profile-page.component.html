@@ -1,40 +1,46 @@
 <!-- informacije o korisniku -->
-<div class="container border border-rounded my-2 p-2" *ngIf="this.person">
-    <div class="row d-flex justify-content-around">
+<div class="container border rounded my-2 p-2" *ngIf="this.person">
+    <div class="row d-flex justify-content-around flex-wrap">
         <div class="col-5 col-md-2">
             <img src="{{person.imagePath}}" class="rounded-circle img-fluid">
         </div>
-        <div class="col-md-8">
-            <p class="text-center info-text">
-                {{person.firstName + " " + person.lastName}}
+        <div class="col-md-8 row">
+            <div class="col-12 col-md-4">
+                <p class="text-center info-text name">
+                    {{person.firstName + " " + person.lastName}}
+                </p>
+                <p class="text-center info-text username">
+                    {{"@" + person.username}}
+                </p>
+            </div>
+            <p class="text-center info-text col-12 col-md-8 bio">
+                {{person.bio}}
             </p>
-            <p class="text-center info-text">
-                {{person.email}}
-            </p>
-            <div class="row d-flex justify-content-around mt-2">
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 3">
-                    <button class="btn btn-primary w-100" (click)=onAddFriend()>Dodaj prijatelja</button>
+
+            <div class="row w-100 justify-content-around mt-2">
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 3">
+                    <button class="btn btn-primary w-100 mt-1" (click)=onAddFriend()>Dodaj prijatelja</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 2">
-                    <button class="btn btn-info w-100" (click)="onDeleteFriend()">Obrisi prijatelja</button>
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 2">
+                    <button class="btn btn-info w-100 mt-1" (click)="onDeleteFriend()">Obrisi prijatelja</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
-                    <button class="btn btn-info w-100" (click)="onAcceptRequest()">Prihvati zahtev</button>
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 5">
+                    <button class="btn btn-info w-100 mt-1" (click)="onAcceptRequest()">Prihvati zahtev</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 5">
-                    <button class="btn btn-info w-100" (click)="onRejectRequest()">Odbij zahtev</button>
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 5">
+                    <button class="btn btn-info w-100 mt-1" (click)="onRejectRequest()">Odbij zahtev</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 4">
-                    <button class="btn btn-info w-100" (click)="onCancelRequest()">Otkazi zahtev</button>
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 4">
+                    <button class="btn btn-info w-100 mt-1" (click)="onCancelRequest()">Otkazi zahtev</button>
                 </div>
-                <div class="col-3 col-sm-3" *ngIf="profileType && profileType == 1">
-                    <button class="btn btn-primary w-100" routerLink="/add-post">Nova objava</button>
+                <div class="col-7 col-sm-3" *ngIf="profileType && profileType == 1">
+                    <button class="btn btn-primary w-100 mt-1" routerLink="/add-post">Nova objava</button>
                 </div>
-                <div class="col-3 col-sm-3">
-                    <button class="btn btn-profile">{{ "Prijatelji: " + person.friendsNo}}</button>
+                <div class="col-7 col-sm-3">
+                    <button class="btn btn-profile mt-1 button-t btn-outline-primary">{{ "Prijatelji: " + person.friendsNo}}</button>
                 </div>
-                <div class="col-3 col-sm-3">
-                    <button class="btn btn-profile">{{ "Lokacije: "+ person.followedLocNo}}</button>
+                <div class="col-7 col-sm-3">
+                    <button class="btn btn-profile mt-1 button-t btn-outline-primary">{{ "Lokacije: "+ person.followedLocNo}}</button>
                 </div>
             </div>
         </div>

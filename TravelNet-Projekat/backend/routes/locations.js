@@ -180,12 +180,12 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
             country: location.properties.country,
             city: location.properties.city,
             followersNo: location.properties.followersNo.low,
-            postsNo: location.properties.followersNo.low,
+            postsNo: location.properties.postsNo.low,
             followByUser: result.records[0].get("follow"),
             posts: [],
         };
 
-        if (response.followersNo > 0) {
+        if (response.postsNo > 0) {
             result.records[0].get("posts").forEach((post) => {
                 const currentPost = post[0];
                 response.posts.push({

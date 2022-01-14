@@ -5,13 +5,20 @@ import {
   Notification,
   NOTIFICATION_TRIGGERS,
 } from '../models/notification-models/notification.model';
-import { ProfileType } from '../models/person_models/person-explore.model';
 import { PersonFull } from '../models/person_models/person-full.model';
 import { AuthService } from '../services/authentication/auth.service';
 import { FriendsService } from '../services/friends.service';
 import { PostsService } from '../services/posts.service';
 import { ProfileService } from '../services/profile.service';
 import { SocketService } from '../services/socket/socket.service';
+
+export enum ProfileType {
+  personal = 1,
+  friend = 2,
+  non_friend = 3,
+  sent_req = 4,
+  rec_req = 5,
+}
 
 @Component({
   selector: 'app-profile-page',
@@ -25,6 +32,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loggedUsername: string;
   profileType: ProfileType;
   allRead: boolean = false;
+  pageSize: number = 3;
 
   constructor(
     private authService: AuthService,
@@ -48,13 +56,13 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
           if (username == this.loggedUsername) {
             this.profileType = ProfileType.personal;
             this.profileService
-              .getLoggedUserProfileInfo(this.loggedUsername, 3)
+              .getLoggedUserProfileInfo(this.loggedUsername, this.pageSize)
               .subscribe((user) => {
                 this.person = user;
               });
           } else {
             this.profileService
-              .getOtherUserProfileInfo(user.username, username, 3)
+              .getOtherUserProfileInfo(user.username, username, this.pageSize)
               .subscribe((userData) => {
                 if (userData.relation == null) {
                   this.profileType = ProfileType.non_friend;
@@ -167,7 +175,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
             this.person.username,
             loggedU,
             this.person.posts.length,
-            3
+            this.pageSize
           )
           .subscribe({
             next: (resp) => {

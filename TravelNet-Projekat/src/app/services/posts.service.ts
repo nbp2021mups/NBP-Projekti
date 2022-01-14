@@ -2,7 +2,6 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { map } from "rxjs/operators";
 import { LocationBasic } from "../models/location_models/location-basic.model";
-import { PersonBasic } from "../models/person_models/person-basic.model";
 import { PostHomePageModel } from "../models/post_models/post-homepage.model";
 
 @Injectable({providedIn: 'root'})

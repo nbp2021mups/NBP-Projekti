@@ -9,3 +9,7 @@ mat-card-title, mat-card-subtitle, img:hover{
     font-size: 0.8em;
     color: #cfcfcf;
 }
+.anot{
+    font-weight: 100;
+    font-size: 15px;
+}
