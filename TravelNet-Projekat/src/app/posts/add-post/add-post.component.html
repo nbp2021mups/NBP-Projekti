@@ -92,14 +92,16 @@
         />
       </div>
     </div>
-
+    <!-- form.get('opis').invalid || form.get('drzava').invalid || form.get('grad').invalid ||
+    (form.get('drzava').value=='ostalo' && (form.get('novaDrzava').invalid || form.get('noviGrad').invalid)) ||
+    (form.get('grad').value && form.get('noviGrad').invalid) || form.get('slika').invalid -->
 
     <div class="container">
       <div class="col-md-12 text-center">
         <button class="btn btn-outline-primary" type="submit"
-        [disabled]="form.get('opis').invalid || form.get('drzava').invalid || form.get('grad').invalid ||
-        (drzava=='ostalo' && form.get('novaDrzava').invalid && form.get('noviGrad').invalid) ||
-        (grad=='ostalo' && form.get('noviGrad').invalid) || form.get('slika').invalid">
+        [disabled]="(form.get('drzava').invalid || form.get('slika').invalid || form.get('opis').invalid)
+        || (drzava=='ostalo' && (form.get('novaDrzava').invalid || form.get('noviGrad').invalid))
+        || (grad =='ostalo' && form.get('noviGrad').invalid) || (form.get('grad').invalid && drzava!='ostalo')">
         Dodaj objavu</button>
       </div>
     </div>
