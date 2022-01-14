@@ -97,6 +97,8 @@ router.get("/locations/:name/:userId/:startIndex/:count", async(req, res) => {
         const parsedRes = result.records.map((x) => ({
             id: x.get("l").identity.low,
             ...x.get("l").properties,
+            followersNo: x.get("l").properties.followersNo.low,
+            postsNo: x.get("l").properties.postsNo.low,
             follows: x.get("FOLLOWS"),
         }));
 
@@ -133,9 +135,13 @@ router.get("/users/:name/:userId/:startIndex/:count", async(req, res) => {
             name: req.params.name,
         };
         const result = await session.run(cypher, params);
+        console.log(result.records[0].get("u"));
         const parsedRes = result.records.map((x) => ({
             id: x.get("u").identity.low,
             ...x.get("u").properties,
+            friendsNo: x.get("u").properties.friendsNo.low,
+            postsNo: x.get("u").properties.postsNo.low,
+            followedLocationsNo: x.get("u").properties.followedLocationsNo.low,
             status: x.get("STATUS"),
         }));
 
