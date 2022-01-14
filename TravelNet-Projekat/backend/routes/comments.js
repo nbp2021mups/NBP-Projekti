@@ -68,6 +68,7 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
                 id: c.get("r").identity.low,
                 from: c.get("u").properties.username,
                 ...c.get("r").properties,
+                time: new Date(c.get("r").properties.time),
             }))
         );
     } catch (ex) {

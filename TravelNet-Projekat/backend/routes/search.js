@@ -124,7 +124,10 @@ router.get("/users/:name/:userId/:startIndex/:count", async(req, res) => {
                             OPTIONAL MATCH r=(u)<-[:SENT_REQUEST]-(u1) WHERE id(u1)=$userId
                             RETURN {friends: p IS NOT NULL, requested: q IS NOT NULL, pending: r IS NOT NULL} AS STATUS
                         }
-                        RETURN u, STATUS
+                        RETURN { id: id(u), image: u.image, username: u.username,
+                                firstName: u.firstName, lastName: u.lastName,
+                                friendsNo: u.friendsNo, postsNo: u.postsNo,
+                                followedLocationsNo: u.followedLocationsNo, status: STATUS } AS USER
                         ORDER BY u.firstName, u.lastName, u.username ASC
                         SKIP $startIndex
                         LIMIT $count`;
@@ -135,14 +138,12 @@ router.get("/users/:name/:userId/:startIndex/:count", async(req, res) => {
             name: req.params.name,
         };
         const result = await session.run(cypher, params);
-        console.log(result.records[0].get("u"));
         const parsedRes = result.records.map((x) => ({
-            id: x.get("u").identity.low,
-            ...x.get("u").properties,
-            friendsNo: x.get("u").properties.friendsNo.low,
-            postsNo: x.get("u").properties.postsNo.low,
-            followedLocationsNo: x.get("u").properties.followedLocationsNo.low,
-            status: x.get("STATUS"),
+            ...x.get("USER"),
+            id: x.get("USER").id.low,
+            friendsNo: x.get("USER").friendsNo.low,
+            postsNo: x.get("USER").postsNo.low,
+            followedLocationsNo: x.get("USER").followedLocationsNo.low,
         }));
 
         return res.status(200).send(parsedRes);

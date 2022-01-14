@@ -4,12 +4,11 @@
   </mat-card-header>
 
   <mat-card-content class="mat-card-list">
-    <app-comment *ngFor="let comment of comments" [comment]="comment">
-    </app-comment>
-
-    <button mat-raised-button *ngIf="hasMore" (click)="loadMore()">
+    <button mat-button *ngIf="hasMore" (click)="loadMore()">
       Učitaj još komentara
     </button>
+    <app-comment *ngFor="let comment of comments" [comment]="comment">
+    </app-comment>
   </mat-card-content>
 
   <mat-card-footer>
