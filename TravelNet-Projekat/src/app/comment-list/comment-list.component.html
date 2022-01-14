@@ -1,25 +1,34 @@
-<mat-card class="comment-list-card">
+<div class="comment-list-card px-1 d-flex flex-column">
   <mat-card-header>
     <mat-card-title>Komentari</mat-card-title>
   </mat-card-header>
 
-  <mat-card-content class="mat-card-list">
-    <button mat-button *ngIf="hasMore" (click)="loadMore()">
+  <div class="d-flex flex-column">
+    <button mat-button *ngIf="hasMore" (click)="loadMore()" class="btn btn-load col-12 p-2 px-0">
       Učitaj još komentara
     </button>
-    <app-comment *ngFor="let comment of comments" [comment]="comment">
+    <app-comment class ="col-12 w-100 m-0"
+      *ngFor="let comment of comments"
+      [comment]="comment"
+      [postId]="post.id"
+      [postedUsername]="post.person.username"
+    >
     </app-comment>
-  </mat-card-content>
+  </div>
 
-  <mat-card-footer>
-    <mat-form-field appearance="outline" class="full-width centered">
-      <mat-label>Unesite svoj komentar</mat-label>
+  <mat-form-field appearance="outline" class="col-12 mt-auto mb-0 kom">
+    <mat-label>Unesite svoj komentar</mat-label>
 
-      <input
-        matInput
-        placeholder="Budite kulturni...."
-        (keyup.Enter)="sendComment($event)"
-      />
-    </mat-form-field>
-  </mat-card-footer>
-</mat-card>
+    <input class = "full-width"
+      matInput
+      placeholder="Budite kulturni...."
+      (keyup.Enter)="sendComment($event)"
+    />
+  </mat-form-field>
+
+  <!-- <mat-card-actions class="p-0 actions">
+    <button class="btn btn-com" mat-icon-button><mat-icon>close</mat-icon></button>
+    <button class="btn btn-com" mat-icon-button><mat-icon>done</mat-icon></button>
+  </mat-card-actions> -->
+
+</div>

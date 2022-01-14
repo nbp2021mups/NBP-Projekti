@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { Comment } from './../models/comment/comment';
 import { SocketService } from '../services/socket/socket.service';
+import { PostHomePageModel } from '../models/post_models/post-homepage.model';
 
 @Component({
   selector: 'app-comment-list',
@@ -10,7 +11,7 @@ import { SocketService } from '../services/socket/socket.service';
 })
 export class CommentListComponent implements OnInit {
   @Input()
-  postId: number;
+  public post: PostHomePageModel;
   public loggedUser: { username: string; id: number };
   public comments: Array<Comment> = new Array<Comment>();
   public hasMore: boolean = false;
@@ -28,7 +29,7 @@ export class CommentListComponent implements OnInit {
     this.httpService
       .post(`http://localhost:3000/comments`, {
         userId: this.loggedUser.id,
-        postId: this.postId,
+        postId: this.post.id,
         comment: event.target.value,
       })
       .subscribe({
@@ -50,7 +51,7 @@ export class CommentListComponent implements OnInit {
 
   public loadComments(start: number = 0, count: number = 20) {
     this.httpService
-      .get(`http://localhost:3000/comments/${this.postId}/${start}/${count}`)
+      .get(`http://localhost:3000/comments/${this.post.id}/${start}/${count}`)
       .subscribe({
         next: (data: Array<Comment>) => {
           this.hasMore = data.length == count;

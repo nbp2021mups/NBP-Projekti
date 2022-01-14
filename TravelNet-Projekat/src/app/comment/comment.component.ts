@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { DAYS, MILLISECONDS_PER_DAY } from '../chat/chat.component';
+import { AuthService } from '../services/authentication/auth.service';
 import { Comment } from './../models/comment/comment';
 
 @Component({
@@ -9,9 +10,21 @@ import { Comment } from './../models/comment/comment';
 })
 export class CommentComponent implements OnInit {
   @Input() comment: Comment;
-  constructor() {}
+  @Input() postId: number;
+  @Input() postedUsername: string;
 
-  ngOnInit(): void {}
+  allowDel: boolean = false;
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.user.subscribe(user => {
+      if(user.username == this.comment.from || user.username == this.postedUsername){
+        this.allowDel = true;
+      } else {
+        this.allowDel = false;
+      }
+    }).unsubscribe();
+  }
 
   getDate(dateStr) {
     let date = new Date(dateStr);

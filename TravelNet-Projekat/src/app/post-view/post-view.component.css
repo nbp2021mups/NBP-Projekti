@@ -36,3 +36,13 @@ mat-icon {
 mat-icon:hover {
     color: black;
 }
+
+
+@media only screen and (max-width: 600px) {
+    .backdrop {
+        height: 200vh;
+    }
+    .panel {
+        height: 147vh;
+    }
+  }

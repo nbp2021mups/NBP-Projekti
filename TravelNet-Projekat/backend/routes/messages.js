@@ -2,7 +2,6 @@ const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
 const router = require("express").Router();
 const { getConnection } = require("./../redisclient");
-const { validateNewMessage } = require("./../validation/messageValidation");
 
 const session = driver.session();
 
