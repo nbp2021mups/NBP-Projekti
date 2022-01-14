@@ -31,6 +31,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loggedUsername: string;
   profileType: ProfileType;
   allRead: boolean = false;
+  pageSize: number = 3;
 
   constructor(private authService: AuthService, private route: ActivatedRoute, 
     private profileService: ProfileService, private friendService: FriendsService, 
@@ -46,11 +47,11 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
           this.loggedUsername = user.username;
           if(username == this.loggedUsername) {
             this.profileType = ProfileType.personal;
-            this.profileService.getLoggedUserProfileInfo(this.loggedUsername, 3).subscribe(user => {
+            this.profileService.getLoggedUserProfileInfo(this.loggedUsername, this.pageSize).subscribe(user => {
               this.person = user;
             })
           } else {
-            this.profileService.getOtherUserProfileInfo(user.username, username, 3).subscribe(userData =>{
+            this.profileService.getOtherUserProfileInfo(user.username, username, this.pageSize).subscribe(userData =>{
               if(userData.relation == null){
                 this.profileType = ProfileType.non_friend;
               } else if(userData.relation == "friend"){
@@ -127,7 +128,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loadMore(event) {
     this.authService.user.subscribe(user => {
       const loggedU = user.username;
-      this.postService.loadMoreProfilePosts(this.person.username, loggedU, this.person.posts.length, 3).subscribe({
+      this.postService.loadMoreProfilePosts(this.person.username, loggedU, this.person.posts.length, this.pageSize).subscribe({
         next: resp => {
           if(resp.length == 0){
             this.allRead = true;

@@ -274,6 +274,59 @@ router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
     }
 });
 
+
+
+router.get('/loadPostsLocation/:idLoc/:loggedU/:skip/:limit', async (req, res) => {
+
+    try{
+        const cypher = `MATCH (u:User)-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc: Location)
+        WHERE id(loc)=$idLoc
+        WITH p, s, loc, u
+        OPTIONAL MATCH(logU: User{username: $username})-[l:LIKED]->(p)
+        WITH p, s, loc, u, count(l) > 0 as liked
+        ORDER BY s.time DESC
+        SKIP $skip LIMIT $limit
+        RETURN collect({user: {id: id(u), username:u.username, fName: u.firstName, lName: u.lastName, image: u.image}, post: 
+        p, liked: liked}) as posts`;
+
+        const params = {
+            idLoc: int(req.params.idLoc),
+            username: req.params.loggedU,
+            skip: int(req.params.skip),
+            limit: int(req.params.limit)
+        };
+
+        const result = await session.run(cypher, params);
+
+        const parsedPosts = [];
+        const posts = result.records[0].get(0);
+        posts.forEach(post => {
+            parsedPosts.push({
+                id: post.post.identity.low,
+                image: post.post.properties.image,
+                likeNo: post.post.properties.likeNo.low,
+                commentNo: post.post.properties.commentNo.low,
+                desc: post.post.properties.description,
+                user: {
+                    id: post.user.id.low,
+                    firstName: post.user.fName,
+                    lastName: post.user.lName,
+                    username: post.user.username,
+                    image: post.user.image
+                },
+                liked: post.liked
+            });
+        });
+        return res.send(parsedPosts);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+
+});
+
+
 //vracanje ukupnog broja komentara i lajkova za konkretnu objavu
 /* router.get("/:postId/reactions", async(req, res) => {
     try {

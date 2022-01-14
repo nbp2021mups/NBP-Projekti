@@ -1,0 +1,27 @@
+.load-more{
+    color: #555555;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+.load-more:hover{
+    color: black;
+}
+.loc{
+    font-size: 2.5em;
+    font-weight: 700;
+}
+.text-n{
+    font-size: 1.3em;
+    font-weight: 450;
+    font-style: italic;
+    color: darkblue;
+}
+.button-t{
+    background-color: transparent;
+}
+.button-t:hover{
+    background-color: #efefef;
+    color: #040461;
+    border: 1px solid #040461;
+}

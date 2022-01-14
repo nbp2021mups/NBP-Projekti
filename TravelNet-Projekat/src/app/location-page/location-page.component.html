@@ -1,12 +1,12 @@
 <div class="container border border-rounded my-2 p-2" *ngIf="this.location">
     <div class="text-center">
-        <h2>{{this.location.city + " - " + this.location.country}}</h2>
-        <h4>{{ "Broj objava na ovoj lokaciji : " + this.location.postsNo}}</h4>
+        <p class="loc mb-1">{{this.location.city + ", " + this.location.country}}</p>
+        <p class="text-n">{{ "Objave na ovoj lokaciji : " + this.location.postsNo}}</p>
     </div>
     <div class="row justify-content-around">
-        <button class="btn btn-primary col-5" *ngIf="!this.location.followed" (click)="onFollowLoc()">Prati lokaciju</button>
-        <button class="btn btn-info col-5" *ngIf="this.location.followed" (click)="onUnfollowLoc()">Otkazi pracenje</button>
-        <button class="btn btn-primary col-5">{{"Pratioci : " + this.location.followersNo}}</button>
+        <button class="btn btn-primary col-7 col-sm-2 mb-1" *ngIf="!this.location.followed" (click)="onFollowLoc()">Prati lokaciju</button>
+        <button class="btn btn-info col-7 col-sm-2 mb-1" *ngIf="this.location.followed" (click)="onUnfollowLoc()">Otkazi pracenje</button>
+        <button class="btn btn-outline-primary button-t col-7 col-sm-2 mb-1">{{"Pratioci : " + this.location.followersNo}}</button>
     </div>
 </div>
 
@@ -14,3 +14,11 @@
     [profilePosts]="true"
     [posts]="this.location && this.location.posts">
 </app-post-list>
+
+<div class="container border-bottom border-dark my-2"></div>
+<div class="row justify-content-center mt-1">
+    <div class="col-sm-1 d-flex justify-content-center"
+    *ngIf="this.location && this.location.posts && this.location.posts.length > 0 && !allRead">
+        <button mat-icon-button class="w-50 load-more" (click)="loadMore($event)"><mat-icon>keyboard_arrow_down</mat-icon></button>
+    </div>
+</div>
