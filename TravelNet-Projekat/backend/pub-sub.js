@@ -150,7 +150,7 @@ const updateMessages = async(data) => {
                     UNWIND $props AS map
                     CREATE (c)-[:HAS]->(m:Message)
                     SET m = map
-                    SET m.timeSent=datetime(map.isoTime)
+                    SET m.timeSent=datetime(map.timeSent)
                     RETURN m`;
     await driver.session().run(cypher, {
         chatId: int(data["chatId"]),
@@ -161,7 +161,7 @@ const updateMessages = async(data) => {
                 to: parsed.to,
                 chatId: int(parsed.chatId),
                 content: parsed.content,
-                isoTime: parsed.timeSent,
+                timeSent: parsed.timeSent,
                 read: true,
             };
         }),
