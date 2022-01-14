@@ -8,15 +8,16 @@
   <mat-icon>close</mat-icon>
 </button>
 <div
-  class="panel rounded rounded-lg d-flex flex-row justify-content-center align-items-center p-2"
+  class="panel rounded rounded-lg d-flex flex-row justify-content-center flex-wrap align-items-center p-2"
   [ngStyle]="{ top: (this.startY + 10).toString() + 'px' }"
 >
   <app-post
     [post]="this.post"
-    class="image-part col-sm-6"
+    class="image-part col-sm-6 border border-white"
     [showImage]="true"
   ></app-post>
-  <div class="col-sm-6">
+  <div class="col-12 col-sm-6">
     <app-comment-list [post]="post"></app-comment-list>
   </div>
+  
 </div>

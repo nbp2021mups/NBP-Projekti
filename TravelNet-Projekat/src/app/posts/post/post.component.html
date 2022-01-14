@@ -11,15 +11,18 @@
     <mat-card-content class="post-desc mt-1 mb-2" *ngIf="!editDesc">{{post.desc}}</mat-card-content>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="isPersonal && editDesc">
-        <mat-form-field class="input-group mb-3 form-group col-md-6 m-0 mt-1" appearance="fill">
+        <mat-form-field class="input-group mb-3 form-group col-md-6 m-0 mt-1" appearance="standard">
             <mat-label>Novi opis</mat-label>
-            <input
+            <textarea
             matInput
+            maxlength="100"
+            rows="3"
             type="text"
             id="desc"
             name="desc"
+            style="resize:none;"
             formControlName="desc"
-            >
+            ></textarea>
             <mat-error *ngIf="form.get('desc').invalid">Morate uneti neki opis!</mat-error>
             <button class="post-button" mat-icon button matSuffix (click)="onSubmit"><mat-icon>done</mat-icon></button>
             <button class="post-button" mat-icon button matSuffix (click)="this.editDesc = false;"><mat-icon>close</mat-icon></button>

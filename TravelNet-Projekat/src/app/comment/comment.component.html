@@ -1,12 +1,14 @@
-<mat-card class="comment-card">
+<mat-card class="comment-card m-0 mt-1">
   <div class="space">
-    <div class="content">
+    <div class="content col-9">
       <b>@{{ comment.from }}: </b>
-
       {{ comment.comment }}
     </div>
-    <div class="time">
+    <div class="time text-center col-2">
       {{ getDate(comment.time) }}
+    </div>
+    <div class="col-1">
+      <button class="btn" mat-icon-button *ngIf="allowDel"><mat-icon>delete</mat-icon></button>
     </div>
   </div>
 </mat-card>
