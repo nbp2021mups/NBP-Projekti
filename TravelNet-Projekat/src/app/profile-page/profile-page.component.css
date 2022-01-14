@@ -35,4 +35,8 @@
   border: 1px solid #040461;
 }
 .edit-btn {
+  display: inline;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
 }

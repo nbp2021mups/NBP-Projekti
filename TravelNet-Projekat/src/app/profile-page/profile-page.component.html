@@ -8,8 +8,8 @@
             <div class="col-12 col-md-4">
                 <p class="text-center info-text name">
                     {{person.firstName + " " + person.lastName}}
+                    <button class="edit-btn" *ngIf="profileType == 1" routerLink="/edit-profile"><mat-icon>edit</mat-icon></button>
                 </p>
-                <button class="edit-btn"><mat-icon>edit</mat-icon></button>
                 <p class="text-center info-text username">
                     {{"@" + person.username}}
                 </p>

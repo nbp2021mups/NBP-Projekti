@@ -120,7 +120,7 @@ router.post("/login", async(req, res) => {
     }
 });
 
-//promena slike, username-a, lozinke, opisa profila
+//promena slike, imena, prezimena, lozinke, opisa profila
 router.patch(
     "/:id",
     multer({ storage: storage }).single("image"),
@@ -130,15 +130,17 @@ router.patch(
             const params = new Object();
             params.id = int(req.params.id);
 
-            if (req.body.image) {
-                params.image = req.body.image;
-                chyper = "u.image = $image";
-            }
-            if (req.body.username) {
+            if (req.body.firstName) {
                 if (chyper) chyper += ", ";
-                chyper += "u.username = $username";
-                params.username = req.body.username;
+                chyper += "u.firstName = $firstName";
+                params.firstName = req.body.firstName;
             }
+
+            if (req.body.lastName) {
+              if (chyper) chyper += ", ";
+              chyper += "u.lastName = $lastName";
+              params.lastName = req.body.lastName;
+          }
 
             if (req.body.password && req.body.newPassword) {
                 const result = await session.run(
@@ -173,7 +175,15 @@ router.patch(
                 chyper += "u.image = $image";
                 params.image = imgPath;
             }
+
             await session.run("MATCH (u:User) WHERE id(u)=$id SET " + chyper, params);
+
+            if (req.file){
+              const path ="./backend" + req.body.oldImage.substring(req.body.oldImage.indexOf("/images"));
+              fs.unlink(path, (err) => {
+                  if (err) console.log(err);
+              });
+            }
             return res.send("Ažuriranje podataka je uspešno.");
         } catch (ex) {
             if (ex.message.includes("username"))
@@ -363,5 +373,26 @@ router.get("/light/:username", async(req, res) => {
         return res.status(501).send("Došlo je do greske!");
     }
 });
+
+router.get("/info/:username", async (req, res)=>{
+  try{
+    const chyper=`MATCH (u:User {username: $username})
+                  RETURN u.firstName, u.lastName, u.bio, u.image, u.email, id(u) `
+    const response = await session.run(chyper, {username: req.params.username})
+    return res.send({
+      firstName: response.records[0].get('u.firstName'),
+      lastName: response.records[0].get('u.lastName'),
+      bio: response.records[0].get('u.bio'),
+      image: response.records[0].get('u.image'),
+      email: response.records[0].get('u.email'),
+      id: response.records[0].get('id(u)').low
+    })
+
+  }
+  catch{
+    console.log(ex);
+    return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
+  }
+})
 
 module.exports = router;

@@ -4,6 +4,7 @@ import { map } from "rxjs/operators";
 import { LocationBasic } from "../models/location_models/location-basic.model";
 import { PersonBasic } from "../models/person_models/person-basic.model";
 import { PersonFull } from "../models/person_models/person-full.model";
+import { PersonProfile } from "../models/person_models/person-profile.model";
 import { PostHomePageModel } from "../models/post_models/post-homepage.model";
 
 @Injectable({providedIn : 'root'})
@@ -46,5 +47,17 @@ export class ProfileService{
             }
             return {person: person, relation: respData.relation};
         }));
+    }
+
+    getLoggedUserBasicInfo(username: string){
+      return this.http.get<any>("http://localhost:3000/users/info/"+username)
+      .pipe(map(resp => {
+          return new PersonProfile(resp.id,resp.firstName, resp.lastName, username, resp.image, resp.bio, resp.email);
+      }));
+    }
+
+    updateLoggedUserInfo(formData : FormData, id: number){
+      return this.http.patch("http://localhost:3000/users/"+id, formData, {responseType: 'text'})
+
     }
 }
