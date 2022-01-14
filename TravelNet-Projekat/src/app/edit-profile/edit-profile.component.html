@@ -1,4 +1,4 @@
-<div class="container edit-profile d-flex align-items-center">
+<div class="container edit-profile d-flex align-items-center" *ngIf="this.person">
   <mat-card class="container d-flex flex-row flex-wrap justify-content-around">
     <form class="d-flex flex-row justify-content-center flex-wrap px-2" [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="d-flex justify-content-center flex-column col-lg-5 align-items-center">
@@ -6,7 +6,6 @@
           <img
             [src]="imagePreview"
             class="rounded slika"
-            *ngIf="imagePreview !== '' && imagePreview"
           />
         </div>
         <div class="col-sm-4">
@@ -55,9 +54,8 @@
         <mat-form-field class="p-2 col-12 col-lg-6" appearance="outline">
           <mat-label>E-mail</mat-label>
           <input
-          [disabled]="true"
+          [readonly]="this.rdonly"
           matInput
-          type="email"
           id="email"
           name="email"
           formControlName="email"
@@ -71,14 +69,14 @@
           id="username"
           name="username"
           formControlName="username"
-          [disabled]="true"
+          [readonly]="this.rdonly"
           >
         </mat-form-field>
       </div>
       <mat-form-field class="  p-2" appearance="outline">
         <mat-label>Opis</mat-label>
         <textarea
-          style="resize: none;"
+          style="resize:none;"
           matInput
           type="string"
           name="opis"
@@ -92,8 +90,32 @@
         <mat-expansion-panel-header>
           <mat-panel-title class="text-center"> Promena lozinke </mat-panel-title>
         </mat-expansion-panel-header>
-
+        <mat-form-field appearance="outline">
+          <mat-label>Trenutna lozinka</mat-label>
+          <input
+          matInput
+            type="password"
+            id="lozinka"
+            name="lozinka"
+            formControlName="lozinka"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nova lozinka</mat-label>
+          <input
+          matInput
+            type="password"
+            id="novaLozinka"
+            name="novaLozinka"
+            formControlName="novaLozinka"
+          />
+        </mat-form-field>
       </mat-expansion-panel>
+      <div class="d-flex justify-content-center">
+        <button class="btn btn-outline-primary mt-3 me-3" type="submit"
+        [disabled]="form.get('ime').invalid || form.get('prezime').invalid || form.get('novaLozinka').invalid">Sačuvaj</button>
+        <button class="btn btn-outline-primary mt-3 ms-3" (click)="onCancel()" [disabled]="">Otkaži</button>
+      </div>
       </div>
     </form>
   </mat-card>

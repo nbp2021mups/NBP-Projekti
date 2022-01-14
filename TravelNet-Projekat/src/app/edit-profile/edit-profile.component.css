@@ -8,3 +8,9 @@
 input[type="file"] {
   visibility: hidden;
 }
+
+@media only screen and (min-width: 990px) {
+  .edit-profile {
+    height: 90%;
+  }
+}
