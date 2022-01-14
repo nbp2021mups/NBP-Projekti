@@ -364,35 +364,4 @@ router.get("/light/:username", async(req, res) => {
     }
 });
 
-router.get("/conversations/:userId/:startIndex/:count", async(req, res) => {
-    try {
-        const cypher = `MATCH (u1: User)-[r1:HAS]->(c:Chat)<-[r2:HAS]-(u2: User)
-                        WHERE id(u1) = $userId
-                        WITH c, u2
-                        RETURN u2.username, u2.image, c
-                        ORDER BY c.topMessageTimeSent DESC
-                        SKIP $startIndex
-                        LIMIT $count`;
-        const params = {
-            userId: int(req.params.userId),
-            startIndex: int(req.params.startIndex),
-            count: int(req.params.count),
-        };
-        const result = await session.run(cypher, params);
-        const parsedRes = result.records.map((x) => ({
-            friendUsername: x.get(0),
-            friendImage: x.get(1),
-            id: x.get(2).identity.low,
-            ...x.get(2).properties,
-            unreadCount: x.get(2).properties.unreadCount.low,
-            topMessageTimeSent: new Date(x.get(2).properties.topMessageTimeSent),
-        }));
-
-        return res.status(200).send(parsedRes);
-    } catch (err) {
-        console.log(err);
-        return res.status(501).send("Došlo je do greske!");
-    }
-});
-
 module.exports = router;

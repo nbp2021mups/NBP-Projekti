@@ -11,6 +11,8 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
     try {
         req.params.count = parseInt(req.params.count);
         req.params.startIndex = parseInt(req.params.startIndex);
+        console.log(req.params.startIndex);
+        console.log(req.params.count);
 
         const redisClient = await getConnection();
         let result = await redisClient.lRange(

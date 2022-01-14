@@ -7,7 +7,12 @@
     <button mat-button *ngIf="hasMore" (click)="loadMore()">
       Učitaj još komentara
     </button>
-    <app-comment *ngFor="let comment of comments" [comment]="comment">
+    <app-comment
+      *ngFor="let comment of comments"
+      [comment]="comment"
+      [postId]="post.id"
+      [postedUsername]="post.person.username"
+    >
     </app-comment>
   </mat-card-content>
 

@@ -74,7 +74,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.searchService
       .getHasMore()
       .subscribe((hasMore) => (this.hasMore = hasMore));
-    this.searchService.initialLoad(NO_FILTER, 10);
+    this.searchService.initialLoad(NO_FILTER, 2);
 
     this.readMsgSubscription = this.socketService
       .getMessagesObservable(MESSAGE_EVENTS.READ_MESSAGES)
@@ -127,7 +127,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   searchConversations() {
     if (this.filter == '') return;
-    else this.searchService.initialLoad(this.filter, 10);
+    else this.searchService.initialLoad(this.filter, 2);
   }
 
   filterConversations(event: KeyboardEvent) {
