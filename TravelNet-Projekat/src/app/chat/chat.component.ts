@@ -1,8 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { stringify } from 'querystring';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Conversation } from '../models/conversation-model/conversation.model';
 import { Message } from '../models/message-model/message.model';
+import { ConversationSearchService } from '../services/search/conversation-search.service';
+import { NO_FILTER } from '../services/search/search.service';
 import {
   MESSAGE_EVENTS,
   SocketService,
@@ -31,20 +33,25 @@ export const ALLOWED_ALPHANUM = [
   styleUrls: ['./chat.component.css'],
 })
 export class ChatComponent implements OnInit, OnDestroy {
-  public conversations: Conversation[] = Array<Conversation>();
-  public filteredConversations: Conversation[] = Array<Conversation>();
+  public conversations: Array<Conversation> = Array<Conversation>();
+  public filteredConversations: Array<Conversation> = Array<Conversation>();
+
   public selectedConversation: Conversation = null;
   public selectedIndex!: number;
+
   public filter: string = '';
-  public loggedUser: { username: string; id: number } = null;
   public newMessage: string = '';
+
+  public loggedUser: { username: string; id: number } = null;
+
   public readMsgSubscription: Subscription;
   public receivedMsgSubscription: Subscription;
+
   public hasMore: boolean = false;
 
   constructor(
     private socketService: SocketService,
-    private httpService: HttpClient
+    private searchService: ConversationSearchService
   ) {}
 
   ngOnDestroy(): void {
@@ -55,7 +62,19 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loggedUser = JSON.parse(window.localStorage.getItem('logged-user'));
-    this.loadConversations();
+    this.searchService.getIncoming().subscribe((convs) => {
+      this.filteredConversations = convs;
+      this.conversations = [
+        ...this.conversations,
+        ...convs.filter(
+          (c) => this.conversations.find((el) => el.id == c.id) == null
+        ),
+      ];
+    });
+    this.searchService
+      .getHasMore()
+      .subscribe((hasMore) => (this.hasMore = hasMore));
+    this.searchService.initialLoad(NO_FILTER, 10);
 
     this.readMsgSubscription = this.socketService
       .getMessagesObservable(MESSAGE_EVENTS.READ_MESSAGES)
@@ -106,38 +125,22 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadMore() {
-    this.loadConversations(this.conversations.length);
+  searchConversations() {
+    if (this.filter == '') return;
+    else this.searchService.initialLoad(this.filter, 10);
   }
 
-  loadConversations(start: number = 0, count: number = 10) {
-    this.httpService
-      .get(
-        `http://localhost:3000/users/conversations/${this.loggedUser.id}/${start}/${count}`
-      )
-      .subscribe((result: Array<any>) => {
-        this.hasMore = result.length == count;
-        result.forEach((c) => {
-          this.conversations.push(
-            new Conversation(
-              c.id,
-              c.friendUsername,
-              c.friendImage,
-              new Message(
-                0,
-                c.topMessageFrom,
-                c.topMessageTo,
-                c.id,
-                c.topMessageContent,
-                c.topMessageTimeSent,
-                c.topMessageRead
-              ),
-              c.topMessageFrom != this.loggedUser.username ? c.unreadCount : 0
-            )
-          );
-        });
-        this.filteredConversations = this.conversations;
-      });
+  filterConversations(event: KeyboardEvent) {
+    if (!ALLOWED_ALPHANUM[event.key.toLowerCase()]) return;
+    if (this.filter == '') this.filteredConversations = this.conversations;
+    else
+      this.filteredConversations = this.conversations.filter((c) =>
+        c.friend.match(this.filter)
+      );
+  }
+
+  loadMore() {
+    this.searchService.loadMore();
   }
 
   getDay(dateCal): string {
@@ -191,20 +194,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     return `${month < 10 ? '0' : ''}${month}.${
       day < 10 ? '0' : ''
     }${day} u ${hours}:${minutes}h`;
-  }
-
-  searchUsers(event: KeyboardEvent) {
-    const input = event.key.toLocaleLowerCase();
-    if (!ALLOWED_ALPHANUM[input]) return;
-
-    if (input == 'backspace') this.filter = this.filter.slice(0, -1);
-    else this.filter += input;
-
-    if (this.filter == '') this.filteredConversations = this.conversations;
-    else
-      this.filteredConversations = this.conversations.filter((val) =>
-        val.friend.toLocaleLowerCase().match(this.filter)
-      );
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -264,14 +253,16 @@ export class ChatComponent implements OnInit, OnDestroy {
       await this.selectedConversation.loadMore();
     }
 
-    this.selectedConversation.messages.forEach((m) => {
-      if (!m.read) m.read = true;
-    });
-    this.socketService.readMessages({
-      chatId: this.selectedConversation.id,
-      from: this.selectedConversation.friend,
-      unreadCount: this.selectedConversation.myUnread,
-    });
-    this.selectedConversation.myUnread = 0;
+    if (this.selectedConversation.myUnread > 0) {
+      // this.selectedConversation.messages.forEach((m) => {
+      //   if (!m.read) m.read = true;
+      // });
+      this.socketService.readMessages({
+        chatId: this.selectedConversation.id,
+        from: this.selectedConversation.friend,
+        unreadCount: this.selectedConversation.myUnread,
+      });
+      this.selectedConversation.myUnread = 0;
+    }
   }
 }

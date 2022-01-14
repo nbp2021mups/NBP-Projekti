@@ -8,7 +8,9 @@
         <input
           type="text"
           placeholder="Nađite konveraciju s prijateljem..."
-          (keyup)="searchUsers($event)"
+          [(ngModel)]="filter"
+          (keyup.Enter)="searchConversations()"
+          (keyup)="filterConversations($event)"
         />
       </div>
       <div class="conversation-list-div">
@@ -22,10 +24,8 @@
           ></div>
           <ng-template #unreadMessages>
             <div
-              [class]="
+              [class.selected-conversation-div]="
                 selectedConversation == conversation
-                  ? 'selected-conversation-div'
-                  : 'hoverable'
               "
               class="conversation-preview-div unread-conversation-div"
               (click)="selectConversation(i)"

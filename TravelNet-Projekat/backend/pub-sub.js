@@ -111,7 +111,10 @@ const subscribeToUpdates = async(socket) => {
 
 const storeMessage = async(msg) => {
     const redisClient = await getConnection();
-    const msgString = JSON.stringify(msg);
+    const msgString = JSON.stringify({
+        ...msg,
+        timeSent: new Date().toISOString(),
+    });
     await redisClient.rPush(`unread-messages:chat:${msg.chatId}`, msgString);
     await redisClient.publish(
         `user-updates:${msg.to}`,
@@ -120,12 +123,14 @@ const storeMessage = async(msg) => {
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.topMessageFrom=$from,
-                    c.topMessageTimeSet=datetime(),
+                    c.topMessageTo=$to,
+                    c.topMessageTimeSent=datetime(),
                     c.topMessageContent=$content,
                     c.unreadCount=c.unreadCount+1`;
     await driver.session().run(cypher, {
         chatId: int(msg.chatId),
         from: msg.from,
+        to: msg.to,
         content: msg.content,
     });
 };
@@ -137,6 +142,7 @@ const updateMessages = async(data) => {
         `unread-messages:chat:${data.chatId}`,
         String(data["unreadCount"]),
     ]);
+    if (!result) return;
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.unreadCount=0
@@ -144,7 +150,7 @@ const updateMessages = async(data) => {
                     UNWIND $props AS map
                     CREATE (c)-[:HAS]->(m:Message)
                     SET m = map
-                    SET m.timeSent=datetime()
+                    SET m.timeSent=datetime(map.isoTime)
                     RETURN m`;
     await driver.session().run(cypher, {
         chatId: int(data["chatId"]),
@@ -155,6 +161,7 @@ const updateMessages = async(data) => {
                 to: parsed.to,
                 chatId: int(parsed.chatId),
                 content: parsed.content,
+                isoTime: parsed.timeSent,
                 read: true,
             };
         }),

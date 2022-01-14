@@ -77,6 +77,7 @@ router.post("/accept", async(req, res) => {
                         MERGE (u1)-[r2:HAS]->(c:Chat{
                             unreadCount: 0,
                             topMessageFrom: $from,
+                            topMessageTo: $to,
                             topMessageTimeSent: datetime(),
                             topMessageContent: $msgContent
                         })<-[r3:HAS]-(u2)
@@ -108,6 +109,7 @@ router.post("/accept", async(req, res) => {
             id1: req.body.id1,
             id2: req.body.id2,
             from: "System",
+            to: "@Everyone",
             msgContent: "Novi prijatelj!",
             read: false,
         };
