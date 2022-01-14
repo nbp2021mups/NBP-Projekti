@@ -9,14 +9,15 @@ const { getConnection } = require("../redisclient");
 
 router.post("", async(req, res) => {
     try {
+        console.log(req.body);
         const cypher = `MATCH (u:User), (p:Post)<-[:SHARED]-(toUser:User)
                         WHERE id(u)=$userId AND id(p)=$postId
                         SET p.commentNo=p.commentNo+1
-                        MERGE (u)-[r:COMMENTED{comment: $comment, time: $time}]->(p)
+                        MERGE (u)-[r:COMMENTED{comment: $comment, time: datetime()}]->(p)
                         MERGE (toUser)-[:HAS]->(n:Notification{
                             from: u.username,
                             to: toUser.username,
-                            timeSent: $time,
+                            timeSent: datetime(),
                             read: $read,
                             content: id(r),
                             type: 'post-comment'
@@ -26,13 +27,13 @@ router.post("", async(req, res) => {
             userId: req.body.userId,
             postId: req.body.postId,
             comment: req.body.comment,
-            time: new Date().toString(),
             read: false,
         };
         const result = await session.run(cypher, params);
         const notification = {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
+            timeSent: new Date(result.records[0].get("n").properties.timeSent),
         };
         const redisClient = await getConnection();
         await redisClient.publish(
@@ -40,7 +41,7 @@ router.post("", async(req, res) => {
             JSON.stringify({ type: "new-notification", payload: notification })
         );
 
-        return res.send("comment postavljen uspesno");
+        return res.send({ msg: "Komentar uspešno postavljen!" });
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
@@ -62,13 +63,13 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
             count: int(req.params.count),
         };
         const result = await session.run(cypher, params);
-        return res.send({
-            comments: result.records.map((c) => ({
+        return res.send(
+            result.records.map((c) => ({
                 id: c.get("r").identity.low,
-                username: c.get("u").properties.username,
+                from: c.get("u").properties.username,
                 ...c.get("r").properties,
-            })),
-        });
+            }))
+        );
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");

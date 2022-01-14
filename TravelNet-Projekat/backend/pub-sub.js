@@ -57,7 +57,7 @@ const followLocation = async(loc, socket) => {
                     from: m.text,
                     to: socket.username,
                     content: m.locationId,
-                    timeSent: new Date().toString(),
+                    timeSent: new Date().toUTCString(),
                     type: "new-post-on-location",
                 },
                 socket
@@ -99,7 +99,7 @@ const subscribeToUpdates = async(socket) => {
                             from: m.text,
                             to: socket.username,
                             content: m.locationId,
-                            timeSent: new Date().toString(),
+                            timeSent: new Date().toUTCString(),
                             type: "new-post-on-location",
                         },
                         socket
@@ -111,10 +111,7 @@ const subscribeToUpdates = async(socket) => {
 
 const storeMessage = async(msg) => {
     const redisClient = await getConnection();
-    const msgString = JSON.stringify({
-        ...msg,
-        timeSent: new Date(msg.timeSent).toString(),
-    });
+    const msgString = JSON.stringify(msg);
     await redisClient.rPush(`unread-messages:chat:${msg.chatId}`, msgString);
     await redisClient.publish(
         `user-updates:${msg.to}`,
@@ -123,13 +120,12 @@ const storeMessage = async(msg) => {
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.topMessageFrom=$from,
-                    c.topMessageTimeSet=$timeSent,
+                    c.topMessageTimeSet=datetime(),
                     c.topMessageContent=$content,
                     c.unreadCount=c.unreadCount+1`;
     await driver.session().run(cypher, {
         chatId: int(msg.chatId),
         from: msg.from,
-        timeSent: new Date(msg.timeSent).toString(),
         content: msg.content,
     });
 };
@@ -148,6 +144,7 @@ const updateMessages = async(data) => {
                     UNWIND $props AS map
                     CREATE (c)-[:HAS]->(m:Message)
                     SET m = map
+                    SET m.timeSent=datetime()
                     RETURN m`;
     await driver.session().run(cypher, {
         chatId: int(data["chatId"]),
@@ -158,7 +155,6 @@ const updateMessages = async(data) => {
                 to: parsed.to,
                 chatId: int(parsed.chatId),
                 content: parsed.content,
-                timeSent: parsed.timeSent,
                 read: true,
             };
         }),

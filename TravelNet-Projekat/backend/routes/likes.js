@@ -12,11 +12,11 @@ router.post("", async(req, res) => {
         const cypher = `MATCH (u:User), (p:Post)<-[:SHARED]-(toUser:User)
                       WHERE id(u) = $userId AND id(p) = $postId
                       SET p.likeNo=p.likeNo+1
-                      MERGE (u)-[r:LIKED{time: $time}]->(p)
+                      MERGE (u)-[r:LIKED{time: datetime()}]->(p)
                       MERGE (toUser)-[:HAS]->(n:Notification{
                           from: u.username,
                           to: toUser.username,
-                          timeSent: $time,
+                          timeSent: datetime(),
                           read: $read,
                           content: id(r),
                           type: 'post-like'
@@ -25,13 +25,14 @@ router.post("", async(req, res) => {
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
-            time: new Date().toString(),
             read: false,
         };
+
         const result = await session.run(cypher, params);
         const notification = {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
+            timeSent: new Date(result.records[0].get("n").properties.timeSent),
         };
         const redisClient = await getConnection();
         await redisClient.publish(

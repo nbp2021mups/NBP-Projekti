@@ -1,1 +1,26 @@
-<p>comment-list works!</p>
+<mat-card class="comment-list-card">
+  <mat-card-header>
+    <mat-card-title>Komentari</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content class="mat-card-list">
+    <app-comment *ngFor="let comment of comments" [comment]="comment">
+    </app-comment>
+
+    <button mat-raised-button *ngIf="hasMore" (click)="loadMore()">
+      Učitaj još komentara
+    </button>
+  </mat-card-content>
+
+  <mat-card-footer>
+    <mat-form-field appearance="outline" class="full-width centered">
+      <mat-label>Unesite svoj komentar</mat-label>
+
+      <input
+        matInput
+        placeholder="Budite kulturni...."
+        (keyup.Enter)="sendComment($event)"
+      />
+    </mat-form-field>
+  </mat-card-footer>
+</mat-card>
