@@ -11,7 +11,7 @@ import { AuthService } from '../services/authentication/auth.service';
 export class RegistrationPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
-  imagePreview: string='./../../assets/resources/universal.jpg';
+  imagePreview: string='./../../assets/resources/profile-avatar.jpg';
   constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
@@ -34,7 +34,7 @@ export class RegistrationPageComponent implements OnInit {
 
 
   onSubmit(){
-    
+
     const fName = this.form.get('ime').value;
     const lName = this.form.get('prezime').value;
     const email = this.form.get('email').value;

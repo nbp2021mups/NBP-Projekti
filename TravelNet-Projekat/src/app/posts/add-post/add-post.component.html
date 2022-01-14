@@ -1,8 +1,8 @@
 
-<mat-card class="container">
+<mat-card class="container mt-5">
   <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-    <mat-form-field appearance="fill" class="me-1">
+    <mat-form-field appearance="outline" class="me-1">
       <mat-label>Izaberite državu</mat-label>
       <mat-select
       aria-label="Default select example"
@@ -16,7 +16,7 @@
 
     <mat-form-field
       class="input-group mb-3 form-group col-md-6"
-      appearance="fill"
+      appearance="outline"
       *ngIf="drzava == 'ostalo'">
       <mat-label>Unesite novu državu</mat-label>
       <input
@@ -30,7 +30,7 @@
       >
     </mat-form-field>
 
-    <mat-form-field appearance="fill" *ngIf="drzava && drzava != 'ostalo'" class="ms-1">
+    <mat-form-field appearance="outline" *ngIf="drzava && drzava != 'ostalo'" class="ms-1">
       <mat-label>Izaberite grad</mat-label>
       <mat-select
        aria-label="Default select example"
@@ -43,7 +43,7 @@
     </mat-form-field>
     <mat-form-field
       class="input-group mb-3 form-group col-md-6"
-      appearance="fill"
+      appearance="outline"
       *ngIf="drzava == 'ostalo' || grad == 'ostalo' "
     >
       <mat-label>Unesite novi grad</mat-label>
@@ -57,7 +57,7 @@
         >Molimo Vas da unesete naziv grada</mat-error
       >
     </mat-form-field>
-    <mat-form-field class="input-group mt-2 mb-3 form-group col-md-6" appearance="fill">
+    <mat-form-field class="input-group mt-2 mb-3 form-group col-md-6" appearance="outline">
       <mat-label>Opis</mat-label>
       <input
       matInput
@@ -71,7 +71,7 @@
     <div class="form-group ml-10">
       <div class="justify-content-center">
         <button
-          class="btn btn-info"
+          class="btn btn-outline-primary"
           type="button"
           (click)="filePicker.click()"
         >
@@ -87,15 +87,11 @@
       <div class="slika-conteiner">
         <img
           [src]="imagePreview"
-          class="slika"
+          class="slika mx-auto d-block img-fluid"
           *ngIf="imagePreview !== '' && imagePreview && form.get('slika').valid"
         />
       </div>
     </div>
-    <!-- form.get('opis').invalid || form.get('drzava').invalid || form.get('grad').invalid ||
-    (form.get('drzava').value=='ostalo' && (form.get('novaDrzava').invalid || form.get('noviGrad').invalid)) ||
-    (form.get('grad').value && form.get('noviGrad').invalid) || form.get('slika').invalid -->
-
     <div class="container">
       <div class="col-md-12 text-center">
         <button class="btn btn-outline-primary" type="submit"
