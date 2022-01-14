@@ -111,7 +111,10 @@ const subscribeToUpdates = async(socket) => {
 
 const storeMessage = async(msg) => {
     const redisClient = await getConnection();
-    const msgString = JSON.stringify(msg);
+    const msgString = JSON.stringify({
+        ...msg,
+        timeSent: new Date().toISOString(),
+    });
     await redisClient.rPush(`unread-messages:chat:${msg.chatId}`, msgString);
     await redisClient.publish(
         `user-updates:${msg.to}`,
@@ -147,7 +150,7 @@ const updateMessages = async(data) => {
                     UNWIND $props AS map
                     CREATE (c)-[:HAS]->(m:Message)
                     SET m = map
-                    SET m.timeSent=datetime()
+                    SET m.timeSent=datetime(map.isoTime)
                     RETURN m`;
     await driver.session().run(cypher, {
         chatId: int(data["chatId"]),
@@ -158,6 +161,7 @@ const updateMessages = async(data) => {
                 to: parsed.to,
                 chatId: int(parsed.chatId),
                 content: parsed.content,
+                isoTime: parsed.timeSent,
                 read: true,
             };
         }),
