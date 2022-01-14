@@ -14,7 +14,9 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
 
         const redisClient = await getConnection();
         let result = await redisClient.lRange(
-            `unread-messages:chat:${req.params.chatId}`, -req.params.count - req.params.startIndex, -req.params.startIndex - 1
+            `unread-messages:chat:${req.params.chatId}`,
+            req.params.startIndex,
+            req.params.startIndex + req.params.count - 1
         );
 
         if (result) {
