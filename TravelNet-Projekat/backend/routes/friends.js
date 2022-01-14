@@ -77,7 +77,7 @@ router.post("/accept", async(req, res) => {
                         MERGE (u1)-[r2:HAS]->(c:Chat{
                             unreadCount: 0,
                             topMessageFrom: $from,
-                            topMessageTo:$to,
+                            topMessageTo: $to,
                             topMessageTimeSent: datetime(),
                             topMessageContent: $msgContent
                         })<-[r3:HAS]-(u2)

@@ -3,7 +3,6 @@ import { BehaviorSubject, map, Observable } from 'rxjs';
 import { Conversation } from 'src/app/models/conversation-model/conversation.model';
 import { SearchService } from './search.service';
 import { Message } from './../../models/message-model/message.model';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -39,7 +38,7 @@ export class ConversationSearchService extends SearchService {
                   x.topMessageTimeSent,
                   x.unreadCount == 0
                 ),
-                x.unreadCount
+                x.topMessageFrom != this.loggedUser.username ? x.unreadCount : 0
               )
           )
         )

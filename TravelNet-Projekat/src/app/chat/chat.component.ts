@@ -253,14 +253,16 @@ export class ChatComponent implements OnInit, OnDestroy {
       await this.selectedConversation.loadMore();
     }
 
-    this.selectedConversation.messages.forEach((m) => {
-      if (!m.read) m.read = true;
-    });
-    this.socketService.readMessages({
-      chatId: this.selectedConversation.id,
-      from: this.selectedConversation.friend,
-      unreadCount: this.selectedConversation.myUnread,
-    });
-    this.selectedConversation.myUnread = 0;
+    if (this.selectedConversation.myUnread > 0) {
+      // this.selectedConversation.messages.forEach((m) => {
+      //   if (!m.read) m.read = true;
+      // });
+      this.socketService.readMessages({
+        chatId: this.selectedConversation.id,
+        from: this.selectedConversation.friend,
+        unreadCount: this.selectedConversation.myUnread,
+      });
+      this.selectedConversation.myUnread = 0;
+    }
   }
 }
