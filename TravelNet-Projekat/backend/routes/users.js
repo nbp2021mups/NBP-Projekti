@@ -237,7 +237,7 @@ router.get("/profile/:loggedUser/:profileUser/:limit", async(req, res) => {
                         commentNo: postWithLoc.post.properties.commentNo.low,
                         likeNo: postWithLoc.post.properties.likeNo.low,
                         description: postWithLoc.post.properties.description,
-                        time: postWithLoc.post.properties.time,
+                        time: new Date(postWithLoc.post.properties.time),
                         like: postWithLoc.like == 0 ? false : true,
                         location: {
                             id: postWithLoc.loc.id.low,
@@ -385,6 +385,7 @@ router.get("/conversations/:userId/:startIndex/:count", async(req, res) => {
             id: x.get(2).identity.low,
             ...x.get(2).properties,
             unreadCount: x.get(2).properties.unreadCount.low,
+            topMessageTimeSent: new Date(x.get(2).properties.topMessageTimeSent),
         }));
 
         return res.status(200).send(parsedRes);

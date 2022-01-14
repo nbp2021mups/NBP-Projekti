@@ -14,13 +14,12 @@ router.post("/follow", async(req, res) => {
         const cypher = `MATCH (u:User), (l:Location)
                         WHERE id(u) = $userId AND id(l) = $locationId
                         SET l.followersNo=l.followersNo+1, u.followedLocationsNo=u.followedLocationsNo+1
-                        MERGE (u)-[r:FOLLOWS{time: $time}]->(l)
+                        MERGE (u)-[r:FOLLOWS{time: datetime()}]->(l)
                         RETURN u.username`;
         const locationId = req.body.locationId;
         const result = await session.run(cypher, {
             userId: req.body.userId,
             locationId: locationId,
-            time: new Date().toString(),
         });
 
         if (result.records.length > 0) {

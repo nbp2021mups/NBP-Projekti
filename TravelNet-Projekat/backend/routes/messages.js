@@ -1,12 +1,7 @@
 const { int } = require("neo4j-driver");
 const driver = require("../neo4jdriver");
 const router = require("express").Router();
-const {
-    lRangeMessage,
-    rPushMessage,
-    lSetMessage,
-    getConnection,
-} = require("./../redisclient");
+const { getConnection } = require("./../redisclient");
 const { validateNewMessage } = require("./../validation/messageValidation");
 
 const session = driver.session();
@@ -47,6 +42,7 @@ router.get("/:chatId/:startIndex/:count", async(req, res) => {
                 id: r.get("m").identity.low,
                 ...r.get("m").properties,
                 chatId: r.get("m").properties.chatId.low,
+                timeSent: new Date(r.get("m").properties.timeSent),
             });
         });
         return res.send(result);

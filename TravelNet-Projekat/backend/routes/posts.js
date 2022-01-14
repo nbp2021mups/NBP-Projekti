@@ -21,7 +21,6 @@ router.post(
             const params = {
                 description: req.body.description,
                 idU: int(req.body.userId),
-                time: new Date().toString(),
                 image: imgPath,
             };
             let cypher;
@@ -32,7 +31,7 @@ router.post(
                 cypher = `MATCH (u:User), (l:Location)
                       WHERE id(u)=$idU AND l.country=$country AND l.city=$city
                       SET l.postsNo=l.postsNo+1, u.postsNo=u.postsNo+1
-                      CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)
+                      CREATE (u)-[r1:SHARED{time: datetime()}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l)
                       RETURN id(l), l.followersNo, u.username`;
             } else if (
                 (req.body.country && req.body.newCity) ||
@@ -68,7 +67,7 @@ router.post(
                 cypher = `MATCH (u:User)
                         WHERE id(u)=$idU
                         SET u.postsNo=u.postsNo+1
-                        CREATE (u)-[r1:SHARED{time: $time}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
+                        CREATE (u)-[r1:SHARED{time: datetime()}]->(p:Post {description: $description, likeNo:0, commentNo:0, image: $image})-[r2:LOCATED_AT]->(l:Location {country: $country, city: $city, postsNo:1, followersNo:0})
                         WITH l, u
                         RETURN id(l), l.followersNo, u.username`;
             } else {
@@ -132,7 +131,7 @@ router.post(
                             MERGE (u)-[:HAS]->(n:Notification{
                                 from: $loc,
                                 to: u.username,
-                                timeSent: $time,
+                                timeSent: datetime(),
                                 read: $read,
                                 content: id(l),
                                 type: 'new-post-on-location'
@@ -140,7 +139,6 @@ router.post(
                         await session.run(followedUsersCypher, {
                             country: params.country,
                             city: params.city,
-                            time: new Date().toString(),
                             read: false,
                             loc: message.text,
                         });

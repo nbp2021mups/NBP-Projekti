@@ -13,7 +13,9 @@
       <div class="card text-center marginable">
         <div class="time-close-div">
           <label>{{ getDate(notification.timeSent) }}</label>
-          <button class="hoverable" (click)="deleteNotification(i)">X</button>
+          <button class="hoverable" (click)="deleteNotification(i)">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
         <div
           class="card-body hoverable"
@@ -31,7 +33,9 @@
       <div class="card text-center marginable">
         <div class="time-close-div">
           <label>{{ getDate(notification.timeSent) }}</label>
-          <button class="hoverable" (click)="deleteNotification(i)">X</button>
+          <button class="hoverable" (click)="deleteNotification(i)">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
         <div
           class="card-body hoverable"

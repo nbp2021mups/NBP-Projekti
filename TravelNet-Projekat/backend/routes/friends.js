@@ -12,11 +12,11 @@ router.post("/request", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User), (u2:User)
                         WHERE u1.username=$u1 AND u2.username=$u2
-                        MERGE (u1)-[r:SENT_REQUEST{time: $time}]->(u2)
+                        MERGE (u1)-[r:SENT_REQUEST{time: datetime()}]->(u2)
                         MERGE (u2)-[:HAS]->(n:Notification{
                             from: u1.username,
                             to: u2.username,
-                            timeSent: $time,
+                            timeSent: datetime(),
                             read: $read,
                             content: id(r),
                             type: 'sent-friend-request'
@@ -25,13 +25,13 @@ router.post("/request", async(req, res) => {
         const params = {
             u1: req.body.username1,
             u2: req.body.username2,
-            time: new Date().toString(),
             read: false,
         };
         const result = await session.run(cypher, params);
         const notification = {
             id: result.records[0].get("n").identity.low,
             ...result.records[0].get("n").properties,
+            timeSent: new Date(result.records[0].get("n").properties.timeSent),
         };
         const redisClient = await getConnection();
         await redisClient.publish(
@@ -77,15 +77,15 @@ router.post("/accept", async(req, res) => {
                         MERGE (u1)-[r2:HAS]->(c:Chat{
                             unreadCount: 0,
                             topMessageFrom: $from,
-                            topMessageTimeSent: $since,
+                            topMessageTimeSent: datetime(),
                             topMessageContent: $msgContent
                         })<-[r3:HAS]-(u2)
-                        MERGE (u1)<-[r4:IS_FRIEND{since: $since, chatId: id(c)}]-(u2)
-                        MERGE (u1)-[r5:IS_FRIEND{since: $since, chatId: id(c)}]->(u2)
+                        MERGE (u1)<-[r4:IS_FRIEND{since: datetime(), chatId: id(c)}]-(u2)
+                        MERGE (u1)-[r5:IS_FRIEND{since: datetime(), chatId: id(c)}]->(u2)
                         MERGE (u1)-[r6:HAS]->(n1:Notification{
                             from: u2.username,
                             to: u1.username,
-                            timeSent: $since,
+                            timeSent: datetime(),
                             read: $read,
                             content: id(r4),
                             type: 'accepted-friend-request'
@@ -93,7 +93,7 @@ router.post("/accept", async(req, res) => {
                         MERGE (u2)-[r7:HAS]->(n2:Notification{
                             from: u1.username,
                             to: u2.username,
-                            timeSent: $since,
+                            timeSent: datetime(),
                             read: $read,
                             content: id(r5),
                             type: 'accepted-friend-request'
@@ -107,7 +107,6 @@ router.post("/accept", async(req, res) => {
         const params = {
             id1: req.body.id1,
             id2: req.body.id2,
-            since: new Date().toString(),
             from: "System",
             msgContent: "Novi prijatelj!",
             read: false,
@@ -117,6 +116,7 @@ router.post("/accept", async(req, res) => {
         const notification = {
             id: result.records[0].get("n1").identity.low,
             ...result.records[0].get("n1").properties,
+            timeSent: new Date(result.records[0].get("n1").properties.timeSent),
         };
         const redisClient = await getConnection();
         await redisClient.publish(

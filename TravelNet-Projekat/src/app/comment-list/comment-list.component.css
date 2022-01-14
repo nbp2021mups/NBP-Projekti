@@ -1,0 +1,39 @@
+.full-width {
+    width: 95%;
+}
+
+.comment-list-card {
+    height: 65vh;
+}
+
+.centered {
+    display: flex;
+    flex-direction: row;
+    flex: 1 0 95%;
+    justify-content: center;
+}
+
+.mat-card-list {
+    height: 45vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+    width: 0.5em;
+    border-radius: 1em;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 1em;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 1em;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
