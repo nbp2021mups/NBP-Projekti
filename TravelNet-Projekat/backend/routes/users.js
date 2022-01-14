@@ -36,7 +36,7 @@ router.post(
         const url = req.protocol + "://" + req.get("host");
         let imgPath = url + "/images/";
         if (req.file) imgPath += req.file.filename;
-        else imgPath += "universal.jpg";
+        else imgPath += "profile-avatar.jpg";
 
         try {
             let cypher = `CREATE (a:User {firstName: $firstName,
@@ -346,7 +346,7 @@ router.get("/profile/:username/:limit", async(req, res) => {
 router.get("/light/:username", async(req, res) => {
     try {
         const cypher = `MATCH (u: User {username:$username})
-                        RETURN u.firstName, u.lastName, 
+                        RETURN u.firstName, u.lastName,
                         u.username, u.image`;
         const result = await session.run(cypher, { username: req.params.username });
 

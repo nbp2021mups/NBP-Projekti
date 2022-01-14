@@ -33,6 +33,8 @@ import { CommentComponent } from './comment/comment.component';
 import { CommentListComponent } from './comment-list/comment-list.component';
 import { LocationCardComponent } from './location-card/location-card.component';
 import { LocationCardListComponent } from './location-card-list/location-card-list.component';
+import { EditProfileComponent } from './edit-profile/edit-profile.component';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @NgModule({
   declarations: [
@@ -57,6 +59,7 @@ import { LocationCardListComponent } from './location-card-list/location-card-li
     CommentListComponent,
     LocationCardComponent,
     LocationCardListComponent,
+    EditProfileComponent,
   ],
   imports: [
     BrowserModule,
@@ -70,6 +73,7 @@ import { LocationCardListComponent } from './location-card-list/location-card-li
     ReactiveFormsModule,
     MatSelectModule,
     HttpClientModule,
+    MatExpansionModule
   ],
   providers: [],
   bootstrap: [AppComponent],

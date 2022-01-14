@@ -1,36 +1,38 @@
-.container{
-    background-color: white;
+.container {
+  background-color: white;
 }
-.info-text{
-    font-size: 150%;
-    margin: 0%;
+.info-text {
+  font-size: 150%;
+  margin: 0%;
 }
-.load-more{
-    color: #555555;
-    border: none;
-    box-shadow: none;
-    background-color: transparent;
+.load-more {
+  color: #555555;
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
 }
-.load-more:hover{
-    color: black;
+.load-more:hover {
+  color: black;
 }
-.name{
-    color: #555555;
+.name {
+  color: #555555;
 }
-.username{
-    font-weight: 700;
+.username {
+  font-weight: 700;
 }
-.bio{
-    font-weight: 450;
-    font-family: cursive;
-    font-style: italic;
-    color: darkblue;
+.bio {
+  font-weight: 450;
+  font-family: cursive;
+  font-style: italic;
+  color: darkblue;
 }
-.button-t{
-    background-color: transparent;
+.button-t {
+  background-color: transparent;
 }
-.button-t:hover{
-    background-color: #efefef;
-    color: #040461;
-    border: 1px solid #040461;
+.button-t:hover {
+  background-color: #efefef;
+  color: #040461;
+  border: 1px solid #040461;
+}
+.edit-btn {
 }

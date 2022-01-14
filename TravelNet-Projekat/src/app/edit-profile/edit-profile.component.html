@@ -1,0 +1,100 @@
+<div class="container edit-profile d-flex align-items-center">
+  <mat-card class="container d-flex flex-row flex-wrap justify-content-around">
+    <form class="d-flex flex-row justify-content-center flex-wrap px-2" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="d-flex justify-content-center flex-column col-lg-5 align-items-center">
+        <div class="slika-conteiner">
+          <img
+            [src]="imagePreview"
+            class="rounded slika"
+            *ngIf="imagePreview !== '' && imagePreview"
+          />
+        </div>
+        <div class="col-sm-4">
+          <button
+            class="btn btn-outline-primary mt-3 w-100"
+            type="button"
+            (click)="filePicker.click()"
+          >
+            Promeni sliku
+          </button>
+          <input
+            type="file"
+            name="image"
+            #filePicker
+            (change)="onImagePicked($event)"
+          />
+        </div>
+      </div>
+      <div class=" d-flex flex-column col-lg-6">
+        <div class="d-flex flex-row flex-wrap">
+          <mat-form-field class="p-2 col-12 col-lg-6" appearance="outline">
+            <mat-label>Ime</mat-label>
+            <input
+            matInput
+            type="text"
+            id="ime"
+            name="ime"
+            formControlName="ime"
+            >
+            <mat-error *ngIf="form.get('ime').invalid">Molimo Vas da unesete Vaše ime</mat-error>
+
+          </mat-form-field>
+          <mat-form-field class="p-2 col-12 col-lg-6" appearance="outline">
+            <mat-label>Prezime</mat-label>
+            <input
+            matInput
+            type="text"
+            id="prezime"
+            name="prezime"
+            formControlName="prezime"
+            >
+            <mat-error *ngIf="form.get('prezime').invalid">Molimo Vas da unesete Vaše prezime</mat-error>
+          </mat-form-field>
+      </div>
+      <div class="d-flex flex-row flex-wrap">
+        <mat-form-field class="p-2 col-12 col-lg-6" appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input
+          [disabled]="true"
+          matInput
+          type="email"
+          id="email"
+          name="email"
+          formControlName="email"
+          >
+        </mat-form-field>
+        <mat-form-field class="p-2 col-12 col-lg-6" appearance="outline">
+          <mat-label>Korisničko ime</mat-label>
+          <input
+          matInput
+          type="text"
+          id="username"
+          name="username"
+          formControlName="username"
+          [disabled]="true"
+          >
+        </mat-form-field>
+      </div>
+      <mat-form-field class="  p-2" appearance="outline">
+        <mat-label>Opis</mat-label>
+        <textarea
+          style="resize: none;"
+          matInput
+          type="string"
+          name="opis"
+          cols="40"
+          rows="4"
+          maxlength="250"
+          formControlName="opis"
+        ></textarea>
+      </mat-form-field>
+      <mat-expansion-panel [expanded]="false">
+        <mat-expansion-panel-header>
+          <mat-panel-title class="text-center"> Promena lozinke </mat-panel-title>
+        </mat-expansion-panel-header>
+
+      </mat-expansion-panel>
+      </div>
+    </form>
+  </mat-card>
+</div>
