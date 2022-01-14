@@ -27,7 +27,7 @@ export enum ProfileType {
 })
 export class ProfilePageComponent implements OnInit, OnDestroy {
   person: PersonFull;
-  loggedUserSub: Subscription;
+  userSub: Subscription;
   loggedID: number;
   loggedUsername: string;
   profileType: ProfileType;
@@ -44,10 +44,10 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe({
+    this.userSub = this.route.params.subscribe({
       next: (params: Params) => {
         const username = params['username'];
-        this.loggedUserSub = this.authService.user.subscribe((user) => {
+        this.authService.user.subscribe((user) => {
           if (!user) {
             return;
           }
@@ -76,7 +76,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
                 this.person = userData.person;
               });
           }
-        });
+        }).unsubscribe();
       },
     });
   }
@@ -203,7 +203,18 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       .unsubscribe();
   }
 
+
+  onFriendsClicked() {
+
+  }
+
+
+  onLocationsClicked() {
+    
+  }
+
+
   ngOnDestroy(): void {
-    this.loggedUserSub.unsubscribe();
+    this.userSub.unsubscribe();
   }
 }

@@ -39,10 +39,14 @@
                     <button class="btn btn-primary w-100 mt-1" routerLink="/add-post">Nova objava</button>
                 </div>
                 <div class="col-7 col-sm-3">
-                    <button class="btn btn-profile mt-1 button-t btn-outline-primary">{{ "Prijatelji: " + person.friendsNo}}</button>
+                    <button class="btn btn-profile mt-1 button-t btn-outline-primary" (click)="onFriendsClicked()">
+                        {{ "Prijatelji: " + person.friendsNo}}
+                    </button>
                 </div>
                 <div class="col-7 col-sm-3">
-                    <button class="btn btn-profile mt-1 button-t btn-outline-primary">{{ "Lokacije: "+ person.followedLocNo}}</button>
+                    <button class="btn btn-profile mt-1 button-t btn-outline-primary" (click)="onLocationsClicked()">
+                        {{ "Lokacije: "+ person.followedLocNo}}
+                    </button>
                 </div>
             </div>
         </div>
