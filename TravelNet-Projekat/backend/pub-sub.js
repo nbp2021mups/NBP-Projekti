@@ -120,12 +120,14 @@ const storeMessage = async(msg) => {
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.topMessageFrom=$from,
-                    c.topMessageTimeSet=datetime(),
+                    c.topMessageTo=$to,
+                    c.topMessageTimeSent=datetime(),
                     c.topMessageContent=$content,
                     c.unreadCount=c.unreadCount+1`;
     await driver.session().run(cypher, {
         chatId: int(msg.chatId),
         from: msg.from,
+        to: msg.to,
         content: msg.content,
     });
 };
@@ -137,6 +139,7 @@ const updateMessages = async(data) => {
         `unread-messages:chat:${data.chatId}`,
         String(data["unreadCount"]),
     ]);
+    if (!result) return;
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.unreadCount=0
