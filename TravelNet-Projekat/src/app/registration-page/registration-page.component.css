@@ -1,8 +1,3 @@
-.container {
-  margin-top: 5%;
-  width: 66%;
-}
-
 .mat-form-field-appearance-fill .mat-form-field-flex {
   background-color: rgb(13 104 136 / 13%);
 }
@@ -12,11 +7,17 @@ input[type="file"] {
 }
 
 .slika {
-  width: 250px;
-  height: 250px;
-  margin-bottom: 1%;
+  width: 230px;
+  height: 230px;
+  max-width: 230px;
+  max-height: 230px;
 }
-.slika-conteiner {
+/* .slika-conteiner {
   display: flex;
   flex-direction: row;
+}
+ */
+
+.reg {
+  height: 90%;
 }

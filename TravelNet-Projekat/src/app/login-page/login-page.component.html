@@ -2,10 +2,10 @@
 
   <mat-card class="container d-flex flex-row flex-wrap justify-content-around">
     <div class="col-md-8 p-3">
-      <img src="./../../assets/resources/login-page-2.jpg" alt="" class="img-fluid rounded">
+      <img src="./../../assets/resources/login-page.jpg" alt="" class="img-fluid rounded">
     </div>
     <form class ="col-md-4 py-3 px-2 d-flex flex-column justify-content-center"[formGroup]="form" (ngSubmit)="onSubmit()">
-      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="fill">
+      <mat-form-field class="input-group mb-3 form-group col-md-6" appearance="outline">
         <mat-label>Korisničko ime</mat-label>
         <input
         matInput
@@ -17,7 +17,7 @@
         <mat-error *ngIf="form.get('username').invalid">Molimo Vas da unesete korisničko ime</mat-error>
 
       </mat-form-field>
-      <mat-form-field class="input-group mb-3 lozinka form-group col-md-6" appearance="fill">
+      <mat-form-field class="input-group mb-3 lozinka form-group col-md-6" appearance="outline">
         <mat-label>Lozinka</mat-label>
         <input
         matInput

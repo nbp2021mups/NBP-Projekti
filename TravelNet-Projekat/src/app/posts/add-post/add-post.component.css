@@ -1,7 +1,10 @@
 .slika {
-  width: 60%;
-  height: 30%;
+  max-width: 60%;
+  max-height: 35%;
+  min-width: 30%;
+  min-height: 20%;
   margin: 2% 0;
+  align-self: center;
 }
 
 input[type="file"] {
