@@ -1,9 +1,0 @@
-//USER
-
-CREATE CONSTRAINT user_username_unique FOR (u:User) REQUIRE u.username IS UNIQUE
-CREATE CONSTRAINT user_email_unique FOR (u:User) REQUIRE u.email IS UNIQUE
-CREATE CONSTRAINT user_ime_not_null FOR (u:User) REQUIRE u.ime IS NOT NULL
-CREATE CONSTRAINT user_prezime_not_null FOR (u:User) REQUIRE u.prezime IS NOT NULL
-CREATE CONSTRAINT user_username_not_null FOR (u:User) REQUIRE u.username IS NOT NULL
-CREATE CONSTRAINT user_email_not_null FOR (u:User) REQUIRE u.email IS NOT NULL
-CREATE CONSTRAINT user_lozinka_not_null FOR (u:User) REQUIRE u.lozinka IS NOT NULL
