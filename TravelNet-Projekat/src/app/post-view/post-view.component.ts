@@ -45,11 +45,13 @@ export class PostViewComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     window.scrollTo({
-      top: Number.MAX_SAFE_INTEGER,
+      top: window.document.body.scrollHeight,
       left: 0,
       behavior: 'smooth',
     });
-    window.document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      window.document.body.style.overflow = 'hidden';
+    }, 350);
   }
 
   onCloseView() {

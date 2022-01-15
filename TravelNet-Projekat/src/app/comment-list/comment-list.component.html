@@ -13,7 +13,7 @@
   </div>
 
   <div class="controll">
-    <h2 *ngIf="comments.length == 0">Objava nema komentara</h2>
+    <h4 *ngIf="comments.length == 0">Objava nema komentara</h4>
     <h5 class="header-more" *ngIf="hasMore" (click)="loadMore()">
       Učitaj još komentara
     </h5>

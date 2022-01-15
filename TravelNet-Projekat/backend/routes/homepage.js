@@ -38,29 +38,29 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
             };
 
             /* const result = await session.run(cypher, params);
-            return res.send(result.records); */
+                        return res.send(result.records); */
 
             result = (await session.run(cypher, params)).records.map((x) => ({
                 post: {
-                    id: x.get('p').identity.low,
-                    image: x.get('p').properties.image,
-                    commentNo: x.get('p').properties.commentNo.low,
-                    likeNo: x.get('p').properties.likeNo.low,
-                    desc: x.get('p').properties.description,
-                    liked: x.get('liked')
+                    id: x.get("p").identity.low,
+                    image: x.get("p").properties.image,
+                    commentNo: x.get("p").properties.commentNo.low,
+                    likeNo: x.get("p").properties.likeNo.low,
+                    desc: x.get("p").properties.description,
+                    liked: x.get("liked"),
                 },
                 user: {
-                    id: x.get('id(u)').low,
-                    fName: x.get('u.firstName'),
-                    lName: x.get('u.lastName'),
-                    username: x.get('u.username'),
-                    image: x.get('u.image')
+                    id: x.get("id(u)").low,
+                    fName: x.get("u.firstName"),
+                    lName: x.get("u.lastName"),
+                    username: x.get("u.username"),
+                    image: x.get("u.image"),
                 },
                 loc: {
-                    id: x.get('id(loc)').low,
-                    city: x.get('loc.city'),
-                    country: x.get('loc.country')
-                }
+                    id: x.get("id(loc)").low,
+                    city: x.get("loc.city"),
+                    country: x.get("loc.country"),
+                },
             }));
 
             if (result) {
