@@ -13,3 +13,19 @@ a{
     color:blue;
     cursor: pointer;
 }
+.decor{
+    color: white;
+    font-weight: 450;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    font-size: 1.3em;
+    font-family: cursive;
+}
+.decor-container{
+    background-color: #343a40;
+}
+.load-more{
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}

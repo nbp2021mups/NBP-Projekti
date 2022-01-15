@@ -94,6 +94,9 @@
       </div>
     </div>
     <div class="container">
+      <div class="alert alert-danger text-center ml-auto m-3" *ngIf="error">
+        {{ error }}
+      </div>
       <div class="col-md-12 text-center">
         <button class="btn btn-outline-primary btn-add-post" type="submit"
         [disabled]="(form.get('drzava').invalid || form.get('slika').invalid || form.get('opis').invalid)

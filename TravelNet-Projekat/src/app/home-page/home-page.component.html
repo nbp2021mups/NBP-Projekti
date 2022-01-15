@@ -1,17 +1,28 @@
-<div class="row justify-content-around d-flex flex-wrap my-2">
-    <div class="col-sm-2">
-        <app-hotspots></app-hotspots>
+<app-spinner class="spinner" *ngIf="isLoading"></app-spinner>
+
+<div class="row justify-content-around d-flex flex-wrap my-2 p-2" *ngIf="!isLoading">
+    <div class="col-sm-3">
+        <app-hotspots [locations]="this.leaderboard"></app-hotspots>
     </div>
 
-    <div class="col-12 col-sm-7" *ngIf="this.posts && this.posts.length > 0">
+    <div class="col-12 col-sm-6 d-flex justify-content-center flex-column" *ngIf="this.posts && this.posts.length > 0">
         <app-post-list [profilePosts]="false" [posts]="this.posts"></app-post-list>
+
+        <div class="container border-bottom border-dark my-2"></div>
+        <button mat-icon-button class="w-10 mb-3 load-more" 
+        (click)="loadMore($event)" *ngIf = "this.hasMore"><mat-icon>keyboard_arrow_down</mat-icon></button>
     </div>
+
     <div *ngIf="this.posts && this.posts.length == 0" class="text-center tekst col-12 col-sm-7 text-wrap">
         Vasa pocetna strana je prazna, potrazite lokacije, ili prijatelje koje vas zanimaju na stranici
         <span class="link"><a routerLink="/explore">Explore</a></span>
     </div>
 
-    <div class="col-sm-2">
-        <app-hotspots></app-hotspots>
+    <div class="col-sm-3">
+        <p class="decor p-4 decor-container rounded">Tako su navedeni orijentalni Istanbul, šarmantni Milano, besprekorni Pariz i nezaobilazna, 
+            raskošna austrijska prestonica. Kada smo posle pogledali praznične fotografije iz ovih gradova, 
+            uverili smo se da su autori definitivno bili u pravu prilikom pisanja ovog zanimljivog turističkog 
+            teksta, jer su ovi gradovi za praznike zaista izgledali magično, a izbora za šoping u njima ima na pretek!
+        </p>
     </div>
 </div>

@@ -28,6 +28,13 @@ export class HomepageService {
 
 
     getLeaderboard() {
-        return this.http.get<any>('http://localhost:3000/leaderboards');
+        return this.http.get<any>('http://localhost:3000/leaderboards')
+        .pipe(map(resp => {
+            const ret = [];
+            resp.forEach(loc => {
+                ret.push({loc: new LocationBasic(loc.id, loc.country, loc.city), postsNo: loc.postsNo});
+            });
+            return ret;
+        }));
     }
 }

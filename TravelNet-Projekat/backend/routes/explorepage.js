@@ -7,7 +7,6 @@ const { int } = require('neo4j-driver');
 const driver = require('../neo4jdriver');
 const session = driver.session();
 const redisClient = require('../redisclient');
-const { json } = require("stream/consumers");
 
 //PROSTOR ZA METODE
 
