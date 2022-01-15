@@ -61,7 +61,7 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
                 },
             }));
 
-            if (result) {
+            if (result && result.length > 0) {
                 await redisClient
                     .multi()
                     .rPush(

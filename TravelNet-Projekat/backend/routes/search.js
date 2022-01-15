@@ -181,16 +181,16 @@ router.get("/posts/:name/:userId/:startIndex/:count", async(req, res) => {
         const cypher = `WITH toLower($name) AS lower
                         MATCH (u:User)-[r:SHARED]->(p:Post)-[:LOCATED_AT]->(l:Location)
                         WHERE (NOT id(u) = $userId) AND 
-                        (toLower(u.username) CONTAINS lower 
-                        OR toLower(u.firstName) CONTAINS lower 
-                        OR toLower(u.lastName) CONTAINS lower
-                        OR toLower(l.city) CONTAINS lower
-                        OR toLower(l.country) CONTAINS lower)
+                        (toLower(u.username) CONTAINS lower OR
+                        toLower(l.city) CONTAINS lower OR
+                        toLower(l.country) CONTAINS lower OR
+                        toLower(u.firstName) CONTAINS lower OR
+                        toLower(u.lastName) CONTAINS lower)
                         CALL
                         {
                             WITH p
-                            OPTIONAL MATCH l=(u1)-[:LIKED]->(p) WHERE id(u1)=$userId
-                            RETURN l IS NOT NULL AS LIKED
+                            OPTIONAL MATCH k=(u1)-[:LIKED]->(p) WHERE id(u1)=$userId
+                            RETURN k IS NOT NULL AS LIKED
                         }
                         RETURN { id: id(p), userId: id(u), userFirstName: u.firstName, userLastName: u.lastName,
                                 userImage: u.image, userUsername: u.username, 
@@ -208,6 +208,7 @@ router.get("/posts/:name/:userId/:startIndex/:count", async(req, res) => {
             name: req.params.name != NO_FILTER ? req.params.name : "",
         };
         const result = await session.run(cypher, params);
+
         const parsedRes = result.records.map((x) => {
             try {
                 return {

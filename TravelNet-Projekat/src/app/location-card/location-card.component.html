@@ -1,6 +1,6 @@
 <mat-card class="d-flex flex-row flex-wrap justify-content-between align-items-center p-2">
     <div class="col-md-4"><p class="link" [routerLink]="['/location', this.location.loc.id]">{{location.loc.city + ", " + location.loc.country}}</p></div>
     <div class="col-md-2"><p>{{location.postNo + " objava na lokaciji"}}</p></div>
-    <button class="btn btn-primary" *ngIf="location.followed" (click)="onUnfollowClicked()">Otprati</button>
-    <button class="btn btn-primary" *ngIf="!location.followed" (click)="onFollowClicked()">Zaprati</button>
+    <button class="btn btn-outline-primary info-btn" *ngIf="location.followed" (click)="onUnfollowClicked()">Otprati</button>
+    <button class="btn btn-outline-primary info-btn" *ngIf="!location.followed" (click)="onFollowClicked()">Zaprati</button>
 </mat-card>

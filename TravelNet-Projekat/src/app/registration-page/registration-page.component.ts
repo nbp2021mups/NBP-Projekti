@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { mimeType } from '../mime-type-validator/mime-type-validator';
 import { AuthService } from '../services/authentication/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-registration-page',
@@ -12,7 +13,7 @@ export class RegistrationPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
   imagePreview: string='./../../assets/resources/profile-avatar.jpg';
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService ,private router: Router) { }
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -45,6 +46,7 @@ export class RegistrationPageComponent implements OnInit {
 
     this.authService.register(fName, lName, email, username, password, desc, image).subscribe(
       {next : (resp) => {
+        this.router.navigate(["login"]);
         console.log(resp);
       },
       error : (err) => {
