@@ -232,4 +232,107 @@ router.get("/posts/:name/:userId/:startIndex/:count", async(req, res) => {
     }
 });
 
+router.get(
+    "/explore/users/:userId/:pattern/:startIndex/:count",
+    async(req, res) => {
+        try {
+            const cypher = `WITH toLower($pattern) as lower
+                            MATCH (u:User)
+                            WHERE toLower(u.username) CONTAINS lower
+                            OR toLower(u.firstName) CONTAINS lower 
+                            OR toLower(u.lastName) CONTAINS lower
+                            CALL
+                            {
+                                WITH u
+                                OPTIONAL MATCH p=(u)-[:IS_FRIEND]->(u1) WHERE id(u1)=$userId
+                                OPTIONAL MATCH q=(u)-[:SENT_REQUEST]->(u1) WHERE id(u1)=$userId
+                                OPTIONAL MATCH r=(u)<-[:SENT_REQUEST]-(u1) WHERE id(u1)=$userId
+                                RETURN {friends: p IS NOT NULL, requested: q IS NOT NULL, pending: r IS NOT NULL} AS STATUS
+                            }
+                            RETURN {
+                                person: {
+                                    id: id(u),
+                                    imagePath: u.image,
+                                    username: u.username,
+                                    firstName: u.firstName,
+                                    lastName: u.lastName
+                                },
+                                status: STATUS
+                            } AS USER
+                            ORDER BY u.firstName, u.lastName, u.username ASC
+                            SKIP $startIndex
+                            LIMIT $count`;
+            const params = {
+                userId: int(req.params.userId),
+                pattern: req.params.pattern,
+                startIndex: int(req.params.startIndex),
+                count: int(req.params.count),
+            };
+            const result = await session.run(cypher, params);
+            return res.send(
+                result.records.map((x) => ({
+                    person: {
+                        ...x.get("USER").person,
+                        id: x.get("USER").person.id.low,
+                    },
+                    status: x.get("USER").status,
+                }))
+            );
+        } catch (err) {
+            console.log(err);
+            return res.status(501).send("Došlo je do greske!");
+        }
+    }
+);
+
+router.get(
+    "/explore/locations/:userId/:pattern/:startIndex/:count",
+    async(req, res) => {
+        try {
+            const cypher = `WITH toLower($pattern) as lower
+                            MATCH (l:Location)
+                            WHERE toLower(l.city) CONTAINS lower
+                            OR toLower(l.country) CONTAINS lower
+                            CALL
+                            {
+                                WITH l
+                                OPTIONAL MATCH k=(u:User)-[:FOLLOWS]->(l) WHERE id(u)=$userId
+                                RETURN k IS NOT NULL as FOLLOWS
+                            }
+                            RETURN {
+                                loc: {
+                                    id: id(l),
+                                    city: l.city,
+                                    country: l.country
+                                },
+                                followed: FOLLOWS,
+                                postNo: l.postsNo
+                            } AS LOCATION
+                            ORDER BY l.country, l.city ASC
+                            SKIP $startIndex
+                            LIMIT $count`;
+            const params = {
+                userId: int(req.params.userId),
+                pattern: req.params.pattern,
+                startIndex: int(req.params.startIndex),
+                count: int(req.params.count),
+            };
+            const result = await session.run(cypher, params);
+            return res.send(
+                result.records.map((x) => ({
+                    loc: {
+                        ...x.get("LOCATION").loc,
+                        id: x.get("LOCATION").loc.id.low,
+                    },
+                    followed: x.get("LOCATION").followed,
+                    postNo: x.get("LOCATION").postNo.low,
+                }))
+            );
+        } catch (err) {
+            console.log(err);
+            return res.status(501).send("Došlo je do greske!");
+        }
+    }
+);
+
 module.exports = router;

@@ -11,7 +11,7 @@ export abstract class SearchService {
   protected pattern: string;
   protected start: number;
   protected count: number;
-  protected hasMore: BehaviorSubject<Object> = new BehaviorSubject<Object>(
+  protected hasMore: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
     false
   );
   protected loggedUser: { username: string; id: number };
@@ -21,6 +21,7 @@ export abstract class SearchService {
   }
 
   initialLoad(pattern: string, count: number) {
+    console.log('initial load');
     this.pattern = pattern;
     this.count = count;
     this.start = 0;
@@ -29,9 +30,9 @@ export abstract class SearchService {
 
   abstract loadMore(): void;
 
-  abstract getIncoming(): Observable<Object>;
+  abstract getIncoming(): Observable<Array<Object>>;
 
-  getHasMore(): Observable<Object> {
+  getHasMore(): Observable<boolean> {
     return this.hasMore.asObservable();
   }
 }

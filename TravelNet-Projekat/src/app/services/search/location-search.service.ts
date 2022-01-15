@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
+import { LocationBasic } from 'src/app/models/location_models/location-basic.model';
 import { LocationFull } from 'src/app/models/location_models/location-full.model';
 import { SearchService } from './search.service';
 
@@ -8,21 +9,24 @@ import { SearchService } from './search.service';
   providedIn: 'root',
 })
 export class LocationSearchService extends SearchService {
-  private incoming: BehaviorSubject<Array<LocationFull>> = new BehaviorSubject(
-    []
-  );
+  private incoming: BehaviorSubject<
+    Array<{ loc: LocationBasic; followed: boolean; postNo: number }>
+  > = new BehaviorSubject([]);
 
-  getIncoming(): Observable<Array<LocationFull>> {
+  getIncoming(): Observable<
+    Array<{ loc: LocationBasic; followed: boolean; postNo: number }>
+  > {
     return this.incoming.asObservable();
   }
 
   loadMore() {
     this.http
       .get(
-        `http://localhost:3000/search/locations/${this.pattern}/${this.loggedUser.id}/${this.start}/${this.count}`
+        `http://localhost:3000/search/explore/locations/${this.loggedUser.id}/${this.pattern}/${this.start}/${this.count}`
       )
       .subscribe({
-        next: (data: Array<LocationFull>) => {
+        next: (data: any) => {
+          console.log(this.pattern, data);
           this.incoming.next(data);
           this.hasMore.next(data.length == this.count);
           this.start += data.length;
