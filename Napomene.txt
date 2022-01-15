@@ -1,3 +1,10 @@
+Članovi tima:
+- Miljana 	Simić 		[17401]
+- Uroš 		Pešić 		[17356]
+- Petar 	Petković 	[17339]
+- Stefan 	Aleksić 	[16995]
+
+
 U bazi je kreirano dosta korisničkih naloga, neki od popunjenih kako bi se isprobale sve funkcionalnosti aplikacije jesu:
 username: miljana
 lozinka: miljana123

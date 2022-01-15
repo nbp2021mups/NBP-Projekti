@@ -56,7 +56,7 @@
     flex-direction: column;
     justify-content: space-between;
     width: 100%;
-    height: 100%;
+    height: fit-content;
     background-color: rgba(153, 155, 255, 0.459);
     border-radius: 2em;
     margin: 1em;

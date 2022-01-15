@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Observable } from 'rxjs/internal/Observable';
 import { LocationBasic } from 'src/app/models/location_models/location-basic.model';
-import { LocationFull } from 'src/app/models/location_models/location-full.model';
 import { SearchService } from './search.service';
 
 @Injectable({
@@ -11,7 +10,7 @@ import { SearchService } from './search.service';
 export class LocationSearchService extends SearchService {
   private incoming: BehaviorSubject<
     Array<{ loc: LocationBasic; followed: boolean; postNo: number }>
-  > = new BehaviorSubject([]);
+  > = new BehaviorSubject(null);
 
   getIncoming(): Observable<
     Array<{ loc: LocationBasic; followed: boolean; postNo: number }>

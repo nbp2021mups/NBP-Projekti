@@ -33,8 +33,14 @@ export class ExploreService {
   public searchToggle: boolean = false;
   public searchType: string = 'Korisnici';
 
-  public hasMoreUsers: boolean = false;
-  public hasMoreLocations: boolean = false;
+  public hasMore: { users: boolean; locations: boolean } = {
+    users: false,
+    locations: false,
+  };
+  public noResult: { users: boolean; locations: boolean } = {
+    users: false,
+    locations: false,
+  };
 
   constructor(
     private http: HttpClient,
@@ -63,21 +69,19 @@ export class ExploreService {
     if (key == 'Enter') {
       this.locationSerachService.getIncoming().subscribe({
         next: (res) => {
-          const locationpool = this.locationPool.length;
-          res.forEach((u) => {
-            if (!this.pulledData[u.loc.id]) {
-              this.pulledData[u.loc.id] = u;
-              this.locationPool.push(u);
-            }
-          });
-          this.hasMoreLocations = this.locationPool.length - locationpool == 10;
-          this.filterLocations(filter);
-          console.log(
-            filter,
-            'No search results',
-            this.displayedLocations.length == 0
-          );
-          console.log(filter, 'Has more locations', this.hasMoreLocations);
+          if (res) {
+            const locationpool = this.locationPool.length;
+            res.forEach((u) => {
+              if (!this.pulledData[u.loc.id]) {
+                this.pulledData[u.loc.id] = u;
+                this.locationPool.push(u);
+              }
+            });
+            this.filterLocations(filter);
+            this.hasMore.locations =
+              this.locationPool.length - locationpool == 10;
+            this.noResult.locations = this.displayedLocations.length == 0;
+          }
         },
         error: (er) => console.log(er),
       });
@@ -91,21 +95,18 @@ export class ExploreService {
     if (key == 'Enter') {
       this.userSearchService.getIncoming().subscribe({
         next: (res) => {
-          const userpool = this.userPool.length;
-          res.forEach((u) => {
-            if (!this.pulledData[u.person.id]) {
-              this.pulledData[u.person.id] = u;
-              this.userPool.push(u);
-            }
-          });
-          this.hasMoreUsers = this.userPool.length - userpool == 10;
-          this.filterUsers(filter);
-          console.log(
-            filter,
-            'No search results',
-            this.displayedUsers.length == 0
-          );
-          console.log(filter, 'Has more users', this.hasMoreUsers);
+          if (res) {
+            const userpool = this.userPool.length;
+            res.forEach((u) => {
+              if (!this.pulledData[u.person.id]) {
+                this.pulledData[u.person.id] = u;
+                this.userPool.push(u);
+              }
+            });
+            this.filterUsers(filter);
+            this.hasMore.users = this.userPool.length - userpool == 10;
+            this.noResult.users = this.displayedUsers.length == 0;
+          }
         },
         error: (er) => console.log(er),
       });
@@ -121,6 +122,7 @@ export class ExploreService {
         lP.loc.city.toLowerCase().match(filter) ||
         lP.loc.country.toLowerCase().match(filter)
     );
+    if (this.displayedLocations.length > 0) this.noResult.locations = false;
   }
   filterUsers(filter: string) {
     this.displayedUsers = this.userPool.filter(
@@ -129,16 +131,13 @@ export class ExploreService {
         uP.person.firstName.toLowerCase().match(filter) ||
         uP.person.lastName.toLowerCase().match(filter)
     );
+    if (this.displayedUsers.length > 0) this.noResult.users = false;
   }
 
-  loadMore() {
-    switch (this.searchType) {
-      case 'Korisnici':
-        this.userSearchService.loadMore();
-        break;
-      case 'Lokacije':
-        this.locationSerachService.loadMore();
-        break;
-    }
+  loadMoreUsers() {
+    this.userSearchService.loadMore();
+  }
+  loadMoreLocations() {
+    this.locationSerachService.loadMore();
   }
 }
