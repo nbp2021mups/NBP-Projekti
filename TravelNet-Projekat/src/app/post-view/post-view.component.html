@@ -5,9 +5,6 @@
     </button>
   </div>
   <div class="content">
-    <div class="comment-list-div">
-      <app-comment-list [post]="this.post"></app-comment-list>
-    </div>
     <div class="post-div">
       <app-post
         [post]="this.post"
@@ -15,6 +12,10 @@
         [showImage]="true"
       >
       </app-post>
+    </div>
+
+    <div class="comment-list-div">
+      <app-comment-list [post]="this.post"></app-comment-list>
     </div>
   </div>
 </div>

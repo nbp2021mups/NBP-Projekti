@@ -25,20 +25,18 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
 
         if (result.length == 0) {
             const cypher = `MATCH (logU:User{username: $username})-[:IS_FRIEND]->(u:User)-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc:Location)
-            OPTIONAL MATCH (p)<-[l:LIKED]-(logU)
-            WITH u,s,p,l,loc
-            ORDER BY s.time DESC
-            SKIP $start LIMIT $count
-            RETURN id(u), u.firstName, u.lastName, u.username, u.image, id(loc), loc.country, loc.city, count(l) > 0 as liked, p`;
+                            OPTIONAL MATCH (p)<-[l:LIKED]-(logU)
+                            WITH u,s,p,l,loc
+                            ORDER BY s.time DESC
+                            SKIP $start LIMIT $count
+                            RETURN id(u), u.firstName, u.lastName, u.username,
+                            u.image, id(loc), loc.country, loc.city, count(l) > 0 as liked, p`;
 
             const params = {
                 username: req.params.username,
                 start: int(req.params.startIndex),
                 count: int(req.params.count),
             };
-
-            /* const result = await session.run(cypher, params);
-                        return res.send(result.records); */
 
             result = (await session.run(cypher, params)).records.map((x) => ({
                 post: {
@@ -68,7 +66,7 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
                     .multi()
                     .rPush(
                         `homepagePosts:${username}`,
-                        ...result.map((x) => JSON.stringify(x))
+                        result.map((x) => JSON.stringify(x))
                     )
                     // LT je od verzije 7.0.0
                     // postavlja expiration samo ukoliko je trenutno vreme isteka manje od novog koje se postavlja
@@ -76,7 +74,6 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
                     .exec();
             }
         }
-        console.log(result);
         return res.send(result);
     } catch (ex) {
         console.log(ex);
