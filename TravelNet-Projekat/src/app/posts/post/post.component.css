@@ -1,15 +1,23 @@
-mat-card-title, mat-card-subtitle, img:hover{
-    cursor: pointer;
+mat-card-title,
+mat-card-subtitle,
+img:hover {
+  cursor: pointer;
 }
 
-.float-r{
-    float: right;
+.float-r {
+  float: right;
 }
-.post-desc{
-    font-size: 0.8em;
-    color: #cfcfcf;
+.post-desc {
+  font-size: 0.8em;
+  color: #cfcfcf;
 }
-.anot{
-    font-weight: 100;
-    font-size: 15px;
+.anot {
+  font-weight: 100;
+  font-size: 15px;
+}
+
+.location-info:hover,
+.user-info:hover {
+  cursor: pointer;
+  color: #6666ff;
 }
