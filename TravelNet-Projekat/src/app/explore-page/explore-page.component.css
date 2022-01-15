@@ -1,0 +1,78 @@
+.search-div {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    border-bottom: 0.2em solid rgb(15, 15, 61);
+}
+
+.search-div>button {
+    background-color: rgba(240, 248, 255, 0);
+    border: none;
+    box-shadow: none;
+    width: 10%;
+}
+
+.search-type {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    flex: 1 0 10%;
+}
+
+.search-input {
+    padding: 0.5em;
+    text-align: center;
+    flex: 3 0 80%;
+    width: 80%;
+    background-color: rgba(240, 248, 255, 0);
+    border: 0;
+    font-size: large;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex: 1 0 100%;
+    width: 100%;
+    height: 80vh;
+}
+
+.search-result-div {
+    width: 80%;
+    height: 80vh;
+    padding: 2em;
+    justify-self: center;
+}
+
+.search-users-div,
+.search-locations-div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(153, 155, 255, 0.459);
+    border-radius: 2em;
+    margin: 1em;
+    padding: 1em;
+}
+
+.result-list-div {
+    height: 80%;
+    padding: 2em;
+    margin: 1em;
+}
+
+.load-more-button {
+    border: 0;
+    border-radius: 2em;
+    padding: 0.5em;
+    font-size: medium;
+    background-color: rgba(85, 85, 85, 0.192);
+}

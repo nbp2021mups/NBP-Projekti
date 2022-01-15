@@ -1,7 +1,6 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/authentication/auth.service';
-import { ExploreService } from '../services/explore/explore.service';
 import { PopUpService } from '../services/pop-up/pop-up.service';
 import { SocketService } from '../services/socket/socket.service';
 
@@ -19,8 +18,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private popUpService: PopUpService,
-    private socketSer: SocketService,
-    public exploreService: ExploreService
+    private socketSer: SocketService
   ) {}
 
   ngOnInit(): void {
@@ -47,10 +45,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.userSub.unsubscribe();
-  }
-
-  @HostListener('document:keyup', ['$event'])
-  onKeyUp(event: KeyboardEvent) {
-    if (event.key == 'Escape') this.exploreService.searchToggle = false;
   }
 }

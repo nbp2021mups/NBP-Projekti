@@ -1,10 +1,5 @@
 <nav class="navbar navbar-expand-sm navbar-dark bg-dark sticky-top">
-  <input
-    placeholder="Pretražite korisnike i lokacije..."
-    *ngIf="this.exploreService.searchToggle"
-    class="search-input"
-  />
-  <div class="container-fluid" *ngIf="!this.exploreService.searchToggle">
+  <div class="container-fluid">
     <a class="navbar-brand" routerLink="">TravelNet</a>
 
     <button
@@ -24,11 +19,7 @@
         <a class="nav-link" routerLink="/home" *ngIf="isLoggedIn"
           ><mat-icon>home</mat-icon></a
         >
-        <a
-          class="nav-link"
-          routerLink="/explore"
-          *ngIf="isLoggedIn"
-          (click)="this.exploreService.searchToggle = true"
+        <a class="nav-link" routerLink="/explore" *ngIf="isLoggedIn"
           ><mat-icon>search</mat-icon></a
         >
         <a class="nav-link" routerLink="/messages" *ngIf="isLoggedIn"
@@ -68,34 +59,3 @@
   (destroy)="toggleNotifications()"
   *ngIf="displayNotifications && isLoggedIn"
 ></app-notifications>
-<div
-  class="search-result-div animate__animated animate__bounceInDown"
-  *ngIf="this.exploreService.searchToggle"
->
-  <div class="search-users-div">
-    <h3>Korisnici</h3>
-    <app-friends-list
-      [friends]="this.exploreService.displayedUsers"
-      [displayData]="true"
-    ></app-friends-list>
-    <button
-      class="load-more-button"
-      (click)="this.exploreService.loadMoreUsers()"
-    >
-      Učitaj još
-    </button>
-  </div>
-  <div class="search-locations-div">
-    <h3>Lokacije</h3>
-    <app-location-card-list
-      [locations]="this.exploreService.displayedLocations"
-      [displayData]="true"
-    ></app-location-card-list>
-    <button
-      class="load-more-button"
-      (click)="this.exploreService.loadMoreLocations()"
-    >
-      Učitaj još
-    </button>
-  </div>
-</div>

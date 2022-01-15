@@ -1,3 +1,69 @@
+<div class="search-div">
+  <div class="search-type p-1">
+    <div>
+      <label class="m-1">Korisnici</label>
+      <input
+        type="radio"
+        name="search-type"
+        value="Korisnici"
+        [(ngModel)]="this.exploreService.searchType"
+      />
+    </div>
+    <div>
+      <label class="m-1">Lokacije</label>
+      <input
+        type="radio"
+        name="search-type"
+        value="Lokacije"
+        [(ngModel)]="this.exploreService.searchType"
+      />
+    </div>
+  </div>
+  <input
+    placeholder="Pretražite mrežu..."
+    class="search-input"
+    [(ngModel)]="this.exploreService.searchFilter"
+    (keyup)="this.exploreService.search($event)"
+  />
+  <button (click)="this.exploreService.searchToggle = false">
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+<div class="search-container" *ngIf="this.exploreService.searchToggle">
+  <div class="search-result-div animate__animated animate__bounceInDown">
+    <div class="search-users-div">
+      <h3>{{ this.exploreService.searchType }}</h3>
+
+      <div class="result-list-div">
+        <app-location-card-list
+          *ngIf="this.exploreService.searchType == 'Lokacije'"
+          [locations]="this.exploreService.displayedLocations"
+          [displayData]="true"
+        ></app-location-card-list>
+
+        <app-friends-list
+          *ngIf="this.exploreService.searchType == 'Korisnici'"
+          [friends]="this.exploreService.displayedUsers"
+          [displayData]="true"
+        ></app-friends-list>
+      </div>
+
+      <button
+        class="load-more-button"
+        (click)="this.exploreService.loadMore()"
+        *ngIf="
+          (this.exploreService.searchType == 'Korisnici' &&
+            this.exploreService.hasMoreUsers) ||
+          (this.exploreService.searchType == 'Lokacije' &&
+            this.exploreService.hasMoreLocations)
+        "
+      >
+        Učitaj još
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="row justify-content-around d-flex flex-wrap my-2">
   <div class="col-sm-2">
     <app-friends-list></app-friends-list>

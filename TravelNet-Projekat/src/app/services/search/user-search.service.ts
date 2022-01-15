@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable } from 'rxjs';
+import { PersonBasic } from 'src/app/models/person_models/person-basic.model';
 import {
   PersonExplore,
   ProfileType,
@@ -11,45 +12,39 @@ import { SearchService } from './search.service';
   providedIn: 'root',
 })
 export class UserSearchService extends SearchService {
-  private incoming: BehaviorSubject<Array<PersonExplore>>;
+  private incoming: BehaviorSubject<
+    Array<{ person: PersonBasic; status: string }>
+  > = new BehaviorSubject<Array<{ person: PersonBasic; status: string }>>([]);
 
-  getIncoming(): Observable<Array<PersonExplore>> {
+  getIncoming(): Observable<Array<{ person: PersonBasic; status: string }>> {
     return this.incoming.asObservable();
   }
 
   loadMore() {
     this.http
       .get(
-        `http://localhost:3000/search/users/${this.pattern}/${this.loggedUser.id}/${this.start}/${this.count}`
+        `http://localhost:3000/search/explore/users/${this.loggedUser.id}/${this.pattern}/${this.start}/${this.count}`
       )
       .pipe(
-        map((data: Array<any>) =>
-          data.map(
-            (x) =>
-              new PersonExplore(
-                x.id,
-                x.firstName,
-                x.lastName,
-                x.image,
-                x.username,
-                x.friendsNo,
-                x.postsNo,
-                x.followedLocationsNo,
-                x.id == this.loggedUser.id
-                  ? ProfileType.personal
-                  : x.status.friends
-                  ? ProfileType.friend
-                  : x.status.requested
-                  ? ProfileType.rec_req
-                  : x.status.pending
-                  ? ProfileType.sent_req
-                  : ProfileType.non_friend
-              )
-          )
+        map((data: Array<{ person: PersonBasic; status: any }>) =>
+          data.map((x) => ({
+            person: x.person,
+            status:
+              x.person.id == this.loggedUser.id
+                ? 'personal'
+                : x.status.friends
+                ? 'friend'
+                : x.status.requested
+                ? 'rec_req'
+                : x.status.pending
+                ? 'sent_req'
+                : 'non_friend',
+          }))
         )
       )
       .subscribe({
         next: (data) => {
+          console.log(this.pattern, data);
           this.incoming.next(data);
           this.hasMore.next(data.length == this.count);
           this.start += data.length;

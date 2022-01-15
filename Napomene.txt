@@ -1,0 +1,23 @@
+U bazi je kreirano dosta korisničkih naloga, neki od popunjenih kako bi se isprobale sve funkcionalnosti aplikacije jesu:
+username: miljana
+lozinka: miljana123
+
+username: sara
+lozinka: sara123
+
+Za pokretanje aplikacije potrebno je pokrenuti glavni server, socket server i angular korišćenjem komandi redom:
+ng serve
+npm run server
+npm run socket-server
+
+Baze su deljene online, lozinke za pristup su:
+
+Redis (https://app.redislabs.com)-Prijavljivanje preko google naloga:
+	gmail: "nbp2021mups@gmail.com"
+	password: "imateli1000pereca"
+	
+neo4j (https://console.neo4j.io):
+	username: "nbp2021mups@gmail.com"
+	password: "Imate li 1000 pereca?"
+
+Ako je bilo šta potrebno objasniti, otvoreni smo za bilo kakva pitanja.
