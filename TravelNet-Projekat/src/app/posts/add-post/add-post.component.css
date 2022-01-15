@@ -15,3 +15,13 @@ input[type="file"] {
   display: flex;
   flex-direction: row;
 }
+
+.btn-add-post {
+  background-color: transparent;
+}
+.btn-add-post:hover {
+  background-color: #b0f0f5;
+  opacity: 0.8;
+  color: rgb(42, 16, 66);
+  border: 1px solid #540a57;
+}

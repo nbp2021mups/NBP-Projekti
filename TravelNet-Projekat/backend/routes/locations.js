@@ -149,7 +149,6 @@ router.get("/all-locations", async(req, res) => {
 
 router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
     try {
-        //(loc:Location)<-[f:FOLLOWS]-(logUser:User)
         const cypher = `MATCH (loc:Location)
                   WHERE ID(loc)=$idL
                   OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
@@ -159,12 +158,18 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
                   ORDER BY s.time DESC
                   LIMIT $limit
                   CALL{
-                    WITH post, loc
-                    MATCH (post)<-[like:LIKED]-(logUser:User)
+                    WITH post, loc, u
+                    OPTIONAL MATCH (post)<-[like:LIKED]-(logUser:User)
                     WHERE ID(logUser)=$idU
                     RETURN count(like)>0 AS liked
                   }
-                  RETURN loc, count(f)>0 AS follow, collect([post, id(u), u.username, u.firstName, u.lastName, u.image, liked]) AS posts`;
+                  CALL{
+                    WITH u
+                    OPTIONAL MATCH (logUser:User)-[friend:IS_FRIEND]->(u)
+                    WHERE ID(logUser)=$idU
+                    RETURN count(friend) AS numFriend
+                  }
+                  RETURN loc, count(f)>0 AS follow, collect([post, id(u), u.username, u.firstName, u.lastName, u.image, liked, numFriend]) AS posts`;
 
         const params = {
             idL: int(req.params.locationId),
@@ -204,6 +209,7 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
                         image: post[5],
                     },
                     liked: post[6],
+                    isFriend: post[7]
                 });
             });
         }

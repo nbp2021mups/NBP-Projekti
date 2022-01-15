@@ -18,3 +18,13 @@ input[type="file"] {
     height: 90%;
   }
 }
+
+.btn-reg {
+  background-color: transparent;
+}
+.btn-reg:hover {
+  background-color: #b0f0f5;
+  opacity: 0.8;
+  color: rgb(42, 16, 66);
+  border: 1px solid #540a57;
+}

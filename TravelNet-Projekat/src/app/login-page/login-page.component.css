@@ -1,3 +1,13 @@
 .login {
   height: 90%;
 }
+
+.btn-login {
+  background-color: transparent;
+}
+.btn-login:hover {
+  background-color: #b0f0f5;
+  opacity: 0.8;
+  color: rgb(42, 16, 66);
+  border: 1px solid #540a57;
+}
