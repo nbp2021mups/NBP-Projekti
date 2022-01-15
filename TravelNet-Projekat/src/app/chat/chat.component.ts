@@ -63,13 +63,15 @@ export class ChatComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loggedUser = JSON.parse(window.localStorage.getItem('logged-user'));
     this.searchService.getIncoming().subscribe((convs) => {
-      this.filteredConversations = convs;
       this.conversations = [
         ...this.conversations,
         ...convs.filter(
           (c) => this.conversations.find((el) => el.id == c.id) == null
         ),
       ];
+      this.filteredConversations = this.conversations.filter((c) =>
+        c.friend.match(this.filter)
+      );
     });
     this.searchService
       .getHasMore()
