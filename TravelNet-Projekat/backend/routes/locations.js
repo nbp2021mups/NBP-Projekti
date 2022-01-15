@@ -275,4 +275,50 @@ router.get('/personalLocations/:user', async (req, res) => {
     }
 })
 
+
+
+router.get('/:locId/followers/:logUser', async(req,res) => {
+    try{
+        const cypher = `MATCH (u:User)-[:FOLLOWS]->(loc:Location)
+        WHERE id(loc)=$locId
+        OPTIONAL MATCH (u)-[r:IS_FRIEND|SENT_REQUEST]-(logU: User{username: $logUser})
+        RETURN DISTINCT id(u), u.firstName, u.lastName, u.username, u.image, type(r)="IS_FRIEND" as friend,
+        type(r)="SENT_REQUEST" and startNode(r)=logU as sent, type(r)="SENT_REQUEST" and startNode(r)=u as recv`;
+        const params = {locId: id(req.params.locId), logUser: req.params.logUser}
+
+        const result = await session.run(cypher, params);
+
+        const parsedRes = [];
+        result.records.forEach(record => {
+            let status;
+            if(record.get(3) == req.params.logUser){
+                status = 'personal'
+            } else if(record.get(5)){
+                status = 'friend'
+            } else if(record.get(6)){
+                status = 'send_req'
+            } else if (record.get(7)) {
+                status = 'rec_req'
+            } else {
+                status = 'non_friend'
+            }
+            parsedRes.push({
+                id: record.get(0).low,
+                fName: record.get(1),
+                lName: record.get(2),
+                username: record.get(3),
+                image: record.get(4),
+                status: status
+            });
+        });
+
+        return res.send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+});
+
+
 module.exports = router;
