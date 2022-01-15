@@ -1,10 +1,11 @@
-<div class = "container-fluid border rounded p-3 mb-2">
-    <div class = "row text-center">
+<div class = "container-fluid border rounded p-3 mb-2 hotspots rounded">
+    <div class = "row text-center text-white">
         <h4>Popularne lokacije</h4>
     </div>
     <div class="row flex-column">
-        <div class="col-12" *ngFor="let loc of locations">
-            <a class="text-center border-top m-0 nav-link">{{loc.locName}}</a>
+        <div class="col-12 hotspot rounded mb-1" *ngFor="let loc of locations">
+            <p class="text-center m-0 mx-2 link tekst">{{loc.loc.city + ", " + loc.loc.country }}</p>
+            <p class="text-center m-0 mx-2 tekst"> {{ loc.postsNo + " objava" }}</p>
         </div>
     </div>
 </div>

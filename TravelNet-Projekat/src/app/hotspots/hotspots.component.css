@@ -1,0 +1,17 @@
+.hotspots{
+    background-color: #343a40;
+}
+.hotspot{
+    background-color: #cfcfcf;
+}
+.tekst{
+    color: #444444;
+}
+.link:hover{
+    color: black;
+    cursor: pointer;
+}
+.link{
+    font-weight: 500;
+    font-size: 1.2em;
+}

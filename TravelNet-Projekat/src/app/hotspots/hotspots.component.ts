@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { LocationBasic } from '../models/location_models/location-basic.model';
 
 @Component({
@@ -8,7 +8,8 @@ import { LocationBasic } from '../models/location_models/location-basic.model';
 })
 export class HotspotsComponent implements OnInit {
 
-  locations: LocationBasic[] = [];
+  @Input()
+  locations: {loc: LocationBasic, postsNo: number}[] = [];
 
   constructor() { }
 
