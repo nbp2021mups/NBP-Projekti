@@ -1,61 +1,74 @@
-.full-width {
-    width: 100%;
-}
-
-.comment-list-card {
-    height: 70.5vh;
-    background-color: rgba(255,255,255, 0.5);
-}
-
-.centered {
+.container {
     display: flex;
-    flex-direction: row;
-    flex: 1 0 95%;
+    flex-direction: column;
+    width: 100%;
+    max-height: 70vh;
+    height: 70vh;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    border-radius: 1em;
+    border: 0.25em solid rgba(66, 66, 66, 0.5);
+    padding: 0.25;
+}
+
+h1 {
+    margin-top: 0.5em;
+}
+
+.content {
+    display: fixed;
+    flex: 3 0 70%;
+    max-height: 70%;
+    height: 100px;
+    border-top: 1% dashed black;
+    border-bottom: 2% solid black;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+.controll {
+    display: flex;
+    width: 100%;
+    flex: 1 0 10%;
+    flex-direction: column;
     justify-content: center;
 }
 
-.mat-card-list {
-    height: 45vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column-reverse;
+.header-more {
+    text-align: center;
 }
-.btn-load {
-    width: 100%;
-    background-color: darkgray;
+
+.header-more:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
-.btn-load:hover{
-    background-color: white;
-    color: black;
+
+input {
+    border-radius: 2em;
+    padding: 0.75em;
+    margin-bottom: 0.2em;
+    background-color: rgba(62, 58, 75, 0.288);
+    border: 0;
 }
+
 ::-webkit-scrollbar {
     width: 0.5em;
     border-radius: 1em;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: rgb(160, 160, 160);
     border-radius: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: rgb(100, 100, 100);
     border-radius: 1em;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: rgb(130, 130, 130);
 }
-
-/* .btn-com{
-    float: right;
-    color: #999999;
-}
-.btn-com:hover{
-    float: right;
-    color: white;
-}
-.actions{
-    margin-top: -1.25em;
-} */

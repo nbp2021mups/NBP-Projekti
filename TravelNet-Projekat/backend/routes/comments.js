@@ -9,7 +9,6 @@ const { getConnection } = require("../redisclient");
 
 router.post("", async(req, res) => {
     try {
-        console.log(req.body);
         const cypher = `MATCH (u:User), (p:Post)<-[:SHARED]-(toUser:User)
                         WHERE id(u)=$userId AND id(p)=$postId
                         SET p.commentNo=p.commentNo+1
@@ -22,7 +21,7 @@ router.post("", async(req, res) => {
                             content: id(r),
                             type: 'post-comment'
                         })
-                        RETURN n`;
+                        RETURN n, r`;
         const params = {
             userId: req.body.userId,
             postId: req.body.postId,
@@ -41,7 +40,7 @@ router.post("", async(req, res) => {
             JSON.stringify({ type: "new-notification", payload: notification })
         );
 
-        return res.send({ msg: "Komentar uspešno postavljen!" });
+        return res.send({ commentId: result.records[0].get("r").identity.low });
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
@@ -71,6 +70,23 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
                 time: new Date(c.get("r").properties.time),
             }))
         );
+    } catch (ex) {
+        console.log(ex);
+        return res.status(401).send("Došlo je do greške");
+    }
+});
+
+router.delete("/:commentId", async(req, res) => {
+    try {
+        const cypher = `MATCH (:User)-[r:COMMENTED]-(:Post)
+                        WHERE id(r)=$commentId
+                        DETACH DELETE r`;
+        const params = {
+            commentId: int(req.params.commentId),
+        };
+        await session.run(cypher, params);
+
+        return res.send({ msg: "Komentar je uspesno obrisan!" });
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");

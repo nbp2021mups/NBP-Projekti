@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Comment } from './../models/comment/comment';
 import { SocketService } from '../services/socket/socket.service';
 import { PostHomePageModel } from '../models/post_models/post-homepage.model';
@@ -9,19 +9,37 @@ import { PostHomePageModel } from '../models/post_models/post-homepage.model';
   templateUrl: './comment-list.component.html',
   styleUrls: ['./comment-list.component.css'],
 })
-export class CommentListComponent implements OnInit {
+export class CommentListComponent implements OnInit, OnDestroy {
   @Input()
   public post: PostHomePageModel;
+
   public loggedUser: { username: string; id: number };
+
   public comments: Array<Comment> = new Array<Comment>();
+
   public hasMore: boolean = false;
-  constructor(
-    private httpService: HttpClient,
-    private socketService: SocketService
-  ) {}
+
+  constructor(private httpService: HttpClient) {}
+
+  ngOnDestroy(): void {
+    this.comments = null;
+  }
+
+  ngOnInit(): void {
+    this.loggedUser = JSON.parse(window.localStorage.getItem('logged-user'));
+    this.loadMore();
+  }
 
   public loadMore() {
-    this.loadComments(this.comments.length, 3);
+    this.loadComments(this.comments.length, 10);
+  }
+
+  public deleteComment(comment: Comment) {
+    this.httpService
+      .delete(`http://localhost:3000/comments/${comment.id}`)
+      .subscribe((res) => {
+        this.comments = this.comments.filter((c) => c.id != comment.id);
+      });
   }
 
   public sendComment(event) {
@@ -33,10 +51,10 @@ export class CommentListComponent implements OnInit {
         comment: event.target.value,
       })
       .subscribe({
-        next: () => {
+        next: (res: any) => {
           this.comments = [
             new Comment(
-              0,
+              res.commentId,
               this.loggedUser.username,
               event.target.value,
               new Date()
@@ -61,10 +79,5 @@ export class CommentListComponent implements OnInit {
         },
         error: (er) => console.log(er),
       });
-  }
-
-  ngOnInit(): void {
-    this.loggedUser = JSON.parse(window.localStorage.getItem('logged-user'));
-    this.loadMore();
   }
 }

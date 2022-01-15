@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+  OnDestroy,
+  HostListener,
+} from '@angular/core';
 import { PostHomePageModel } from '../models/post_models/post-homepage.model';
 
 @Component({
@@ -6,7 +14,7 @@ import { PostHomePageModel } from '../models/post_models/post-homepage.model';
   templateUrl: './post-view.component.html',
   styleUrls: ['./post-view.component.css'],
 })
-export class PostViewComponent implements OnInit {
+export class PostViewComponent implements OnInit, OnDestroy {
   @Input()
   public post: PostHomePageModel;
 
@@ -16,11 +24,41 @@ export class PostViewComponent implements OnInit {
   @Output()
   viewClosed: EventEmitter<void> = new EventEmitter<void>();
 
+  private inside: boolean = false;
+
   constructor() {}
 
-  ngOnInit(): void {}
+  ngOnDestroy(): void {
+    this.onCloseView();
+  }
+
+  @HostListener('click', ['$event'])
+  clickInside(event) {
+    this.inside = true;
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event) {
+    if (!this.inside) event.stopPropagation();
+    this.inside = false;
+  }
+
+  ngOnInit(): void {
+    window.scrollTo({
+      top: Number.MAX_SAFE_INTEGER,
+      left: 0,
+      behavior: 'smooth',
+    });
+    window.document.body.style.overflow = 'hidden';
+  }
 
   onCloseView() {
+    window.scrollTo({
+      top: this.startY,
+      left: 0,
+      behavior: 'smooth',
+    });
+    window.document.body.style.overflow = 'auto';
     this.viewClosed.emit();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { DAYS, MILLISECONDS_PER_DAY } from '../chat/chat.component';
 import { AuthService } from '../services/authentication/auth.service';
 import { Comment } from './../models/comment/comment';
@@ -10,20 +10,26 @@ import { Comment } from './../models/comment/comment';
 })
 export class CommentComponent implements OnInit {
   @Input() comment: Comment;
-  @Input() postId: number;
+  @Output()
+  commentDeleted: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Input() postedUsername: string;
 
   allowDel: boolean = false;
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.authService.user.subscribe(user => {
-      if(user.username == this.comment.from || user.username == this.postedUsername){
-        this.allowDel = true;
-      } else {
-        this.allowDel = false;
-      }
-    }).unsubscribe();
+    this.authService.user
+      .subscribe((user) => {
+        if (
+          user.username == this.comment.from ||
+          user.username == this.postedUsername
+        ) {
+          this.allowDel = true;
+        } else {
+          this.allowDel = false;
+        }
+      })
+      .unsubscribe();
   }
 
   getDate(dateStr) {

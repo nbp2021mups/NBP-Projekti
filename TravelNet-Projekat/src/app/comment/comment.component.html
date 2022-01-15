@@ -1,14 +1,23 @@
 <mat-card class="comment-card m-0 mt-1">
   <div class="space">
     <div class="content col-9">
-      <b>@{{ comment.from }}: </b>
+      <b class="hoverable" [routerLink]="['/profile/', comment.from]"
+        >@{{ comment.from }}:
+      </b>
       {{ comment.comment }}
     </div>
     <div class="time text-center col-2">
       {{ getDate(comment.time) }}
     </div>
     <div class="col-1">
-      <button class="btn" mat-icon-button *ngIf="allowDel"><mat-icon>delete</mat-icon></button>
+      <button
+        class="btn"
+        mat-icon-button
+        *ngIf="allowDel"
+        (click)="this.commentDeleted.emit(true)"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
     </div>
   </div>
 </mat-card>

@@ -1,23 +1,20 @@
-<div class="backdrop" [ngStyle]="{ top: this.startY.toString() + 'px' }"></div>
-<button
-  (click)="onCloseView()"
-  class="close"
-  mat-icon-button
-  [ngStyle]="{ top: (this.startY + 15).toString() + 'px' }"
->
-  <mat-icon>close</mat-icon>
-</button>
-<div
-  class="panel rounded rounded-lg d-flex flex-row justify-content-center flex-wrap align-items-center p-2"
-  [ngStyle]="{ top: (this.startY + 10).toString() + 'px' }"
->
-  <app-post
-    [post]="this.post"
-    class="image-part col-sm-6 border border-white"
-    [showImage]="true"
-  ></app-post>
-  <div class="col-12 col-sm-6">
-    <app-comment-list [post]="post"></app-comment-list>
+<div class="container">
+  <div class="header">
+    <button (click)="onCloseView()" class="close" mat-icon-button>
+      <mat-icon>close</mat-icon>
+    </button>
   </div>
-  
+  <div class="content">
+    <div class="comment-list-div">
+      <app-comment-list [post]="this.post"></app-comment-list>
+    </div>
+    <div class="post-div">
+      <app-post
+        [post]="this.post"
+        class="image-part col-sm-6 border border-white"
+        [showImage]="true"
+      >
+      </app-post>
+    </div>
+  </div>
 </div>
