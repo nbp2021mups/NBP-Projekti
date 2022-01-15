@@ -12,6 +12,8 @@ import { Router } from '@angular/router';
 export class RegistrationPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
+  error: string = '';
+  success: string = '';
   imagePreview: string='./../../assets/resources/profile-avatar.jpg';
   constructor(private authService: AuthService ,private router: Router) { }
 
@@ -46,12 +48,20 @@ export class RegistrationPageComponent implements OnInit {
 
     this.authService.register(fName, lName, email, username, password, desc, image).subscribe(
       {next : (resp) => {
-        this.router.navigate(["login"]);
+        this.success=resp;
+        setTimeout(()=>{
+          this.router.navigate(["login"]);
+        },3000);
+        //this.router.navigate(["login"]);
         console.log(resp);
       },
       error : (err) => {
-        console.log(err);
-      }});
+        this.error=err.error;
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
+        }
+      });
 
     //this.form.reset()c
   }

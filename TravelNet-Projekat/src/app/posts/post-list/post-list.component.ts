@@ -11,6 +11,8 @@ export class PostListComponent implements OnInit {
   posts: PostHomePageModel[] = [];
   @Input()
   profilePosts: boolean = false;
+  @Input()
+  commDisabled: boolean = false;
 
   public post: PostHomePageModel = null;
   startY: number;

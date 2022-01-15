@@ -19,6 +19,7 @@ export class AddPostComponent implements OnInit {
   locations: LocationBasic[] = [];
   drzava: string;
   grad: string;
+  error: string='';
 
   constructor(private locService: LocationsService, private authService: AuthService,
     private http: HttpClient, private router: Router) { }
@@ -74,10 +75,18 @@ export class AddPostComponent implements OnInit {
       console.log(postValues.get('city'))
       console.log(postValues.get('newCountry'))
       console.log(postValues.get('newCity'))
-      this.http.post('http://localhost:3000/posts', postValues, {responseType: 'text'}).subscribe(resp => {
-        alert(resp);
-        this.router.navigate(['/profile', username]);
-      });
+      this.http.post('http://localhost:3000/posts', postValues, {responseType: 'text'}).
+      subscribe({
+        next: (resp) =>{
+          this.router.navigate(['/profile', username]);
+        },
+        error: (err) =>{
+          this.error=err.error;
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
+        }
+      })
     }).unsubscribe();
   }
 

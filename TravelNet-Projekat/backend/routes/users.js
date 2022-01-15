@@ -64,23 +64,27 @@ router.post(
             cypher += "})";
             await session.run(cypher, params);
 
-            return res.send("Uspesno registrovan");
+            return res.send("Uspešno ste se registrovali, pokušajte da se prijavite.");
         } catch (ex) {
+          console.log(ex);
+          if(req.file){
             fs.unlink(req.file.path, (err) => {
-                if (err)
-                    return res
-                        .status(409)
-                        .send("Niste uneli validne podatke, proverite ponovo.");
+              if (err)
+                  return res
+                      .status(409)
+                      .send("Niste uneli validne podatke, proverite ponovo.");
             });
-            console.log(ex);
-            if (ex.message.includes("email"))
-                return res
-                    .status(409)
-                    .send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
-            else
-                return res
-                    .status(409)
-                    .send("Postoji nalog sa ovim username-om, probajte ponovo");
+          }
+
+
+          if (ex.message.includes("email"))
+              return res
+                  .status(409)
+                  .send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
+          else
+              return res
+                  .status(409)
+                  .send("Postoji nalog sa ovim username-om, probajte ponovo.");
         }
     }
 );
@@ -125,6 +129,7 @@ router.patch(
     "/:id",
     multer({ storage: storage }).single("image"),
     async(req, res) => {
+      console.log("body",req.body)
         try {
             let chyper = "";
             const params = new Object();
@@ -141,16 +146,18 @@ router.patch(
               chyper += "u.lastName = $lastName";
               params.lastName = req.body.lastName;
           }
-
-            if (req.body.password && req.body.newPassword) {
+            console.log(chyper,params,"linija 148")
+            if (req.body.newPassword) {
                 const result = await session.run(
                     "MATCH (u:User) WHERE id(u)=$id RETURN u.password", { id: int(req.params.id) }
                 );
+                console.log(chyper,params,"linija 153")
                 const isValid = await bcrypt.compare(
                     req.body.password,
                     result.records[0].get(0)
                 );
                 if (isValid) {
+                  console.log(chyper,params,"linija 159 validna sifra")
                     const hashPassword = await bcrypt.hash(req.body.newPassword, 12);
                     if (chyper) chyper += ", ";
                     chyper += "u.password = $password";
@@ -159,10 +166,10 @@ router.patch(
                     return res
                         .status(305)
                         .send(
-                            "Uneta password se ne poklapa sa trenutnom lozinkom, proverite unete podatke."
+                            "Uneta lozinka se ne poklapa sa trenutnom lozinkom, proverite unete podatke."
                         );
             }
-
+            console.log(chyper,params,"linija 171")
             if (req.body.bio) {
                 if (chyper) chyper += ", ";
                 chyper += "u.bio = $bio";
@@ -175,9 +182,9 @@ router.patch(
                 chyper += "u.image = $image";
                 params.image = imgPath;
             }
-
+            console.log(chyper,params,"linija 185")
             await session.run("MATCH (u:User) WHERE id(u)=$id SET " + chyper, params);
-
+            console.log(chyper,params,"linija 187")
             if (req.file){
               const path ="./backend" + req.body.oldImage.substring(req.body.oldImage.indexOf("/images"));
               fs.unlink(path, (err) => {
@@ -186,14 +193,8 @@ router.patch(
             }
             return res.send("Ažuriranje podataka je uspešno.");
         } catch (ex) {
-            if (ex.message.includes("username"))
-                return res
-                    .status(409)
-                    .send("Postoji nalog sa ovim username-om, probajte ponovo.");
-            return (
-                res.status(409),
-                send("Doslo je do greške prilikom ažuriranja, pokušajte ponovo.")
-            );
+            console.log(ex)
+            return res.status(409).send("Doslo je do greške prilikom ažuriranja, pokušajte ponovo.");
         }
     }
 );

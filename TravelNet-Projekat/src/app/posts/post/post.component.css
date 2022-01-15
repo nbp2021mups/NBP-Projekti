@@ -10,6 +10,7 @@ img:hover {
 .post-desc {
   font-size: 0.8em;
   color: #cfcfcf;
+  height: 40px;
 }
 .anot {
   font-weight: 100;

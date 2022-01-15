@@ -18,6 +18,7 @@
 
 <app-post-list
     [profilePosts]="true"
+    [commDisabled]="true"
     [posts]="this.location.posts"
     *ngIf="!isLoading && this.location && this.location.posts">
 </app-post-list>

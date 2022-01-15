@@ -1,28 +1,21 @@
-<div class="container">
-  <input
-    placeholder="Pretražite objave korisnika i lokacija"
-    [(ngModel)]="this.searchFilter"
-    (keyup)="searchPosts($event)"
-  />
-  <div class="row justify-content-around d-flex flex-wrap my-2">
-    <div class="col-sm-2">
-      <app-friends-list></app-friends-list>
-    </div>
+<div class="row justify-content-around d-flex flex-wrap my-2">
+  <div class="col-sm-2">
+    <app-friends-list></app-friends-list>
+  </div>
 
-    <div
-      class="col-12 col-sm-7"
-      *ngIf="this.displayedPosts && this.displayedPosts.length > 0"
-    >
-      <app-post-list
-        [profilePosts]="false"
-        [posts]="this.displayedPosts"
-      ></app-post-list>
+  <div
+    class="col-12 col-sm-7"
+    *ngIf="this.recommendedPosts && this.recommendedPosts.length > 0"
+  >
+    <app-post-list
+      [profilePosts]="false"
+      [posts]="this.recommendedPosts"
+    ></app-post-list>
 
-      <button *ngIf="this.hasMore" (click)="loadMore()">Učitaj još</button>
-    </div>
+    <button *ngIf="this.hasMore" (click)="loadMore()">Učitaj još</button>
+  </div>
 
-    <div class="col-sm-2">
-      <app-friends-list></app-friends-list>
-    </div>
+  <div class="col-sm-2">
+    <app-friends-list></app-friends-list>
   </div>
 </div>

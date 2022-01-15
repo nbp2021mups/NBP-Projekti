@@ -33,7 +33,7 @@
         <button mat-button class = "post-button p-1 me-1" (click)="onLikeClicked()">
             <mat-icon [color]="getColor()">favorite</mat-icon><span class="anot">{{this.post.likesNo}}</span>
           </button>
-        <button mat-button class = "post-button p-1 ms-1" (click)="onCommentsClicked($event)" *ngIf = "!showImage">
+        <button mat-button class = "post-button p-1 ms-1" (click)="onCommentsClicked($event)" *ngIf = "!showImage && !commDisabled">
             <mat-icon>add_comment</mat-icon><span class="anot ms-1">{{this.post.commentsNo}}</span>
         </button>
         <button mat-button *ngIf="isPersonal" class = "post-button p-1 float-r" (click)="onDeletePost()">
