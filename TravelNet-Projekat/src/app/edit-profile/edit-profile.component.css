@@ -1,8 +1,8 @@
 .slika {
-  width: 230px;
-  height: 230px;
-  max-width: 230px;
-  max-height: 230px;
+  width: 280px;
+  height: 280px;
+  max-width: 280px;
+  max-height: 280px;
 }
 
 input[type="file"] {
@@ -13,4 +13,14 @@ input[type="file"] {
   .edit-profile {
     height: 90%;
   }
+}
+
+.btn-edit-page {
+  background-color: transparent;
+}
+.btn-edit-page:hover {
+  background-color: #b0f0f5;
+  opacity: 0.8;
+  color: rgb(42, 16, 66);
+  border: 1px solid #540a57;
 }
