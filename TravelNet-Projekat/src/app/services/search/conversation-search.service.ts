@@ -11,9 +11,16 @@ export class ConversationSearchService extends SearchService {
   private incoming: BehaviorSubject<Array<Conversation>> = new BehaviorSubject(
     []
   );
+  protected hasMore: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
+    null
+  );
 
   getIncoming(): Observable<Array<Conversation>> {
     return this.incoming.asObservable();
+  }
+
+  getHasMore(): Observable<boolean> {
+    return this.hasMore.asObservable();
   }
 
   loadMore() {

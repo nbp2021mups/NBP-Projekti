@@ -8,8 +8,12 @@
     <div class="row justify-content-around">
         <button class="btn btn-primary col-7 col-sm-2 mb-1" *ngIf="!this.location.followed" (click)="onFollowLoc()">Prati lokaciju</button>
         <button class="btn btn-info col-7 col-sm-2 mb-1" *ngIf="this.location.followed" (click)="onUnfollowLoc()">Otkazi pracenje</button>
-        <button class="btn btn-outline-primary button-t col-7 col-sm-2 mb-1">{{"Pratioci : " + this.location.followersNo}}</button>
+        <button class="btn btn-outline-primary button-t col-7 col-sm-2 mb-1" (click)="onFollowers()">{{"Pratioci : " + this.location.followersNo}}</button>
     </div>
+</div>
+
+<div class="container my-2">
+    <app-friends-list [username]="this.person.username" *ngIf="this.toggleFriends"></app-friends-list>
 </div>
 
 <app-post-list
