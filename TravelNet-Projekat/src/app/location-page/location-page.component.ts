@@ -16,6 +16,7 @@ export class LocationPageComponent implements OnInit, OnDestroy {
   paramsSub: Subscription;
   allRead: boolean = false;
   pageSize: number = 3;
+  isLoading: boolean = false;
 
   constructor(private route: ActivatedRoute, private locService: LocationsService, private authService: AuthService) { }
 
@@ -23,11 +24,13 @@ export class LocationPageComponent implements OnInit, OnDestroy {
     this.paramsSub = this.route.params.subscribe(
       {
         next: params => {
+          this.isLoading = true;
           this.authService.user.subscribe(user => {
             const id = user.id;
             this.locService.getLocation(params['locationId'], id, this.pageSize).subscribe({
               next: resp => {
                 this.location = resp;
+                this.isLoading = false;
               },
               error: err => {console.log(err);}
             });

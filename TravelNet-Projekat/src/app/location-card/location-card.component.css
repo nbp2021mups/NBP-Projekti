@@ -1,7 +1,12 @@
-.location-container{
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    text-align: center;
-    border: 1px solid black
+p{
+    white-space: nowrap;
+    margin: 0;
+}
+.link{
+    font-weight: 700;
+    color: white;
+}
+.link:hover{
+    cursor: pointer;
+    color: #6666ff;
 }

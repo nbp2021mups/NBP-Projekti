@@ -89,7 +89,7 @@ router.get("/user/:username/:startIndex/:count", async(req, res) => {
                 ...x.get("p").properties,
             })),
         };
-        res.send(rez);
+        return res.send(rez);
     } catch (ex) {
         console.log(ex);
         res.status(401).send("Došlo je do greške");

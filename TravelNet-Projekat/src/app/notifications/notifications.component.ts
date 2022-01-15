@@ -44,6 +44,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   public notifications: Array<Notification> = new Array<Notification>();
   public hasMore: boolean = false;
   private inside: boolean = true;
+  isLoading: boolean = false;
 
   constructor(
     private socketService: SocketService,
@@ -100,6 +101,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   loadConversations(start: number = 0, count: number = 20) {
+    this.isLoading = true;
     this.httpService
       .get(
         `http://localhost:3000/notifications/${this.loggedUser.id}/${start}/${count}`
@@ -109,6 +111,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         data.forEach((n) => {
           this.notifications.push(n);
         });
+        this.isLoading = false;
       });
   }
 

@@ -3,9 +3,12 @@
         <app-hotspots></app-hotspots>
     </div>
 
-    <div class="col-12 col-sm-7">
-        <app-post-list></app-post-list>
-        <app-location-card-list></app-location-card-list>
+    <div class="col-12 col-sm-7" *ngIf="this.posts && this.posts.length > 0">
+        <app-post-list [profilePosts]="false" [posts]="this.posts"></app-post-list>
+    </div>
+    <div *ngIf="this.posts && this.posts.length == 0" class="text-center tekst col-12 col-sm-7 text-wrap">
+        Vasa pocetna strana je prazna, potrazite lokacije, ili prijatelje koje vas zanimaju na stranici
+        <span class="link"><a routerLink="/explore">Explore</a></span>
     </div>
 
     <div class="col-sm-2">

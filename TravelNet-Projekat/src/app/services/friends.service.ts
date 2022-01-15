@@ -1,5 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { map } from "rxjs/operators";
+import { PersonBasic } from "../models/person_models/person-basic.model";
 
 @Injectable({providedIn: 'root'})
 export class FriendsService {
@@ -45,5 +47,31 @@ export class FriendsService {
             },
             responseType: 'text'
         });
+    }
+
+
+    getFriends(username: string, loggedUser: string) {
+
+        return this.http.get<any>('http://localhost:3000/friends/getUserFriends/' + loggedUser + '/' + username)
+        .pipe(map(resp => {
+            const ret = [];
+            resp.forEach(user => {
+                ret.push({user: new PersonBasic(user.id, user.fName, user.lName, user.image, user.username), status: user.status});
+            });
+            return ret;
+        }));
+
+    }
+
+
+    getPersonalFriends(username: string) {
+        return this.http.get<any>('http://localhost:3000/friends/personalFriends/' + username)
+        .pipe(map(resp => {
+            const ret = [];
+            resp.forEach(user => {
+                ret.push({user: new PersonBasic(user.id, user.fName, user.lName, user.image, user.username), status: 'friend'});
+            });
+            return ret;
+        }));
     }
 }

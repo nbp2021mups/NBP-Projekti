@@ -1,4 +1,9 @@
-<div>
-    <app-location-card *ngFor="let location of locations"
-    [cardLocation]="location"></app-location-card>
+<div *ngIf = " !isLoading && this.locations && this.locations.length > 0"
+    class="row flex-column border border-rounded p-2 lista rounded rounded-lg">
+    <div class="col-12 my-1" *ngFor="let location of this.locations">
+        <app-location-card [location]="{loc: location.loc, followed: location.followed, postNo: location.postNo}"></app-location-card>
+    </div>
 </div>
+
+
+<app-spinner *ngIf="isLoading" class=""></app-spinner>

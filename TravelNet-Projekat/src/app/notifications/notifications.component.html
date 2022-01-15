@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" *ngIf=!isLoading>
   <h3>Obaveštenja</h3>
   <h4 *ngIf="notifications.length == 0">Nemate obaveštenja</h4>
   <div *ngFor="let notification of notifications; index as i">

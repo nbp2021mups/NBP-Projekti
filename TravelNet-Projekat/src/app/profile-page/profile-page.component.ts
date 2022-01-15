@@ -33,6 +33,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   profileType: ProfileType;
   allRead: boolean = false;
   pageSize: number = 3;
+  toggleFriends: boolean = false;
+  toggleLocations: boolean = false;
+  isLoading: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -46,6 +49,9 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.userSub = this.route.params.subscribe({
       next: (params: Params) => {
+        this.isLoading = true;
+        this.toggleFriends = false;
+        this.toggleLocations = false;
         const username = params['username'];
         this.authService.user.subscribe((user) => {
           if (!user) {
@@ -59,6 +65,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
               .getLoggedUserProfileInfo(this.loggedUsername, this.pageSize)
               .subscribe((user) => {
                 this.person = user;
+                this.isLoading = false;
               });
           } else {
             this.profileService
@@ -74,6 +81,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
                   this.profileType = ProfileType.rec_req;
                 }
                 this.person = userData.person;
+                this.isLoading = false;
               });
           }
         }).unsubscribe();
@@ -205,12 +213,14 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
 
 
   onFriendsClicked() {
-
+    this.toggleFriends = !this.toggleFriends;
+    this.toggleLocations = false;
   }
 
 
   onLocationsClicked() {
-    
+    this.toggleLocations = !this.toggleLocations;
+    this.toggleFriends = false;
   }
 
 

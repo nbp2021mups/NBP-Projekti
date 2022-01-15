@@ -65,4 +65,29 @@ export class LocationsService{
             return resp;
         }));
     }
+
+
+
+    getPersonalLocations(username: string) {
+        return this.http.get<any>('http://localhost:3000/locations/personalLocations/' + username)
+        .pipe(map(respData => {
+            const ret = [];
+            respData.forEach(resp => {
+                ret.push({loc: new LocationBasic(resp.id, resp.country, resp.city), followed: true, postNo: resp.postNo});
+            });
+            return ret;
+        }));
+    }
+
+
+    getUserLocations(username: string, logUser: string) {
+        return this.http.get<any>('http://localhost:3000/locations/userLocations/' + username + '/' + logUser)
+        .pipe(map(respData => {
+            const ret = [];
+            respData.forEach(resp => {
+                ret.push({loc: new LocationBasic(resp.id, resp.country, resp.city), followed: resp.follows, postNo: resp.postNo});
+            });
+            return ret;
+        }));
+    }
 }

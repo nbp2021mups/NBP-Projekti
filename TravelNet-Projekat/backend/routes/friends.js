@@ -182,7 +182,7 @@ router.get("/recommendation/:userId", async(req, res) => {
             lastName: record.get("lastName"),
             image: record.get("image"),
         }));
-        res.send(rez);
+        return res.send(rez);
     } catch (ex) {
         console.log(ex);
         return res.status(401).send("Došlo je do greške");
@@ -190,7 +190,7 @@ router.get("/recommendation/:userId", async(req, res) => {
 });
 
 // Vracanje opsega prijatelja korisnika
-router.get("/:username/:startIndex/:count", async(req, res) => {
+/* router.get("/:username/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `MATCH (u1:User { username: $username })<-[r:IS_FRIEND]->(u2:User)
                         RETURN DISTINCT u2
@@ -214,6 +214,86 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
         console.log(ex);
         res.status(401).send("Došlo je do greške");
     }
+}); */
+
+
+
+router.get('/getUserFriends/:logUser/:user', async (req, res) => {
+
+    try{
+        const cypher = `MATCH (u1:User { username: $user })-[:IS_FRIEND]->(u2:User)
+        OPTIONAL MATCH (u2)-[r:IS_FRIEND|SENT_REQUEST]-(logU: User{username: $logUser})
+        RETURN DISTINCT id(u2), u2.firstName, u2.lastName, u2.username, u2.image, type(r)="IS_FRIEND" as friend, 
+        type(r)="SENT_REQUEST" and startNode(r)=logU as sent, type(r)="SENT_REQUEST" and startNode(r)=u2 as recv`;
+
+        const params = {user: req.params.user, logUser: req.params.logUser};
+
+        const result = await session.run(cypher, params);
+
+        const parsedRes = [];
+        result.records.forEach(record => {
+            let status;
+            if(record.get(3) == req.params.logUser){
+                status = 'personal'
+            } else if(record.get(5)){
+                status = 'friend'
+            } else if(record.get(6)){
+                status = 'send_req'
+            } else if (record.get(7)) {
+                status = 'rec_req'
+            } else {
+                status = 'non_friend'
+            }
+            parsedRes.push({
+                id: record.get(0).low,
+                fName: record.get(1),
+                lName: record.get(2),
+                username: record.get(3),
+                image: record.get(4),
+                status: status
+            });
+        });
+
+        return res.send(parsedRes);
+    }
+    catch(err) {
+        return res.status(501).send("Doslo je do greske!");
+    }
+
+});
+
+
+
+router.get('/personalFriends/:logUser', async (req, res) => {
+
+    try{
+        const cypher = `MATCH (u:User{username: $logUser})-[f:IS_FRIEND]->(u2:User)
+        WITH f, u2
+        ORDER BY f.since DESC
+        RETURN DISTINCT id(u2), u2.firstName, u2.lastName, u2.username, u2.image`
+
+        const params = {logUser: req.params.logUser};
+
+        const result = await session.run(cypher, params);
+        const parsedRes = [];
+
+        result.records.forEach(record => {
+            parsedRes.push({
+                id: record.get(0).low,
+                fName: record.get(1),
+                lName: record.get(2),
+                username: record.get(3),
+                image: record.get(4)
+            });
+        })
+
+        return res.send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+
 });
 
 module.exports = router;

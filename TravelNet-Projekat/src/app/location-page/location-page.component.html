@@ -1,4 +1,6 @@
-<div class="container border border-rounded my-2 p-2" *ngIf="this.location">
+<app-spinner class="spinner" *ngIf="isLoading"></app-spinner>
+
+<div class="container border border-rounded my-2 p-2" *ngIf="this.location && !isLoading">
     <div class="text-center">
         <p class="loc mb-1">{{this.location.city + ", " + this.location.country}}</p>
         <p class="text-n">{{ "Objave na ovoj lokaciji : " + this.location.postsNo}}</p>
@@ -12,7 +14,8 @@
 
 <app-post-list
     [profilePosts]="true"
-    [posts]="this.location && this.location.posts">
+    [posts]="this.location.posts"
+    *ngIf="!isLoading && this.location && this.location.posts">
 </app-post-list>
 
 <div class="container border-bottom border-dark my-2"></div>

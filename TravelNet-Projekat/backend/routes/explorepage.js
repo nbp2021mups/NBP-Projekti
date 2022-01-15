@@ -68,7 +68,7 @@ router.get("/:username", async(req, res) => {
             jsonObjava = JSON.parse(redisObjava);
             listaobjava.push(jsonObjava);
         } 
-        res.send(listaobjava);
+        return res.send(listaobjava);
     }
     catch (ex) {
         console.log(ex);

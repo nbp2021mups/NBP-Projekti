@@ -24,7 +24,7 @@ router.get("",async(req,res)=>{
   }
   catch (ex) {
       console.log(ex);
-      res.status(401).send("Došlo je do greške");
+      return res.status(401).send("Došlo je do greške");
   }
 
 })

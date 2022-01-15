@@ -220,4 +220,59 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
     }
 });
 
+
+
+router.get('/userLocations/:user/:logUser', async (req, res) => {
+    try{
+        const cypher = `MATCH (loc: Location)<-[:FOLLOWS]-(u:User{username:$user})
+        OPTIONAL MATCH (loc)<-[f:FOLLOWS]-(u2:User{username:$logUser})
+        RETURN DISTINCT id(loc), loc.city, loc.country, loc.postsNo, count(f)>0 as follows`;
+        const params = {user: req.params.user, logUser: req.params.logUser};
+
+        const result = await session.run(cypher, params);
+        const parsedRes = [];
+        result.records.forEach(record => {
+            parsedRes.push({
+                id: record.get('id(loc)').low,
+                city: record.get(1),
+                country: record.get(2),
+                postNo: record.get(3).low,
+                follows: record.get(4)
+            });
+        });
+
+        return res.send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+});
+
+
+router.get('/personalLocations/:user', async (req, res) => {
+    try{
+        const cypher = `MATCH (loc: Location)<-[:FOLLOWS]-(u:User{username:$user})
+        RETURN id(loc), loc.city, loc.country, loc.postsNo`;
+        const params = {user: req.params.user};
+
+        const result = await session.run(cypher, params);
+        const parsedRes = [];
+        result.records.forEach(record => {
+            parsedRes.push({
+                id: record.get('id(loc)').low,
+                city: record.get(1),
+                country: record.get(2),
+                postNo: record.get(3).low
+            });
+        });
+
+        return res.send(parsedRes);
+    }
+    catch(err){
+        console.log(err);
+        return res.status(501).send("Doslo je do greske!");
+    }
+})
+
 module.exports = router;

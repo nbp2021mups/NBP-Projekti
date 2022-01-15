@@ -1,0 +1,12 @@
+.name{
+    font-size: 1em;
+    color: white;
+}
+.username{
+    font-weight: 750;
+    color: white;
+}
+.name:hover, .username:hover{
+    cursor: pointer;
+    color: #6666ff;
+}

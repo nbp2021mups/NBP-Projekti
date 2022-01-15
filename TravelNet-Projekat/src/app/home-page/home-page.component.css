@@ -1,0 +1,15 @@
+.tekst{
+    font-size: 2em;
+    font-weight: 450;
+}
+a{
+    text-decoration: none;
+}
+.link{
+    font-weight: 600;
+    color:gray;
+}
+.link:hover{
+    color:blue;
+    cursor: pointer;
+}

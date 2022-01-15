@@ -1,0 +1,12 @@
+.lista{
+    flex-wrap: nowrap;
+    overflow-y: auto;
+    max-height: 40vh;
+    width: 100%;
+    background-color: gray;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #343a40 #ced4da;
+  }

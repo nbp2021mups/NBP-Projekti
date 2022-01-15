@@ -1,5 +1,7 @@
-<div class="row flex-column border border-rounded p-1">
-    <div class="col-12 my-1" *ngFor="let friend of friends; let i = index;">
-        <app-friend-item [friend]="this.friends[i]"></app-friend-item>
+<div class="row flex-column border border-rounded p-2 lista rounded rounded-lg" *ngIf="this.friends.length > 0 && !isLoading">
+    <div class="col-12 my-1" *ngFor="let friend of this.friends">
+        <app-friend-item [friend]="friend"></app-friend-item>
     </div>
 </div>
+
+<app-spinner *ngIf="isLoading" class="col-sm-2"></app-spinner>

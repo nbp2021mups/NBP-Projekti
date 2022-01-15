@@ -24,40 +24,43 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
         ).map((x) => JSON.parse(x));
 
         if (result.length == 0) {
-            const cypher = `MATCH (u1:User{username: $username})-[:IS_FRIEND]->(u2:User)-[r:SHARED]->(p:Post)-[:LOCATED_AT]->(l:Location) 
-                            CALL
-                            {
-                                WITH u1, p
-                                MATCH k=(u1)-[:LIKED]->(p)
-                                RETURN k IS NOT NULL AS liked
-                            }
-                            RETURN { id: id(p), desc: p.description, imagePath: p.image, commentsNo: p.commentNo, likesNo: p.likeNo, liked: liked,
-                                location: { id: id(l), city: l.city, country: l.country },
-                                person: { id: id(u2), firstName: u2.firstName, lastName: u2.lastName, username: u2.username, imagePath: u2.image }
-                            } AS post
-                            ORDER BY r.time DESC
-                            SKIP $start
-                            LIMIT $count`;
+            const cypher = `MATCH (logU:User{username: $username})-[:IS_FRIEND]->(u:User)-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc:Location)
+            OPTIONAL MATCH (p)<-[l:LIKED]-(logU)
+            WITH u,s,p,l,loc
+            ORDER BY s.time DESC
+            SKIP $start LIMIT $count
+            RETURN id(u), u.firstName, u.lastName, u.username, u.image, id(loc), loc.country, loc.city, count(l) > 0 as liked, p`;
 
             const params = {
-                username,
-                start: int(startIndex),
-                count: int(count),
+                username: req.params.username,
+                start: int(req.params.startIndex),
+                count: int(req.params.count),
             };
 
+            /* const result = await session.run(cypher, params);
+            return res.send(result.records); */
+
             result = (await session.run(cypher, params)).records.map((x) => ({
-                ...x.get("post"),
-                id: x.get("post").id.low,
-                commentsNo: x.get("post").commentsNo.low,
-                likesNo: x.get("post").likesNo.low,
-                location: {
-                    ...x.get("post").location,
-                    id: x.get("post").location.id.low,
+                post: {
+                    id: x.get('p').identity.low,
+                    image: x.get('p').properties.image,
+                    commentNo: x.get('p').properties.commentNo.low,
+                    likeNo: x.get('p').properties.likeNo.low,
+                    desc: x.get('p').properties.description,
+                    liked: x.get('liked')
                 },
-                person: {
-                    ...x.get("post").person,
-                    id: x.get("post").person.id.low,
+                user: {
+                    id: x.get('id(u)').low,
+                    fName: x.get('u.firstName'),
+                    lName: x.get('u.lastName'),
+                    username: x.get('u.username'),
+                    image: x.get('u.image')
                 },
+                loc: {
+                    id: x.get('id(loc)').low,
+                    city: x.get('loc.city'),
+                    country: x.get('loc.country')
+                }
             }));
 
             if (result) {
@@ -73,7 +76,8 @@ router.get("/:username/:startIndex/:count", async(req, res) => {
                     .exec();
             }
         }
-        res.send(result);
+        console.log(result);
+        return res.send(result);
     } catch (ex) {
         console.log(ex);
         res.status(401).send("Došlo je do greške");
