@@ -213,6 +213,10 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
                 });
             });
         }
+        const redis = await getConnection();
+        const keyNameSortedSet="explore:"+req.params.userId;
+        await redis.sendCommand(["ZINCRBY",keyNameSortedSet,"1",req.params.locationId])
+
         return res.send(response);
     } catch (ex) {
         console.log(ex);
