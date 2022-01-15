@@ -21,7 +21,7 @@ router.get("", async(req, res) => {
         const topLocations = await client.sendCommand(["ZRANGE","locations-leaderboard","0","4","REV","WITHSCORES"]);
         const response = [];
         for (let i=0;i<topLocations.length;i+=2){
-          const locId= topLocations[i].substring(topLocations[i].indexOf(':'));
+          const locId= topLocations[i].substring(topLocations[i].indexOf(':')+1);
           const locInfo=await client.sendCommand(["HMGET",topLocations[i],"city", "country"]);
           response.push({
             id:locId,
@@ -30,7 +30,6 @@ router.get("", async(req, res) => {
             postsNo:topLocations[i+1]
           })
         }
-        console.log(topLocations)
         return res.send(response);
     } catch (ex) {
         console.log(ex);

@@ -99,30 +99,69 @@ router.get("/:userId/:limit", async(req, res) => {
                         WHERE ID(logUser)=$idU
                         RETURN count(friend)>0 AS isFriend
                       }
-                      RETURN collect([id(loc), loc.country, loc.city, post, u, liked, isFriend])`
+                      RETURN collect([
+                        id(post), post.image, post.commentNo, post.likeNo, post.description, liked,
+                        id(u), u.username, u.firstName, u.lastName, u.image, isFriend,
+                        id(loc), loc.country, loc.city]) AS explorePost`
+
     const params = {idU: int(req.params.userId), limit: int(req.params.limit)}
     const locationsId = [];
     const keyNameSortedSet="explore:"+req.params.userId;
 
     const redis = await redisClient.getConnection();
     const count = await redis.sendCommand(["ZCOUNT", keyNameSortedSet, "-inf","+inf"]);
+    let rangeTopLocation;
     if(count>0){
+      rangeTopLocation="1";
       const locations= await redis.sendCommand(["ZRANGE",keyNameSortedSet,"0","4","REV"]);
 
       locations.forEach(el=>{
         locationsId.push(int(el))
       })
-
     }
-    const topLocationsId = await client.sendCommand(["ZRANGE","locations-leaderboard","0","1","REV","WITHSCORES"]);
+    else
+      rangeTopLocation="4";
+
+    const topLocationsId = await redis.sendCommand(["ZRANGE","locations-leaderboard","0",rangeTopLocation,"REV"]);
+    console.log(topLocationsId)
     topLocationsId.forEach(el=>{
-      locationsId.push(int(el))
+      locationsId.push(int(el.substring(el.indexOf(':')+1)))
     })
 
     params.locations=locationsId;
+    console.log(params.locations)
     const result=await session.run(chyper,params);
-    console.log(result.records[0])
-    return res.send(result.records[0])
+    const response = [];
+    //console.log(result.records[1])
+    result.records[0].get('explorePost').forEach(post=>{
+      console.log(post)
+      response.push({
+        post:{
+          id: post[0].low,
+          image: post[1],
+          commentNo: post[2].low,
+          likeNo: post[3].low,
+          description: post[4],
+          liked: post[5]
+        },
+        user: {
+          id: post[6].low,
+          username: post[7],
+          firstName: post[8],
+          lastName: post[9],
+          image: post[10],
+          isFriend: post[11]
+        },
+        location:{
+          id: post[12].low,
+          city: post[13],
+          country: post[14]
+        }
+      })
+
+    })
+
+    return res.send(response)
   }
   catch (ex) {
       console.log(ex);
