@@ -1,12 +1,22 @@
-p{
-    white-space: nowrap;
-    margin: 0;
+p {
+  white-space: nowrap;
+  margin: 0;
 }
-.link{
-    font-weight: 700;
-    color: white;
+.link {
+  font-weight: 500;
+  color: white;
 }
-.link:hover{
-    cursor: pointer;
-    color: #6666ff;
+.link:hover {
+  cursor: pointer;
+  color: #6666ff;
+}
+
+.info-btn {
+  background-color: transparent;
+}
+.info-btn:hover {
+  background-color: #b0f0f5;
+  opacity: 0.8;
+  color: rgb(42, 16, 66);
+  border: 1px solid #540a57;
 }
