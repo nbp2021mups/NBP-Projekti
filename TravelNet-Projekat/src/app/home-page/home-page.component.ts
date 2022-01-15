@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { PostHomePageModel } from '../models/post_models/post-homepage.model';
 import { AuthService } from '../services/authentication/auth.service';
 import { HomepageService } from '../services/homepage.service';
@@ -16,7 +17,7 @@ export class HomePageComponent implements OnInit {
   constructor(private authService: AuthService, private homeService: HomepageService) { }
 
   ngOnInit(): void {
-    this.authService.user.subscribe(user => {
+    /* this.authService.user.subscribe(user => {
       this.homeService.getHomePagePosts(user.username, 0, this.pageSize).subscribe({
         next: posts => {
           this.posts = posts;
@@ -25,6 +26,14 @@ export class HomePageComponent implements OnInit {
         error: err => {
           console.log(err);
         }
+      })
+    }).unsubscribe(); */
+
+
+    this.authService.user.subscribe(user => {
+      forkJoin([this.homeService.getHomePagePosts(user.username, 0, this.pageSize), this.homeService.getLeaderboard()])
+      .subscribe(result => {
+        console.log(result[0], result[1]);
       })
     }).unsubscribe();
   }

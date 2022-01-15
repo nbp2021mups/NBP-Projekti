@@ -17,6 +17,7 @@ export class LocationPageComponent implements OnInit, OnDestroy {
   allRead: boolean = false;
   pageSize: number = 3;
   isLoading: boolean = false;
+  toggleFriends: boolean = false;
 
   constructor(private route: ActivatedRoute, private locService: LocationsService, private authService: AuthService) { }
 
@@ -94,6 +95,11 @@ export class LocationPageComponent implements OnInit, OnDestroy {
         error: err => {console.log(err);}
       });
     });
+  }
+
+
+  onFollowers() {
+    this.toggleFriends = !this.toggleFriends;
   }
 
 

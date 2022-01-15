@@ -9,9 +9,13 @@ import { AuthService } from './services/authentication/auth.service';
 export class AppComponent implements OnInit {
   title = 'TravelNet-Projekat';
 
+  isLoading: boolean = false;
+
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
+    this.isLoading = true;
     this.authService.autoLogin();
+    this.isLoading = false;
   }
 }
