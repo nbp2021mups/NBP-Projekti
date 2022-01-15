@@ -79,30 +79,29 @@ const { json } = require("stream/consumers");
 
 router.get("/:userId/:limit", async(req, res) => {
   try{
-    //lista id lokacija
-    //ako je lista prazna, po broju lajkova sa top lokacija, start index, count
-    //count minus broj lokacija koje su vracene
+
     const chyper = `MATCH (loc:Location)
-                      WHERE ID(loc) in $locations
-                      OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
-                      WITH loc,post,u,s
-                      LIMIT $limit
-                      CALL{
-                        WITH post, loc, u
-                        OPTIONAL MATCH (post)<-[like:LIKED]-(logUser:User)
-                        WHERE ID(logUser)=$idU
-                        RETURN count(like)>0 AS liked
-                      }
-                      CALL{
-                        WITH u
-                        OPTIONAL MATCH (logUser:User)-[friend:IS_FRIEND]->(u)
-                        WHERE ID(logUser)=$idU
-                        RETURN count(friend)>0 AS isFriend
-                      }
-                      RETURN collect([
-                        id(post), post.image, post.commentNo, post.likeNo, post.description, liked,
-                        id(u), u.username, u.firstName, u.lastName, u.image, isFriend,
-                        id(loc), loc.country, loc.city]) AS explorePost`
+                    WHERE ID(loc) in $locations
+                    OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
+                    WITH loc,post,u,s
+                    LIMIT $limit
+                    CALL{
+                      WITH post, loc, u
+                      OPTIONAL MATCH (post)<-[like:LIKED]-(logUser:User)
+                      WHERE ID(logUser)=$idU
+                      RETURN count(like)>0 AS liked
+                    }
+                    CALL{
+                      WITH u
+                      OPTIONAL MATCH (logUser:User)-[friend:IS_FRIEND]->(u)
+                      WHERE ID(logUser)=$idU
+                      RETURN count(friend)>0 AS isFriend
+                    }
+                    RETURN collect([
+                      id(post), post.image, post.commentNo, post.likeNo, post.description, liked,
+                      id(u), u.username, u.firstName, u.lastName, u.image, isFriend,
+                      id(loc), loc.country, loc.city])
+                      AS explorePost`
 
     const params = {idU: int(req.params.userId), limit: int(req.params.limit)}
     const locationsId = [];
@@ -123,18 +122,15 @@ router.get("/:userId/:limit", async(req, res) => {
       rangeTopLocation="4";
 
     const topLocationsId = await redis.sendCommand(["ZRANGE","locations-leaderboard","0",rangeTopLocation,"REV"]);
-    console.log(topLocationsId)
     topLocationsId.forEach(el=>{
       locationsId.push(int(el.substring(el.indexOf(':')+1)))
     })
 
     params.locations=locationsId;
-    console.log(params.locations)
     const result=await session.run(chyper,params);
     const response = [];
-    //console.log(result.records[1])
+
     result.records[0].get('explorePost').forEach(post=>{
-      console.log(post)
       response.push({
         post:{
           id: post[0].low,
@@ -167,6 +163,5 @@ router.get("/:userId/:limit", async(req, res) => {
       console.log(ex);
       res.status(401).send("Došlo je do greške");
   }
-
 })
 module.exports = router;
