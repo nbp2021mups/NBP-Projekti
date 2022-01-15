@@ -81,95 +81,82 @@ router.post(
                     .status(401)
                     .send("Uneti podaci nisu validni, proverite ponovo.");
             }
+              const result = await session.run(cypher, params);
+              const locationId = String(result.records[0].get("id(l)").low);
+              const from = result.records[0].get("u.username");
+              const followersNo = result.records[0].get("l.followersNo");
+              const client = await redisClient.getConnection();
 
-            try {
-                const result = await session.run(cypher, params);
-                const locationId = String(result.records[0].get("id(l)").low);
-                const from = result.records[0].get("u.username");
-                const followersNo = result.records[0].get("l.followersNo");
-                const client = await redisClient.getConnection();
+              if (req.body.country && req.body.city) {
+                  await client.sendCommand([
+                      "ZINCRBY",
+                      "locations-leaderboard",
+                      "1",
+                      "location:" + locationId,
+                  ]);
+              } else {
+                  await client.sendCommand([
+                      "HSET",
+                      "location:" + locationId,
+                      "city",
+                      params.city,
+                  ]);
+                  await client.sendCommand([
+                      "HSET",
+                      "location:" + locationId,
+                      "country",
+                      params.country,
+                  ]);
+                  await client.sendCommand([
+                      "ZADD",
+                      "locations-leaderboard",
+                      "1",
+                      "location:" + locationId,
+                  ]);
+              }
 
-                if (req.body.country && req.body.city) {
-                    await client.sendCommand([
-                        "ZINCRBY",
-                        "locations-leaderboard",
-                        "1",
-                        "location:" + locationId,
-                    ]);
-                } else {
-                    await client.sendCommand([
-                        "HSET",
-                        "location:" + locationId,
-                        "city",
-                        params.city,
-                    ]);
-                    await client.sendCommand([
-                        "HSET",
-                        "location:" + locationId,
-                        "country",
-                        params.country,
-                    ]);
-                    await client.sendCommand([
-                        "ZADD",
-                        "locations-leaderboard",
-                        "1",
-                        "location:" + locationId,
-                    ]);
-                }
+              if (followersNo && followersNo.low > 0) {
+                  try {
+                      const message = {
+                          text: `Lokacija ${params.country}, ${params.city}`,
+                          from: from,
+                          locationId,
+                      };
+                      const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
+                              country: $country,
+                              city: $city
+                          })
+                          MERGE (u)-[:HAS]->(n:Notification{
+                              from: $loc,
+                              to: u.username,
+                              timeSent: datetime(),
+                              read: $read,
+                              content: id(l),
+                              type: 'new-post-on-location'
+                          })`;
+                      await session.run(followedUsersCypher, {
+                          country: params.country,
+                          city: params.city,
+                          read: false,
+                          loc: message.text,
+                      });
 
-                if (followersNo && followersNo.low > 0) {
-                    try {
-                        const message = {
-                            text: `Lokacija ${params.country}, ${params.city}`,
-                            from: from,
-                            locationId,
-                        };
-                        const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
-                                country: $country,
-                                city: $city
-                            })
-                            MERGE (u)-[:HAS]->(n:Notification{
-                                from: $loc,
-                                to: u.username,
-                                timeSent: datetime(),
-                                read: $read,
-                                content: id(l),
-                                type: 'new-post-on-location'
-                            })`;
-                        await session.run(followedUsersCypher, {
-                            country: params.country,
-                            city: params.city,
-                            read: false,
-                            loc: message.text,
-                        });
-
-                        await client.publish(
-                            "location:" + locationId,
-                            JSON.stringify(message)
-                        );
-                    } catch (ex) {
-                        console.log(ex);
-                    }
-                }
-            } catch (ex) {
-                console.log(ex);
-            }
+                      await client.publish(
+                          "location:" + locationId,
+                          JSON.stringify(message)
+                      );
+                  } catch (ex) {
+                      console.log(ex);
+                  }
+              }
 
             return res.send("Objava uspesno dodata");
         } catch (ex) {
             fs.unlink(req.file.path, (err) => {
                 if (err)
-                    return res
-                        .status(401)
-                        .send(
-                            "Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke."
-                        );
+                    return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
             });
-            return res
-                .status(401)
-                .send(
-                    "Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke."
-                );
+            return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
         }
     }
 );
@@ -286,7 +273,7 @@ router.get('/loadPostsLocation/:idLoc/:loggedU/:skip/:limit', async (req, res) =
         WITH p, s, loc, u, count(l) > 0 as liked
         ORDER BY s.time DESC
         SKIP $skip LIMIT $limit
-        RETURN collect({user: {id: id(u), username:u.username, fName: u.firstName, lName: u.lastName, image: u.image}, post: 
+        RETURN collect({user: {id: id(u), username:u.username, fName: u.firstName, lName: u.lastName, image: u.image}, post:
         p, liked: liked}) as posts`;
 
         const params = {

@@ -61,7 +61,7 @@
         <div class="col-md-12 text-center">
           <a routerLink="/registration" class="nav-link ml-5">Nemate nalog?</a>
           <button
-            class="btn btn-outline-primary btn-login"
+            class="btn btn-outline-primary btn-login mb-10"
             type="submit"
             [disabled]="form.invalid"
           >
@@ -69,6 +69,10 @@
           </button>
         </div>
       </div>
+
     </form>
+    <div class="alert alert-danger text-center ml-auto p-2" *ngIf="error">
+      {{ error }}
+    </div>
   </mat-card>
 </div>

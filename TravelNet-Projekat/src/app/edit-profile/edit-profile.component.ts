@@ -16,6 +16,8 @@ export class EditProfileComponent implements OnInit {
   hide = true;
   rdonly = true;
   imagePreview: string;
+  error: string = '';
+  succes: string = '';
   person: PersonProfile;
 
   constructor(private router: Router, private profileService: ProfileService,
@@ -77,11 +79,11 @@ export class EditProfileComponent implements OnInit {
     if (this.imagePreview!=this.person.imagePath){
       newImage=this.form.value.slika;
       body["oldImage"]=this.person.imagePath;
-
     }
     else
       newImage=null;
-    if (this.form.get('novaLozinka').value.length>6){
+
+    if (this.form.get('novaLozinka').value.length>=6){
       body["newPassword"]=this.form.get('novaLozinka').value;
       body["password"]=this.form.get('lozinka').value;
     }
@@ -101,7 +103,10 @@ export class EditProfileComponent implements OnInit {
         this.router.navigate(["profile",this.person.username]);
       },
       error: err=>{
-        console.log(err);
+        this.error=err.error;
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
       }
     })
 

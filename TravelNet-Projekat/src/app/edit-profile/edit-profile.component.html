@@ -118,5 +118,11 @@
       </div>
       </div>
     </form>
+    <div class="alert alert-success text-center ml-auto mt-3" *ngIf="success">
+      {{ success }}
+    </div>
+    <div class="alert alert-danger text-center ml-auto mt-3" *ngIf="error">
+      {{ error }}
+    </div>
   </mat-card>
 </div>

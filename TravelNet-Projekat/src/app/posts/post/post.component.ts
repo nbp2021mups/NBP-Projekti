@@ -27,6 +27,9 @@ export class PostComponent implements OnInit {
   @Output()
   imageClicked: EventEmitter<number> = new EventEmitter<number>();
 
+  @Input()
+  commDisabled: boolean = false;
+
   form: FormGroup;
 
   constructor(private postsService: PostsService, private authService: AuthService) { }
@@ -49,7 +52,7 @@ export class PostComponent implements OnInit {
     if (!this.post.liked){
       return "black"
     }
-    return "warn" 
+    return "warn"
   }
 
   onDeletePost() {
@@ -108,6 +111,8 @@ export class PostComponent implements OnInit {
 
 
   onImageClick(event) {
+    if(this.commDisabled)
+      return;
     this.imageClicked.emit(event.pageY);
   }
 

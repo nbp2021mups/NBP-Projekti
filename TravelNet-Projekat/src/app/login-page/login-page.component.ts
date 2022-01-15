@@ -11,6 +11,7 @@ import { AuthService } from '../services/authentication/auth.service';
 export class LoginPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
+  error: string = '';
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -33,11 +34,13 @@ export class LoginPageComponent implements OnInit {
     this.authService.login(username, password).subscribe(
       {
         next: (resp) =>{
-          console.log("ok");
           this.router.navigate(['/home']);
         },
         error: (err) =>{
-          console.log(err);
+          this.error=err.error;
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
         }
       });
 
