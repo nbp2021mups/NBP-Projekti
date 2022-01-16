@@ -22,19 +22,13 @@ router.get("/:userId/:skip/:limit", async(req, res) => {
                       WHERE ID(logUser)=$idU
                       RETURN count(like)>0 AS liked
                     }
-                    CALL{
-                      WITH u
-                      OPTIONAL MATCH (logUser:User)-[friend:IS_FRIEND]->(u)
-                      WHERE ID(logUser)=$idU
-                      RETURN count(friend)>0 AS isFriend
-                    }
                     RETURN collect([
                       id(post), post.image, post.commentNo, post.likeNo, post.description, liked,
-                      id(u), u.username, u.firstName, u.lastName, u.image, isFriend,
+                      id(u), u.username, u.firstName, u.lastName, u.image,
                       id(loc), loc.country, loc.city])
                       AS explorePost`
 
-    const params = {idU: int(req.params.userId), skip: int(req.params.limit), limit: int(req.params.limit)}
+    const params = {idU: int(req.params.userId), skip: int(req.params.skip), limit: int(req.params.limit)}
     const locationsId = [];
     const keyNameSortedSet="explore:"+req.params.userId;
 
@@ -42,7 +36,7 @@ router.get("/:userId/:skip/:limit", async(req, res) => {
     const count = await redis.sendCommand(["ZCOUNT", keyNameSortedSet, "-inf","+inf"]);
     let rangeTopLocation;
     if(count>0){
-      rangeTopLocation="1";
+      rangeTopLocation="2";
       const locations= await redis.sendCommand(["ZRANGE",keyNameSortedSet,"0","4","REV"]);
 
       locations.forEach(el=>{
@@ -76,13 +70,12 @@ router.get("/:userId/:skip/:limit", async(req, res) => {
           username: post[7],
           firstName: post[8],
           lastName: post[9],
-          image: post[10],
-          isFriend: post[11]
+          image: post[10]
         },
         location:{
-          id: post[12].low,
-          city: post[13],
-          country: post[14]
+          id: post[11].low,
+          country: post[12],
+          city: post[13]
         }
       })
 
