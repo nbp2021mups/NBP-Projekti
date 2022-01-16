@@ -142,7 +142,6 @@ const updateMessages = async(data) => {
         `unread-messages:chat:${data.chatId}`,
         String(data["unreadCount"]),
     ]);
-    if (!result) return;
     const cypher = `MATCH (c:Chat)
                     WHERE id(c)=$chatId
                     SET c.unreadCount=0
@@ -154,17 +153,19 @@ const updateMessages = async(data) => {
                     RETURN m`;
     await driver.session().run(cypher, {
         chatId: int(data["chatId"]),
-        props: result.map((x) => {
-            const parsed = JSON.parse(x);
-            return {
-                from: parsed.from,
-                to: parsed.to,
-                chatId: int(parsed.chatId),
-                content: parsed.content,
-                timeSent: parsed.timeSent,
-                read: true,
-            };
-        }),
+        props: result ?
+            result.map((x) => {
+                const parsed = JSON.parse(x);
+                return {
+                    from: parsed.from,
+                    to: parsed.to,
+                    chatId: int(parsed.chatId),
+                    content: parsed.content,
+                    timeSent: parsed.timeSent,
+                    read: true,
+                };
+            }) :
+            [],
     });
     await redisClient.publish(
         `user-updates:${data.from}`,
