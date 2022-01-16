@@ -21,7 +21,6 @@ export abstract class SearchService {
   }
 
   initialLoad(pattern: string, count: number) {
-    console.log('initial load');
     this.pattern = pattern;
     this.count = count;
     this.start = 0;

@@ -39,7 +39,6 @@ export class UserSearchService extends SearchService {
       )
       .subscribe({
         next: (data) => {
-          console.log(this.pattern, data);
           this.incoming.next(data);
           this.hasMore.next(data.length == this.count);
           this.start += data.length;

@@ -53,38 +53,40 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
         this.toggleFriends = false;
         this.toggleLocations = false;
         const username = params['username'];
-        this.authService.user.subscribe((user) => {
-          if (!user) {
-            return;
-          }
-          this.loggedID = user.id;
-          this.loggedUsername = user.username;
-          if (username == this.loggedUsername) {
-            this.profileType = ProfileType.personal;
-            this.profileService
-              .getLoggedUserProfileInfo(this.loggedUsername, this.pageSize)
-              .subscribe((user) => {
-                this.person = user;
-                this.isLoading = false;
-              });
-          } else {
-            this.profileService
-              .getOtherUserProfileInfo(user.username, username, this.pageSize)
-              .subscribe((userData) => {
-                if (userData.relation == null) {
-                  this.profileType = ProfileType.non_friend;
-                } else if (userData.relation == 'friend') {
-                  this.profileType = ProfileType.friend;
-                } else if (userData.relation == 'sent_req') {
-                  this.profileType = ProfileType.sent_req;
-                } else {
-                  this.profileType = ProfileType.rec_req;
-                }
-                this.person = userData.person;
-                this.isLoading = false;
-              });
-          }
-        }).unsubscribe();
+        this.authService.user
+          .subscribe((user) => {
+            if (!user) {
+              return;
+            }
+            this.loggedID = user.id;
+            this.loggedUsername = user.username;
+            if (username == this.loggedUsername) {
+              this.profileType = ProfileType.personal;
+              this.profileService
+                .getLoggedUserProfileInfo(this.loggedUsername, this.pageSize)
+                .subscribe((user) => {
+                  this.person = user;
+                  this.isLoading = false;
+                });
+            } else {
+              this.profileService
+                .getOtherUserProfileInfo(user.username, username, this.pageSize)
+                .subscribe((userData) => {
+                  if (userData.relation == null) {
+                    this.profileType = ProfileType.non_friend;
+                  } else if (userData.relation == 'friend') {
+                    this.profileType = ProfileType.friend;
+                  } else if (userData.relation == 'sent_req') {
+                    this.profileType = ProfileType.sent_req;
+                  } else {
+                    this.profileType = ProfileType.rec_req;
+                  }
+                  this.person = userData.person;
+                  this.isLoading = false;
+                });
+            }
+          })
+          .unsubscribe();
       },
     });
   }
@@ -127,26 +129,34 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
     this.friendService.acceptRequest(this.person.id, this.loggedID).subscribe({
       next: (resp) => {
         this.profileType = ProfileType.friend;
-        this.postService.loadMoreProfilePosts(this.person.username, this.loggedUsername, 0, this.pageSize).subscribe({
-          next: resp => {
-            resp.forEach((post) => {
-              post.setPerson(this.person);
-            });
-            this.person.posts = resp;
-            console.log(resp);
+        this.postService
+          .loadMoreProfilePosts(
+            this.person.username,
+            this.loggedUsername,
+            0,
+            this.pageSize
+          )
+          .subscribe({
+            next: (resp) => {
+              resp.forEach((post) => {
+                post.setPerson(this.person);
+              });
+              this.person.posts = resp;
 
-            this.socketService.createNotification(
-              new Notification(
-                0,
-                this.person.username,
-                this.loggedUsername,
-                NOTIFICATION_TRIGGERS.ACCEPT_FRIEND_REQUEST,
-                'test2'
-              )
-            );
-          },
-          error: err => {console.log(err);}
-        });
+              this.socketService.createNotification(
+                new Notification(
+                  0,
+                  this.person.username,
+                  this.loggedUsername,
+                  NOTIFICATION_TRIGGERS.ACCEPT_FRIEND_REQUEST,
+                  'test2'
+                )
+              );
+            },
+            error: (err) => {
+              console.log(err);
+            },
+          });
       },
       error: (err) => {
         console.log(err);
@@ -217,18 +227,15 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       .unsubscribe();
   }
 
-
   onFriendsClicked() {
     this.toggleFriends = !this.toggleFriends;
     this.toggleLocations = false;
   }
 
-
   onLocationsClicked() {
     this.toggleLocations = !this.toggleLocations;
     this.toggleFriends = false;
   }
-
 
   ngOnDestroy(): void {
     this.userSub.unsubscribe();

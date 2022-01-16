@@ -64,27 +64,28 @@ router.post(
             cypher += "})";
             await session.run(cypher, params);
 
-            return res.send("Uspešno ste se registrovali, pokušajte da se prijavite.");
+            return res.send(
+                "Uspešno ste se registrovali, pokušajte da se prijavite."
+            );
         } catch (ex) {
-          console.log(ex);
-          if(req.file){
-            fs.unlink(req.file.path, (err) => {
-              if (err)
-                  return res
-                      .status(409)
-                      .send("Niste uneli validne podatke, proverite ponovo.");
-            });
-          }
+            console.log(ex);
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err)
+                        return res
+                            .status(409)
+                            .send("Niste uneli validne podatke, proverite ponovo.");
+                });
+            }
 
-
-          if (ex.message.includes("email"))
-              return res
-                  .status(409)
-                  .send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
-          else
-              return res
-                  .status(409)
-                  .send("Postoji nalog sa ovim username-om, probajte ponovo.");
+            if (ex.message.includes("email"))
+                return res
+                    .status(409)
+                    .send("Postoji nalog sa ovom e-mail adresom, probajte ponovo.");
+            else
+                return res
+                    .status(409)
+                    .send("Postoji nalog sa ovim username-om, probajte ponovo.");
         }
     }
 );
@@ -129,7 +130,6 @@ router.patch(
     "/:id",
     multer({ storage: storage }).single("image"),
     async(req, res) => {
-      console.log("body",req.body)
         try {
             let chyper = "";
             const params = new Object();
@@ -142,10 +142,10 @@ router.patch(
             }
 
             if (req.body.lastName) {
-              if (chyper) chyper += ", ";
-              chyper += "u.lastName = $lastName";
-              params.lastName = req.body.lastName;
-          }
+                if (chyper) chyper += ", ";
+                chyper += "u.lastName = $lastName";
+                params.lastName = req.body.lastName;
+            }
 
             if (req.body.newPassword) {
                 const result = await session.run(
@@ -157,7 +157,6 @@ router.patch(
                     result.records[0].get(0)
                 );
                 if (isValid) {
-                  console.log(chyper,params,"linija 159 validna sifra")
                     const hashPassword = await bcrypt.hash(req.body.newPassword, 12);
                     if (chyper) chyper += ", ";
                     chyper += "u.password = $password";
@@ -185,9 +184,14 @@ router.patch(
 
             await session.run("MATCH (u:User) WHERE id(u)=$id SET " + chyper, params);
 
-            if (req.file){
-              const path ="./backend" + req.body.oldImage.substring(req.body.oldImage.indexOf("/images"));
-              if(path != './backend/images/universal.jpg' && path != './backend/images/profile-avatar.jpg'){
+            if (req.file) {
+                const path =
+                    "./backend" +
+                    req.body.oldImage.substring(req.body.oldImage.indexOf("/images"));
+                if (
+                    path != "./backend/images/universal.jpg" &&
+                    path != "./backend/images/profile-avatar.jpg"
+                ) {
                     fs.unlink(path, (err) => {
                         if (err) console.log(err);
                     });
@@ -195,8 +199,10 @@ router.patch(
             }
             return res.send("Ažuriranje podataka je uspešno.");
         } catch (ex) {
-            console.log(ex)
-            return res.status(409).send("Doslo je do greške prilikom ažuriranja, pokušajte ponovo.");
+            console.log(ex);
+            return res
+                .status(409)
+                .send("Doslo je do greške prilikom ažuriranja, pokušajte ponovo.");
         }
     }
 );
@@ -377,25 +383,25 @@ router.get("/light/:username", async(req, res) => {
     }
 });
 
-router.get("/info/:username", async (req, res)=>{
-  try{
-    const chyper=`MATCH (u:User {username: $username})
-                  RETURN u.firstName, u.lastName, u.bio, u.image, u.email, id(u) `
-    const response = await session.run(chyper, {username: req.params.username})
-    return res.send({
-      firstName: response.records[0].get('u.firstName'),
-      lastName: response.records[0].get('u.lastName'),
-      bio: response.records[0].get('u.bio'),
-      image: response.records[0].get('u.image'),
-      email: response.records[0].get('u.email'),
-      id: response.records[0].get('id(u)').low
-    })
-
-  }
-  catch{
-    console.log(ex);
-    return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
-  }
-})
+router.get("/info/:username", async(req, res) => {
+    try {
+        const chyper = `MATCH (u:User {username: $username})
+                  RETURN u.firstName, u.lastName, u.bio, u.image, u.email, id(u) `;
+        const response = await session.run(chyper, {
+            username: req.params.username,
+        });
+        return res.send({
+            firstName: response.records[0].get("u.firstName"),
+            lastName: response.records[0].get("u.lastName"),
+            bio: response.records[0].get("u.bio"),
+            image: response.records[0].get("u.image"),
+            email: response.records[0].get("u.email"),
+            id: response.records[0].get("id(u)").low,
+        });
+    } catch {
+        console.log(ex);
+        return res.status(401).send("Greška pri logovanju, pokušajte ponovo.");
+    }
+});
 
 module.exports = router;

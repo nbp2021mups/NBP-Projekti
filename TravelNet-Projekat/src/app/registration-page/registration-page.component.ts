@@ -7,15 +7,15 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-registration-page',
   templateUrl: './registration-page.component.html',
-  styleUrls: ['./registration-page.component.css']
+  styleUrls: ['./registration-page.component.css'],
 })
 export class RegistrationPageComponent implements OnInit {
   form: FormGroup;
   hide = true;
   error: string = '';
   success: string = '';
-  imagePreview: string='./../../assets/resources/profile-avatar.jpg';
-  constructor(private authService: AuthService ,private router: Router) { }
+  imagePreview: string = './../../assets/resources/profile-avatar.jpg';
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -29,15 +29,13 @@ export class RegistrationPageComponent implements OnInit {
       ]),
       slika: new FormControl(null, {
         validators: [Validators.required],
-        asyncValidators: [mimeType]
+        asyncValidators: [mimeType],
       }),
       opis: new FormControl(''),
-    })
+    });
   }
 
-
-  onSubmit(){
-
+  onSubmit() {
     const fName = this.form.get('ime').value;
     const lName = this.form.get('prezime').value;
     const email = this.form.get('email').value;
@@ -46,21 +44,21 @@ export class RegistrationPageComponent implements OnInit {
     const desc = this.form.get('opis').value;
     const image = this.form.value.slika;
 
-    this.authService.register(fName, lName, email, username, password, desc, image).subscribe(
-      {next : (resp) => {
-        this.success=resp;
-        setTimeout(()=>{
-          this.router.navigate(["login"]);
-        },3000);
-        //this.router.navigate(["login"]);
-        console.log(resp);
-      },
-      error : (err) => {
-        this.error=err.error;
+    this.authService
+      .register(fName, lName, email, username, password, desc, image)
+      .subscribe({
+        next: (resp) => {
+          this.success = resp;
+          setTimeout(() => {
+            this.router.navigate(['login']);
+          }, 3000);
+        },
+        error: (err) => {
+          this.error = err.error;
           setTimeout(() => {
             this.error = '';
           }, 3000);
-        }
+        },
       });
 
     //this.form.reset()c
@@ -68,12 +66,10 @@ export class RegistrationPageComponent implements OnInit {
 
   onImagePicked(event: Event) {
     const file = (event.target as HTMLInputElement).files[0];
-    console.log(file)
     this.form.patchValue({ slika: file });
-    this.form.get("slika").updateValueAndValidity();
+    this.form.get('slika').updateValueAndValidity();
     const reader = new FileReader();
-    console.log(this.form.value.slika.type)
-    if(this.form.value.slika.type.includes("image")){
+    if (this.form.value.slika.type.includes('image')) {
       reader.onload = () => {
         this.imagePreview = reader.result as string;
       };
@@ -81,5 +77,4 @@ export class RegistrationPageComponent implements OnInit {
 
     reader.readAsDataURL(file);
   }
-
 }

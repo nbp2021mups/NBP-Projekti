@@ -57,7 +57,6 @@ router.patch("/", async(req, res) => {
 
 router.delete("/:id", async(req, res) => {
     try {
-        console.log(req.params.id);
         const cypher = `MATCH (n:Notification)
                 WHERE id(n)=$id
                 DETACH DELETE n`;

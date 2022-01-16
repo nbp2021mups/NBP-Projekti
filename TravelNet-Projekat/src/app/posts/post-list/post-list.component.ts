@@ -25,7 +25,6 @@ export class PostListComponent implements OnInit {
     this.post = post;
     let pos = event - screen.height / 2;
     this.startY = pos >= 62 ? pos : 62;
-    console.log(this.post);
   }
 
   closeView() {

@@ -25,7 +25,6 @@ export class LocationSearchService extends SearchService {
       )
       .subscribe({
         next: (data: any) => {
-          console.log(this.pattern, data);
           this.incoming.next(data);
           this.hasMore.next(data.length == this.count);
           this.start += data.length;
