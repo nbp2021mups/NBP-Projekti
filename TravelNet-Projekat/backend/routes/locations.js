@@ -209,13 +209,19 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
                         image: post[5],
                     },
                     liked: post[6],
-                    isFriend: post[7]
+                    isFriend: post[7],
                 });
             });
         }
         const redis = await getConnection();
-        const keyNameSortedSet="explore:"+req.params.userId;
-        await redis.sendCommand(["ZINCRBY",keyNameSortedSet,"1",req.params.locationId])
+        const keyNameSortedSet = "explore:" + req.params.userId;
+        await redis.sendCommand([
+            "ZINCRBY",
+            keyNameSortedSet,
+            "1",
+            req.params.locationId,
+        ]);
+        await redis.sendCommand(["EXPIRE", keyNameSortedSet, "172800"]);
 
         return res.send(response);
     } catch (ex) {
@@ -224,87 +230,80 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
     }
 });
 
-
-
-router.get('/userLocations/:user/:logUser', async (req, res) => {
-    try{
+router.get("/userLocations/:user/:logUser", async(req, res) => {
+    try {
         const cypher = `MATCH (loc: Location)<-[:FOLLOWS]-(u:User{username:$user})
         OPTIONAL MATCH (loc)<-[f:FOLLOWS]-(u2:User{username:$logUser})
         RETURN DISTINCT id(loc), loc.city, loc.country, loc.postsNo, count(f)>0 as follows`;
-        const params = {user: req.params.user, logUser: req.params.logUser};
+        const params = { user: req.params.user, logUser: req.params.logUser };
 
         const result = await session.run(cypher, params);
         const parsedRes = [];
-        result.records.forEach(record => {
+        result.records.forEach((record) => {
             parsedRes.push({
-                id: record.get('id(loc)').low,
+                id: record.get("id(loc)").low,
                 city: record.get(1),
                 country: record.get(2),
                 postNo: record.get(3).low,
-                follows: record.get(4)
+                follows: record.get(4),
             });
         });
 
         return res.send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
 
-
-router.get('/personalLocations/:user', async (req, res) => {
-    try{
+router.get("/personalLocations/:user", async(req, res) => {
+    try {
         const cypher = `MATCH (loc: Location)<-[:FOLLOWS]-(u:User{username:$user})
         RETURN id(loc), loc.city, loc.country, loc.postsNo`;
-        const params = {user: req.params.user};
+        const params = { user: req.params.user };
 
         const result = await session.run(cypher, params);
         const parsedRes = [];
-        result.records.forEach(record => {
+        result.records.forEach((record) => {
             parsedRes.push({
-                id: record.get('id(loc)').low,
+                id: record.get("id(loc)").low,
                 city: record.get(1),
                 country: record.get(2),
-                postNo: record.get(3).low
+                postNo: record.get(3).low,
             });
         });
 
         return res.send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
-})
+});
 
-
-
-router.get('/:locId/followers/:logUser', async(req,res) => {
-    try{
+router.get("/:locId/followers/:logUser", async(req, res) => {
+    try {
         const cypher = `MATCH (u:User)-[:FOLLOWS]->(loc:Location)
         WHERE id(loc)=$locId
         OPTIONAL MATCH (u)-[r:IS_FRIEND|SENT_REQUEST]-(logU: User{username: $logUser})
         RETURN DISTINCT id(u), u.firstName, u.lastName, u.username, u.image, type(r)="IS_FRIEND" as friend,
         type(r)="SENT_REQUEST" and startNode(r)=logU as sent, type(r)="SENT_REQUEST" and startNode(r)=u as recv`;
-        const params = {locId: id(req.params.locId), logUser: req.params.logUser}
+        const params = { locId: id(req.params.locId), logUser: req.params.logUser };
 
         const result = await session.run(cypher, params);
 
         const parsedRes = [];
-        result.records.forEach(record => {
+        result.records.forEach((record) => {
             let status;
-            if(record.get(3) == req.params.logUser){
-                status = 'personal'
-            } else if(record.get(5)){
-                status = 'friend'
-            } else if(record.get(6)){
-                status = 'send_req'
+            if (record.get(3) == req.params.logUser) {
+                status = "personal";
+            } else if (record.get(5)) {
+                status = "friend";
+            } else if (record.get(6)) {
+                status = "send_req";
             } else if (record.get(7)) {
-                status = 'rec_req'
+                status = "rec_req";
             } else {
-                status = 'non_friend'
+                status = "non_friend";
             }
             parsedRes.push({
                 id: record.get(0).low,
@@ -312,17 +311,15 @@ router.get('/:locId/followers/:logUser', async(req,res) => {
                 lName: record.get(2),
                 username: record.get(3),
                 image: record.get(4),
-                status: status
+                status: status,
             });
         });
 
         return res.send(parsedRes);
-    }
-    catch(err){
+    } catch (err) {
         console.log(err);
         return res.status(501).send("Doslo je do greske!");
     }
 });
-
 
 module.exports = router;
