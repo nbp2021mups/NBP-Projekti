@@ -81,48 +81,48 @@ router.post(
                     .status(401)
                     .send("Uneti podaci nisu validni, proverite ponovo.");
             }
-              const result = await session.run(cypher, params);
-              const locationId = String(result.records[0].get("id(l)").low);
-              const from = result.records[0].get("u.username");
-              const followersNo = result.records[0].get("l.followersNo");
-              const client = await redisClient.getConnection();
+            const result = await session.run(cypher, params);
+            const locationId = String(result.records[0].get("id(l)").low);
+            const from = result.records[0].get("u.username");
+            const followersNo = result.records[0].get("l.followersNo");
+            const client = await redisClient.getConnection();
 
-              if (req.body.country && req.body.city) {
-                  await client.sendCommand([
-                      "ZINCRBY",
-                      "locations-leaderboard",
-                      "1",
-                      "location:" + locationId,
-                  ]);
-              } else {
-                  await client.sendCommand([
-                      "HSET",
-                      "location:" + locationId,
-                      "city",
-                      params.city,
-                  ]);
-                  await client.sendCommand([
-                      "HSET",
-                      "location:" + locationId,
-                      "country",
-                      params.country,
-                  ]);
-                  await client.sendCommand([
-                      "ZADD",
-                      "locations-leaderboard",
-                      "1",
-                      "location:" + locationId,
-                  ]);
-              }
+            if (req.body.country && req.body.city) {
+                await client.sendCommand([
+                    "ZINCRBY",
+                    "locations-leaderboard",
+                    "1",
+                    "location:" + locationId,
+                ]);
+            } else {
+                await client.sendCommand([
+                    "HSET",
+                    "location:" + locationId,
+                    "city",
+                    params.city,
+                ]);
+                await client.sendCommand([
+                    "HSET",
+                    "location:" + locationId,
+                    "country",
+                    params.country,
+                ]);
+                await client.sendCommand([
+                    "ZADD",
+                    "locations-leaderboard",
+                    "1",
+                    "location:" + locationId,
+                ]);
+            }
 
-              if (followersNo && followersNo.low > 0) {
-                  try {
-                      const message = {
-                          text: `Lokacija ${params.country}, ${params.city}`,
-                          from: from,
-                          locationId,
-                      };
-                      const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
+            if (followersNo && followersNo.low > 0) {
+                try {
+                    const message = {
+                        text: `Lokacija ${params.country}, ${params.city}`,
+                        from: from,
+                        locationId,
+                    };
+                    const followedUsersCypher = `MATCH (u:User)-[:FOLLOWS]->(l:Location{
                               country: $country,
                               city: $city
                           })
@@ -134,29 +134,37 @@ router.post(
                               content: id(l),
                               type: 'new-post-on-location'
                           })`;
-                      await session.run(followedUsersCypher, {
-                          country: params.country,
-                          city: params.city,
-                          read: false,
-                          loc: message.text,
-                      });
+                    await session.run(followedUsersCypher, {
+                        country: params.country,
+                        city: params.city,
+                        read: false,
+                        loc: message.text,
+                    });
 
-                      await client.publish(
-                          "location:" + locationId,
-                          JSON.stringify(message)
-                      );
-                  } catch (ex) {
-                      console.log(ex);
-                  }
-              }
+                    await client.publish(
+                        "location:" + locationId,
+                        JSON.stringify(message)
+                    );
+                } catch (ex) {
+                    console.log(ex);
+                }
+            }
 
             return res.send("Objava uspesno dodata");
         } catch (ex) {
             fs.unlink(req.file.path, (err) => {
                 if (err)
-                    return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
+                    return res
+                        .status(401)
+                        .send(
+                            "Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke."
+                        );
             });
-            return res.status(401).send("Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke.");
+            return res
+                .status(401)
+                .send(
+                    "Lokacija koju ste uneli već postoji na spisku lokacija, proverite ponovo unete podatke."
+                );
         }
     }
 );
@@ -261,12 +269,11 @@ router.get("/loadPosts/:otherU/:loggedU/:skip/:limit", async(req, res) => {
     }
 });
 
-
-
-router.get('/loadPostsLocation/:idLoc/:loggedU/:skip/:limit', async (req, res) => {
-
-    try{
-        const cypher = `MATCH (u:User)-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc: Location)
+router.get(
+    "/loadPostsLocation/:idLoc/:loggedU/:skip/:limit",
+    async(req, res) => {
+        try {
+            const cypher = `MATCH (u:User)-[s:SHARED]->(p:Post)-[:LOCATED_AT]->(loc: Location)
         WHERE id(loc)=$idLoc
         WITH p, s, loc, u
         OPTIONAL MATCH(logU: User{username: $username})-[l:LIKED]->(p)
@@ -276,43 +283,41 @@ router.get('/loadPostsLocation/:idLoc/:loggedU/:skip/:limit', async (req, res) =
         RETURN collect({user: {id: id(u), username:u.username, fName: u.firstName, lName: u.lastName, image: u.image}, post:
         p, liked: liked}) as posts`;
 
-        const params = {
-            idLoc: int(req.params.idLoc),
-            username: req.params.loggedU,
-            skip: int(req.params.skip),
-            limit: int(req.params.limit)
-        };
+            const params = {
+                idLoc: int(req.params.idLoc),
+                username: req.params.loggedU,
+                skip: int(req.params.skip),
+                limit: int(req.params.limit),
+            };
 
-        const result = await session.run(cypher, params);
+            const result = await session.run(cypher, params);
 
-        const parsedPosts = [];
-        const posts = result.records[0].get(0);
-        posts.forEach(post => {
-            parsedPosts.push({
-                id: post.post.identity.low,
-                image: post.post.properties.image,
-                likeNo: post.post.properties.likeNo.low,
-                commentNo: post.post.properties.commentNo.low,
-                desc: post.post.properties.description,
-                user: {
-                    id: post.user.id.low,
-                    firstName: post.user.fName,
-                    lastName: post.user.lName,
-                    username: post.user.username,
-                    image: post.user.image
-                },
-                liked: post.liked
+            const parsedPosts = [];
+            const posts = result.records[0].get(0);
+            posts.forEach((post) => {
+                parsedPosts.push({
+                    id: post.post.identity.low,
+                    image: post.post.properties.image,
+                    likeNo: post.post.properties.likeNo.low,
+                    commentNo: post.post.properties.commentNo.low,
+                    desc: post.post.properties.description,
+                    user: {
+                        id: post.user.id.low,
+                        firstName: post.user.fName,
+                        lastName: post.user.lName,
+                        username: post.user.username,
+                        image: post.user.image,
+                    },
+                    liked: post.liked,
+                });
             });
-        });
-        return res.send(parsedPosts);
+            return res.send(parsedPosts);
+        } catch (err) {
+            console.log(err);
+            return res.status(501).send("Doslo je do greske!");
+        }
     }
-    catch(err){
-        console.log(err);
-        return res.status(501).send("Doslo je do greske!");
-    }
-
-});
-
+);
 
 //vracanje ukupnog broja komentara i lajkova za konkretnu objavu
 /* router.get("/:postId/reactions", async(req, res) => {

@@ -61,7 +61,7 @@ export class PopUpService {
   notificationTriggered(n: Notification) {
     Swal.fire({
       allowOutsideClick: true,
-      position: 'bottom-left',
+      position: 'top-right',
       width: '100%',
       heightAuto: true,
       padding: '0',
@@ -84,7 +84,7 @@ export class PopUpService {
   messageTriggered(m: Message) {
     Swal.fire({
       allowOutsideClick: true,
-      position: 'bottom-left',
+      position: 'top-right',
       width: '100%',
       heightAuto: true,
       padding: '0',
