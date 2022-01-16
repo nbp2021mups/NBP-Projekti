@@ -105,7 +105,7 @@
 <app-spinner class="spinner" *ngIf="isLoading"></app-spinner>
 
 <div class="row justify-content-around d-flex flex-wrap my-2" *ngIf="!isLoading">
-  <div class="col-sm-3">
+  <div class="col-sm-3" *ngIf="newFriends.length > 0">
     <app-friend-recommendation-list [friends]="newFriends"></app-friend-recommendation-list>
   </div>
 
