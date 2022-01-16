@@ -146,12 +146,12 @@ router.patch(
               chyper += "u.lastName = $lastName";
               params.lastName = req.body.lastName;
           }
-            console.log(chyper,params,"linija 148")
+
             if (req.body.newPassword) {
                 const result = await session.run(
                     "MATCH (u:User) WHERE id(u)=$id RETURN u.password", { id: int(req.params.id) }
                 );
-                console.log(chyper,params,"linija 153")
+
                 const isValid = await bcrypt.compare(
                     req.body.password,
                     result.records[0].get(0)
@@ -169,7 +169,7 @@ router.patch(
                             "Uneta lozinka se ne poklapa sa trenutnom lozinkom, proverite unete podatke."
                         );
             }
-            console.log(chyper,params,"linija 171")
+
             if (req.body.bio) {
                 if (chyper) chyper += ", ";
                 chyper += "u.bio = $bio";
@@ -182,14 +182,16 @@ router.patch(
                 chyper += "u.image = $image";
                 params.image = imgPath;
             }
-            console.log(chyper,params,"linija 185")
+
             await session.run("MATCH (u:User) WHERE id(u)=$id SET " + chyper, params);
-            console.log(chyper,params,"linija 187")
+
             if (req.file){
               const path ="./backend" + req.body.oldImage.substring(req.body.oldImage.indexOf("/images"));
-              fs.unlink(path, (err) => {
-                  if (err) console.log(err);
-              });
+              if(path != './backend/images/universal.jpg' && path != './backend/images/profile-avatar.jpg'){
+                    fs.unlink(path, (err) => {
+                        if (err) console.log(err);
+                    });
+                }
             }
             return res.send("Ažuriranje podataka je uspešno.");
         } catch (ex) {
