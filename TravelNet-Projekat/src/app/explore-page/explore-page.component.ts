@@ -55,6 +55,9 @@ export class ExplorePageComponent implements OnInit, OnDestroy {
       this.postService.getExplorePosts(user.id, this.recommendedPosts.length, this.pageSize).subscribe({
         next: resp => {
           this.recommendedPosts = this.recommendedPosts.concat(resp);
+          if(resp.length < this.pageSize){
+            this.hasMore = false;
+          }
         },
         error: err => {
           console.log(err);

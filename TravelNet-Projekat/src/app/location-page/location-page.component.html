@@ -13,7 +13,7 @@
 </div>
 
 <div class="container my-2">
-    <app-friends-list [username]="this.person.username" *ngIf="this.toggleFriends"></app-friends-list>
+    <app-friends-list [location]="this.location.id" *ngIf="this.toggleFriends"></app-friends-list>
 </div>
 
 <app-post-list

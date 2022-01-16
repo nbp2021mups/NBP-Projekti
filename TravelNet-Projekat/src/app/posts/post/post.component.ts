@@ -58,7 +58,6 @@ export class PostComponent implements OnInit {
   onDeletePost() {
     this.postsService.deletePost(this.post.id, this.post.imagePath).subscribe({
       next: resp => {
-        alert(resp);
         this.postDeleted.emit(this.post.id);
       },
       error: err => {console.log(err);}
@@ -101,7 +100,6 @@ export class PostComponent implements OnInit {
     const newDesc = this.form.get('desc').value;
     this.postsService.updateDescription(this.post.id, newDesc).subscribe({
       next: resp => {
-        alert(resp);
         this.post.desc = newDesc;
         this.editDesc = false;
       },
