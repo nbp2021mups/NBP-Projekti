@@ -1,5 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { PersonBasic } from '../models/person_models/person-basic.model';
+import { AuthService } from '../services/authentication/auth.service';
+import { FriendsService } from '../services/friends.service';
 
 @Component({
   selector: 'app-friend-recommendation-item',
@@ -11,14 +13,31 @@ export class FriendRecommendationItemComponent implements OnInit {
   @Input()
   friend: {person: PersonBasic, commonNum: number};
 
-  constructor() { }
+  @Output()
+  friendAdded: EventEmitter<number> = new EventEmitter<number>();
+
+  addSucc: string = null;
+
+  constructor(private authService: AuthService, private friendService: FriendsService) { }
 
   ngOnInit(): void {
-    console.log(this.friend);
   }
 
 
   onAddFriend() {
-
+    this.authService.user.subscribe(user => {
+      this.friendService.sendRequest(user.username, this.friend.person.username).subscribe({
+        next: resp => {
+          this.addSucc = "Prijatelj uspesno dodat."
+          setTimeout(() => {
+            this.friendAdded.emit(this.friend.person.id);
+            this.addSucc = null
+          }, 2000);
+        },
+        error: err => {
+          console.log(err);
+        }
+      });
+    }).unsubscribe();
   }
 }

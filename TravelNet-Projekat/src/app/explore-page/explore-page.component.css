@@ -76,3 +76,12 @@
     font-size: medium;
     background-color: rgba(85, 85, 85, 0.192);
 }
+
+.load-more{
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+.load-more:hover {
+    color: black;
+}

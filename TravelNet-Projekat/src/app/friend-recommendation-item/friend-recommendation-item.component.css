@@ -1,0 +1,31 @@
+.btn-add {
+    background-color: transparent;
+ }
+
+.btn-add:hover {
+background-color: #b0f0f5;
+opacity: 0.8;
+color: rgb(42, 16, 66);
+border: 1px solid #540a57;
+}
+
+.name {
+    font-size: 1em;
+    color: white;
+}
+.username {
+    font-weight: 500;
+    color: white;
+}
+.name:hover,
+.username:hover {
+    cursor: pointer;
+    color: #6666ff;
+}
+
+.content{
+    color: #cccccc;
+}
+.mess{
+    color:green;
+}

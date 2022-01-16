@@ -17,4 +17,11 @@ export class FriendRecommendationListComponent implements OnInit {
 
   }
 
+
+  onFriendAdded(event) {
+    const index = this.friends.findIndex(person => person.person.id == event);
+    if(index != -1){
+      this.friends.splice(index, 1);
+    }
+  }
 }
