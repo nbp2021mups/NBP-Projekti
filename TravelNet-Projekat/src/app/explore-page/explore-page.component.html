@@ -29,20 +29,28 @@
     <mat-icon>close</mat-icon>
   </button>
 </div>
+
 <div class="search-container" *ngIf="this.exploreService.searchToggle">
   <div class="search-result-div animate__animated animate__bounceInDown">
-    <div class="search-users-div">
-      <h3>{{ this.exploreService.searchType }}</h3>
+    <div
+      class="search-users-div"
+      *ngIf="this.exploreService.searchType == 'Korisnici'"
+    >
+      <h3>Korisnici</h3>
+      <h5
+        *ngIf="
+          this.exploreService.displayedUsers.length > 0 &&
+          this.exploreService.searchFilter == ''
+        "
+      >
+        Prethodne pretrage:
+      </h5>
+      <h5 *ngIf="this.exploreService.noResult.users">
+        Nema traženih korisnika
+      </h5>
 
       <div class="result-list-div">
-        <app-location-card-list
-          *ngIf="this.exploreService.searchType == 'Lokacije'"
-          [locations]="this.exploreService.displayedLocations"
-          [displayData]="true"
-        ></app-location-card-list>
-
         <app-friends-list
-          *ngIf="this.exploreService.searchType == 'Korisnici'"
           [friends]="this.exploreService.displayedUsers"
           [displayData]="true"
         ></app-friends-list>
@@ -50,15 +58,42 @@
 
       <button
         class="load-more-button"
-        (click)="this.exploreService.loadMore()"
+        (click)="this.exploreService.loadMoreUsers()"
+        *ngIf="this.exploreService.hasMore.users"
+      >
+        Učitaj još korisnika
+      </button>
+    </div>
+    <div
+      class="search-locations-div"
+      *ngIf="this.exploreService.searchType == 'Lokacije'"
+    >
+      <h3>Lokacije</h3>
+      <h5
         *ngIf="
-          (this.exploreService.searchType == 'Korisnici' &&
-            this.exploreService.hasMoreUsers) ||
-          (this.exploreService.searchType == 'Lokacije' &&
-            this.exploreService.hasMoreLocations)
+          this.exploreService.displayedLocations.length > 0 &&
+          this.exploreService.searchFilter == ''
         "
       >
-        Učitaj još
+        Prethodne pretrage:
+      </h5>
+      <h5 *ngIf="this.exploreService.noResult.locations">
+        Nema traženih lokacija
+      </h5>
+
+      <div class="result-list-div">
+        <app-location-card-list
+          [locations]="this.exploreService.displayedLocations"
+          [displayData]="true"
+        ></app-location-card-list>
+      </div>
+
+      <button
+        class="load-more-button"
+        (click)="this.exploreService.loadMoreLocations()"
+        *ngIf="this.exploreService.hasMore.locations"
+      >
+        Učitaj još lokacija
       </button>
     </div>
   </div>
@@ -77,7 +112,5 @@
       [profilePosts]="false"
       [posts]="this.recommendedPosts"
     ></app-post-list>
-
-    <button *ngIf="this.hasMore" (click)="loadMore()">Učitaj još</button>
   </div>
 </div>

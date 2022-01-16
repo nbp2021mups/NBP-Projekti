@@ -1,11 +1,6 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, Observable } from 'rxjs';
 import { PersonBasic } from 'src/app/models/person_models/person-basic.model';
-import {
-  PersonExplore,
-  ProfileType,
-} from 'src/app/models/person_models/person-explore.model';
 import { SearchService } from './search.service';
 
 @Injectable({
@@ -14,7 +9,7 @@ import { SearchService } from './search.service';
 export class UserSearchService extends SearchService {
   private incoming: BehaviorSubject<
     Array<{ person: PersonBasic; status: string }>
-  > = new BehaviorSubject<Array<{ person: PersonBasic; status: string }>>([]);
+  > = new BehaviorSubject<Array<{ person: PersonBasic; status: string }>>(null);
 
   getIncoming(): Observable<Array<{ person: PersonBasic; status: string }>> {
     return this.incoming.asObservable();
