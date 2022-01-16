@@ -113,7 +113,7 @@ const storeMessage = async(msg) => {
     const redisClient = await getConnection();
     const msgString = JSON.stringify({
         ...msg,
-        timeSent: new Date().toUTCString(),
+        timeSent: new Date().toISOString(),
     });
     await redisClient.lPush(`unread-messages:chat:${msg.chatId}`, msgString);
     await redisClient.publish(
