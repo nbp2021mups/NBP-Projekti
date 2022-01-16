@@ -74,4 +74,19 @@ export class FriendsService {
             return ret;
         }));
     }
+
+
+    getRecommendations(id: number) {
+        return this.http.get<any>('http://localhost:3000/friends/recommendation/' + id)
+        .pipe(map(resp => {
+            const ret = [];
+            resp.forEach(friend => {
+                ret.push({person: new PersonBasic(friend.id, friend.firstName, friend.lastName, friend.image, friend.username),
+                commonNum: friend.mutualFriends});
+            });
+            return ret;
+        }));
+    }
+
+
 }

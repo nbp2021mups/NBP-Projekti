@@ -32,7 +32,7 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   loggedUsername: string;
   profileType: ProfileType;
   allRead: boolean = false;
-  pageSize: number = 3;
+  pageSize: number = 6;
   toggleFriends: boolean = false;
   toggleLocations: boolean = false;
   isLoading: boolean = false;
@@ -94,7 +94,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       .sendRequest(this.loggedUsername, this.person.username)
       .subscribe({
         next: (resp) => {
-          alert(resp);
           this.profileType = ProfileType.sent_req;
           this.socketService.createNotification(
             new Notification(
@@ -115,7 +114,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   onDeleteFriend() {
     this.friendService.deleteFriend(this.loggedID, this.person.id).subscribe({
       next: (resp) => {
-        alert(resp);
         this.profileType = ProfileType.non_friend;
         this.person.posts = null;
       },
@@ -128,17 +126,27 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
   onAcceptRequest() {
     this.friendService.acceptRequest(this.person.id, this.loggedID).subscribe({
       next: (resp) => {
-        alert(resp);
         this.profileType = ProfileType.friend;
-        this.socketService.createNotification(
-          new Notification(
-            0,
-            this.person.username,
-            this.loggedUsername,
-            NOTIFICATION_TRIGGERS.ACCEPT_FRIEND_REQUEST,
-            'test2'
-          )
-        );
+        this.postService.loadMoreProfilePosts(this.person.username, this.loggedUsername, 0, this.pageSize).subscribe({
+          next: resp => {
+            resp.forEach((post) => {
+              post.setPerson(this.person);
+            });
+            this.person.posts = resp;
+            console.log(resp);
+
+            this.socketService.createNotification(
+              new Notification(
+                0,
+                this.person.username,
+                this.loggedUsername,
+                NOTIFICATION_TRIGGERS.ACCEPT_FRIEND_REQUEST,
+                'test2'
+              )
+            );
+          },
+          error: err => {console.log(err);}
+        });
       },
       error: (err) => {
         console.log(err);
@@ -151,7 +159,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       .deleteRequest(this.person.username, this.loggedUsername)
       .subscribe({
         next: (resp) => {
-          alert(resp);
           this.profileType = ProfileType.non_friend;
         },
         error: (err) => {
@@ -165,7 +172,6 @@ export class ProfilePageComponent implements OnInit, OnDestroy {
       .deleteRequest(this.loggedUsername, this.person.username)
       .subscribe({
         next: (resp) => {
-          alert(resp);
           this.profileType = ProfileType.non_friend;
         },
         error: (err) => {

@@ -163,7 +163,7 @@ router.delete("", async(req, res) => {
 router.get("/recommendation/:userId", async(req, res) => {
     try {
         let cypher = `MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friendOfFriend:User)
-                    WHERE id(u)=$id AND id(friendOfFriend)<>$id
+                    WHERE id(u)=$id AND id(friendOfFriend)<>$id AND NOT (u)--(friendOfFriend)
                     RETURN DISTINCT count(friendOfFriend) AS mutualFriends,
                     id(friendOfFriend) AS id,
                     friendOfFriend.username AS username,

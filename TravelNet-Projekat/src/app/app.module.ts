@@ -36,6 +36,8 @@ import { LocationCardListComponent } from './location-card-list/location-card-li
 import { EditProfileComponent } from './edit-profile/edit-profile.component';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SpinnerComponent } from './spinner/spinner.component';
+import { FriendRecommendationListComponent } from './friend-recommendation-list/friend-recommendation-list.component';
+import { FriendRecommendationItemComponent } from './friend-recommendation-item/friend-recommendation-item.component';
 
 @NgModule({
   declarations: [
@@ -62,6 +64,8 @@ import { SpinnerComponent } from './spinner/spinner.component';
     LocationCardListComponent,
     EditProfileComponent,
     SpinnerComponent,
+    FriendRecommendationListComponent,
+    FriendRecommendationItemComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,11 @@
+<mat-card class = "d-flex flex-column flex-wrap justify-content-around align-items-center p-3">
+    <mat-card-header class="col-sm-11 ps-2">
+        <img mat-card-avatar src= "{{friend.person.imagePath}}">
+        <mat-card-subtitle [routerLink]="['/profile', this.friend.person.username]" class="name m-1">{{friend.person.firstName + " " + friend.person.lastName}}</mat-card-subtitle>
+        <mat-card-subtitle [routerLink]="['/profile', this.friend.person.username]" class="username m-1">{{"@" + friend.person.username}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content class="col-sm-11">{{"Imate " + friend.commonNum + " zajednickih prijatelja"}}</mat-card-content>
+    <mat-card-actions class="col-sm-11">
+        <button mat-button class = "btn btn-outline-primary" (click)="onAddFriend()">Dodaj prijatelja</button>
+    </mat-card-actions>
+</mat-card>
