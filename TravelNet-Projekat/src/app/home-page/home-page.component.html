@@ -9,7 +9,7 @@
         <app-post-list [profilePosts]="false" [posts]="this.posts"></app-post-list>
 
         <div class="container border-bottom border-dark my-2"></div>
-        <button mat-icon-button class="w-10 mb-3 load-more" 
+        <button mat-icon-button class="w-10 mb-3 load-more"
         (click)="loadMore($event)" *ngIf = "this.hasMore"><mat-icon>keyboard_arrow_down</mat-icon></button>
     </div>
 
@@ -19,10 +19,21 @@
     </div>
 
     <div class="col-sm-3">
-        <p class="decor p-4 decor-container rounded">Tako su navedeni orijentalni Istanbul, šarmantni Milano, besprekorni Pariz i nezaobilazna, 
-            raskošna austrijska prestonica. Kada smo posle pogledali praznične fotografije iz ovih gradova, 
-            uverili smo se da su autori definitivno bili u pravu prilikom pisanja ovog zanimljivog turističkog 
-            teksta, jer su ovi gradovi za praznike zaista izgledali magično, a izbora za šoping u njima ima na pretek!
-        </p>
+        <p class="decor p-4 decor-container rounded"><b>TOP 5 gradova koje morate posetiti do kraja života:</b></p>
+        <p class="decor p-4 decor-container rounded text-p">1. Venecija, Italija<br>
+          Jednostavno je nemoguće napraviti ovakvu listu bez Venecije, zar ne? Od dobro poznatih kanala i grandioznih bazilika, preko raznobojnih fasada i dobrih malih barova, Venecija je jedinstveno mesto, poput ni jednog drugog na zemlji.</p>
+
+          <p class="decor p-4 decor-container rounded text-p">2. Sevilja, Španija<br>
+          Sevilja je dragulj nekadašnje carske Španije, a posetioci su oduševljeni uskim ulicama obloženim narandžastim cvetovima, mavarskim dvorcima i gastronomskim specijalitetima.</p>
+
+          <p class="decor p-4 decor-container rounded text-p">3. Njujork, SAD<br>
+          Ne čudi zašo Njujork često nazivaju „Raskrsnicom sveta“. Nigde na svetu nećete pronaći tako zadivljujuću koncentraciju umetnosti, kulture, kulinarstva i biznisa.</p>
+
+          <p class="decor p-4 decor-container rounded text-p">4. Lasa, Kina<br>
+          Lasa je duhovni centar tibetanskog budizma. Surovi vrhovi Himalaja sa manastirima i palatama iz kojih se uvek oseća tamjan, čine Lasu jednim od najupečatljivijih gradova na svetu.</p>
+
+          <p class="decor p-4 decor-container rounded text-p">5. Rio de Žaneiro, Brazil<br>
+          Od svetski poznatog karnevala pa do nezaboravne panorame, Rio je iskustvo za svih 5 čula. Ne može škoditi ni činjenica da se u njemu nalaze dve najpoznatije plaže na svetu!</p>
+
     </div>
 </div>
