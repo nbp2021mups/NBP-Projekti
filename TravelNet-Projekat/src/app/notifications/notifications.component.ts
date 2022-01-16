@@ -107,7 +107,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         `http://localhost:3000/notifications/${this.loggedUser.id}/${start}/${count}`
       )
       .subscribe((data: Array<Notification>) => {
-        console.log(data);
         this.hasMore = count == data.length;
         data.forEach((n) => {
           this.notifications.push(n);
