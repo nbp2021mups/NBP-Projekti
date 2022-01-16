@@ -1,0 +1,8 @@
+<div class="row flex-column border border-rounded p-2 rounded rounded-lg rec" *ngIf="this.friends && this.friends.length > 0">
+    <div class="col-sm-12 hd">Osobe koje mozda poznajete</div>
+    <div class="col-12 my-1" *ngFor="let friend of this.friends">
+        <app-friend-recommendation-item 
+        [friend]="{person: friend.person, commonNum: friend.commonNum}" (friendAdded)="onFriendAdded($event)">
+        </app-friend-recommendation-item>
+    </div>
+</div>

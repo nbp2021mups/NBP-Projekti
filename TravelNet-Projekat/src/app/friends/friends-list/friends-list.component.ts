@@ -10,7 +10,7 @@ import { FriendsService } from 'src/app/services/friends.service';
 })
 export class FriendsListComponent implements OnInit {
   @Input()
-  friends: { person: PersonBasic; status: string }[] = [];
+  friends: { person: PersonBasic, status: string }[] = [];
 
   @Input()
   displayData: boolean = false;

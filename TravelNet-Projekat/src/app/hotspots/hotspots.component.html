@@ -4,7 +4,7 @@
     </div>
     <div class="row flex-column">
         <div class="col-12 hotspot rounded mb-1" *ngFor="let loc of locations">
-            <p class="text-center m-0 mx-2 link tekst">{{loc.loc.city + ", " + loc.loc.country }}</p>
+            <p class="text-center m-0 mx-2 link tekst" [routerLink]="['/location', loc.loc.id]">{{loc.loc.city + ", " + loc.loc.country }}</p>
             <p class="text-center m-0 mx-2 tekst"> {{ loc.postsNo + " objava" }}</p>
         </div>
     </div>

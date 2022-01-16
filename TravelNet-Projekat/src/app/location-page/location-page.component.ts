@@ -15,7 +15,7 @@ export class LocationPageComponent implements OnInit, OnDestroy {
   location: LocationFull;
   paramsSub: Subscription;
   allRead: boolean = false;
-  pageSize: number = 3;
+  pageSize: number = 6;
   isLoading: boolean = false;
   toggleFriends: boolean = false;
 
@@ -28,7 +28,7 @@ export class LocationPageComponent implements OnInit, OnDestroy {
           this.isLoading = true;
           this.authService.user.subscribe(user => {
             const id = user.id;
-            this.locService.getLocation(params['locationId'], id, this.pageSize).subscribe({
+            this.locService.getLocation(+params['locationId'], id, this.pageSize).subscribe({
               next: resp => {
                 this.location = resp;
                 this.isLoading = false;

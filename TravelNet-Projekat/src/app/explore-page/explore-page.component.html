@@ -1,8 +1,9 @@
 <div class="search-div">
   <div class="search-type p-1">
     <div>
-      <label class="m-1">Korisnici</label>
-      <input
+      <label class="mx-3 form-check-label">Korisnici</label>
+      <input 
+        class="form-check-input"
         type="radio"
         name="search-type"
         value="Korisnici"
@@ -10,8 +11,9 @@
       />
     </div>
     <div>
-      <label class="m-1">Lokacije</label>
+      <label class="mx-3 form-check-label">Lokacije</label>
       <input
+        class="form-check-input"
         type="radio"
         name="search-type"
         value="Lokacije"
@@ -99,9 +101,12 @@
   </div>
 </div>
 
-<div class="row justify-content-around d-flex flex-wrap my-2">
-  <div class="col-sm-2">
-    <app-friends-list></app-friends-list>
+
+<app-spinner class="spinner" *ngIf="isLoading"></app-spinner>
+
+<div class="row justify-content-around d-flex flex-wrap my-2" *ngIf="!isLoading">
+  <div class="col-sm-3">
+    <app-friend-recommendation-list [friends]="newFriends"></app-friend-recommendation-list>
   </div>
 
   <div
@@ -111,10 +116,15 @@
     <app-post-list
       [profilePosts]="false"
       [posts]="this.recommendedPosts"
+      [commDisabled]="true"
     ></app-post-list>
+
+    <div class="container border-bottom border-dark my-2"></div>
+        <div class="d-flex flex-row justify-content-center m-0">
+          <button mat-icon-button class="w-10 mb-3 load-more" 
+          (click)="loadMore($event)" *ngIf = "this.hasMore"><mat-icon>keyboard_arrow_down</mat-icon></button>
+        </div>
   </div>
 
-  <div class="col-sm-2">
-    <app-friends-list></app-friends-list>
-  </div>
+  <div class="col-sm-2"></div>
 </div>

@@ -163,8 +163,8 @@ router.delete("", async(req, res) => {
 router.get("/recommendation/:userId", async(req, res) => {
     try {
         let cypher = `MATCH (u:User)-[r1:IS_FRIEND]->(friend:User)-[r2:IS_FRIEND]->(friendOfFriend:User)
-                    WHERE id(u)=$id AND id(friendOfFriend)<>$id
-                    RETURN DISTINCT count(friendOfFriend) AS mutalFriends,
+                    WHERE id(u)=$id AND id(friendOfFriend)<>$id AND NOT (u)--(friendOfFriend)
+                    RETURN DISTINCT count(friendOfFriend) AS mutualFriends,
                     id(friendOfFriend) AS id,
                     friendOfFriend.username AS username,
                     friendOfFriend.firstName AS firstName,
@@ -223,7 +223,7 @@ router.get('/getUserFriends/:logUser/:user', async (req, res) => {
     try{
         const cypher = `MATCH (u1:User { username: $user })-[:IS_FRIEND]->(u2:User)
         OPTIONAL MATCH (u2)-[r:IS_FRIEND|SENT_REQUEST]-(logU: User{username: $logUser})
-        RETURN DISTINCT id(u2), u2.firstName, u2.lastName, u2.username, u2.image, type(r)="IS_FRIEND" as friend, 
+        RETURN DISTINCT id(u2), u2.firstName, u2.lastName, u2.username, u2.image, type(r)="IS_FRIEND" as friend,
         type(r)="SENT_REQUEST" and startNode(r)=logU as sent, type(r)="SENT_REQUEST" and startNode(r)=u2 as recv`;
 
         const params = {user: req.params.user, logUser: req.params.logUser};

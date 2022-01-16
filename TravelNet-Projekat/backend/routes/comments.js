@@ -78,8 +78,9 @@ router.get("/:postId/:startIndex/:count", async(req, res) => {
 
 router.delete("/:commentId", async(req, res) => {
     try {
-        const cypher = `MATCH (:User)-[r:COMMENTED]-(:Post)
+        const cypher = `MATCH (:User)-[r:COMMENTED]-(p:Post)
                         WHERE id(r)=$commentId
+                        SET p.commentNo=p.commentNo-1
                         DETACH DELETE r`;
         const params = {
             commentId: int(req.params.commentId),
