@@ -15,7 +15,7 @@ export class LocationPageComponent implements OnInit, OnDestroy {
   location: LocationFull;
   paramsSub: Subscription;
   allRead: boolean = false;
-  pageSize: number = 3;
+  pageSize: number = 6;
   isLoading: boolean = false;
   toggleFriends: boolean = false;
 

@@ -1,6 +1,6 @@
 .lista{
     overflow-y: auto;
-    max-height: 20vh;
+    max-height: 40vh;
     width: 100%;
     background-color: gray;
     flex-wrap: nowrap;
