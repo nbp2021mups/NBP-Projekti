@@ -24,6 +24,7 @@ router.get("/:userId/:startIndex/:count", async(req, res) => {
             result.records.map((x) => ({
                 id: x.get("n").identity.low,
                 ...x.get("n").properties,
+                content: x.get("n").properties.content.low,
                 timeSent: new Date(x.get("n").properties.timeSent),
             }))
         );

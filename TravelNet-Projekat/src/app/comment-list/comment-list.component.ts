@@ -39,6 +39,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .delete(`http://localhost:3000/comments/${comment.id}`)
       .subscribe((res) => {
         this.comments = this.comments.filter((c) => c.id != comment.id);
+        this.post.commentsNo -= 1;
       });
   }
 
@@ -62,6 +63,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
             ...this.comments,
           ];
           event.target.value = '';
+          this.post.commentsNo += 1;
         },
         error: (err) => console.log(err),
       });
