@@ -10,9 +10,8 @@ const redisClient = require('../redisclient');
 router.get("/:userId/:skip/:limit", async(req, res) => {
   try{
 
-    const chyper = `MATCH (loc:Location)
-                    WHERE ID(loc) in $locations
-                    OPTIONAL MATCH (loc)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
+    const chyper = `MATCH (loc:Location)<-[:LOCATED_AT]-(post:Post)<-[s:SHARED]-(u:User)
+                    WHERE ID(loc) in $locations AND post IS NOT NULL
                     WITH loc,post,u,s
                     SKIP $skip
                     LIMIT $limit
@@ -45,12 +44,12 @@ router.get("/:userId/:skip/:limit", async(req, res) => {
     }
     else
       rangeTopLocation="4";
-
+    console.log("prvi put",locationsId)
     const topLocationsId = await redis.sendCommand(["ZRANGE","locations-leaderboard","0",rangeTopLocation,"REV"]);
     topLocationsId.forEach(el=>{
       locationsId.push(int(el.substring(el.indexOf(':')+1)))
     })
-
+    console.log("drugi put",locationsId)
     params.locations=locationsId;
     const result=await session.run(chyper,params);
     const response = [];

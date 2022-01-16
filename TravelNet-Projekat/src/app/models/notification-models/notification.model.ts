@@ -1,5 +1,5 @@
 export const NOTIFICATION_TRANSLATION = {
-  'post-like': 'se sviđa Vaša objava!',
+  'post-like': 'lajkuje Vašu objavu!',
   'post-comment': 'komentariše Vašu objavu!',
   'sent-friend-request': 'šalje zahtev za prijateljstvo!',
   'accepted-friend-request': 'i Vi ste postali prijatelji!',

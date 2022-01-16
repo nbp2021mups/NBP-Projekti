@@ -97,16 +97,17 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   }
 
   loadMore() {
-    this.loadConversations(this.notifications.length, 20);
+    this.loadNotifications(this.notifications.length, 20);
   }
 
-  loadConversations(start: number = 0, count: number = 20) {
+  loadNotifications(start: number = 0, count: number = 20) {
     this.isLoading = true;
     this.httpService
       .get(
         `http://localhost:3000/notifications/${this.loggedUser.id}/${start}/${count}`
       )
       .subscribe((data: Array<Notification>) => {
+        console.log(data);
         this.hasMore = count == data.length;
         data.forEach((n) => {
           this.notifications.push(n);

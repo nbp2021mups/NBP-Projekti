@@ -1,31 +1,37 @@
-.tekst{
-    font-size: 2em;
-    font-weight: 450;
+.tekst {
+  font-size: 2em;
+  font-weight: 450;
 }
-a{
-    text-decoration: none;
+a {
+  text-decoration: none;
 }
-.link{
-    font-weight: 600;
-    color:gray;
+.link {
+  font-weight: 600;
+  color: gray;
 }
-.link:hover{
-    color:blue;
-    cursor: pointer;
+.link:hover {
+  color: blue;
+  cursor: pointer;
 }
-.decor{
-    color: white;
-    font-weight: 450;
-    letter-spacing: 1px;
-    line-height: 1.5;
-    font-size: 1.3em;
-    font-family: cursive;
+.decor {
+  color: white;
+  font-weight: 450;
+  letter-spacing: 1px;
+  line-height: 1.5;
+  font-size: 1.3em;
+  font-family: cursive;
 }
-.decor-container{
-    background-color: #343a40;
+.decor-container {
+  background-color: #343a40;
 }
-.load-more{
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
+.load-more {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.text-p {
+  background-color: #ddbea9;
+  border: 1px solid rgb(19, 7, 39);
+  border-radius: 15px;
 }
