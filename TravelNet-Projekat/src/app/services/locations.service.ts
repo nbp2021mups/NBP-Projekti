@@ -90,4 +90,17 @@ export class LocationsService{
             return ret;
         }));
     }
+
+
+    getLocationFollowers(locId: number, logUser: string){
+        return this.http.get<any>('http://localhost:3000/locations/' + locId + "/followers/" + logUser)
+        .pipe(map(respData => {
+            const ret = [];
+            respData.forEach(follower => {
+                ret.push({person: new PersonBasic(follower.id, follower.fName, follower.lName, follower.image,
+                    follower.username), status: follower.status});
+            });
+            return ret;
+        }));
+    }
 }

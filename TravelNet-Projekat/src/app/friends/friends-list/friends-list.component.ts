@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { PersonBasic } from 'src/app/models/person_models/person-basic.model';
 import { AuthService } from 'src/app/services/authentication/auth.service';
 import { FriendsService } from 'src/app/services/friends.service';
+import { LocationsService } from 'src/app/services/locations.service';
 
 @Component({
   selector: 'app-friends-list',
@@ -14,6 +15,8 @@ export class FriendsListComponent implements OnInit {
 
   @Input()
   displayData: boolean = false;
+  @Input()
+  location: number = null;
 
   //username korisnika za koga ucitavamo prijatelje
   @Input()
@@ -23,11 +26,12 @@ export class FriendsListComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private friendsService: FriendsService
+    private friendsService: FriendsService,
+    private locService: LocationsService
   ) {}
 
   ngOnInit(): void {
-    if (!this.displayData)
+    if (!this.displayData && !this.location) {
       this.authService.user
         .subscribe((user) => {
           this.isLoading = true;
@@ -64,5 +68,19 @@ export class FriendsListComponent implements OnInit {
           }
         })
         .unsubscribe();
+      } else if(this.location) {
+          this.authService.user.subscribe(user => {
+            this.locService.getLocationFollowers(this.location, user.username).subscribe({
+              next: resp => {
+                this.friends = resp;
+              },
+              error: err => {
+                console.log(err);
+                this.friends = [];              
+              }
+            });
+          }).unsubscribe();
+      }
   }
+
 }

@@ -288,7 +288,7 @@ router.get('/:locId/followers/:logUser', async(req,res) => {
         OPTIONAL MATCH (u)-[r:IS_FRIEND|SENT_REQUEST]-(logU: User{username: $logUser})
         RETURN DISTINCT id(u), u.firstName, u.lastName, u.username, u.image, type(r)="IS_FRIEND" as friend,
         type(r)="SENT_REQUEST" and startNode(r)=logU as sent, type(r)="SENT_REQUEST" and startNode(r)=u as recv`;
-        const params = {locId: id(req.params.locId), logUser: req.params.logUser}
+        const params = {locId: int(req.params.locId), logUser: req.params.logUser}
 
         const result = await session.run(cypher, params);
 

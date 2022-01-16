@@ -48,8 +48,8 @@ export class LocationPageComponent implements OnInit, OnDestroy {
       const id = user.id;
       this.locService.followLocation(id, this.location.id).subscribe({
         next: resp => {
-          alert(resp);
           this.location.followed = true;
+          this.location.followersNo++;
         },
         error: err => {console.log(err);}
       });
@@ -89,14 +89,13 @@ export class LocationPageComponent implements OnInit, OnDestroy {
       const id = user.id;
       this.locService.unfollowLocation(id, this.location.id).subscribe({
         next: resp => {
-          alert(resp);
           this.location.followed = false;
+          this.location.followersNo--;
         },
         error: err => {console.log(err);}
       });
     });
   }
-
 
   onFollowers() {
     this.toggleFriends = !this.toggleFriends;
