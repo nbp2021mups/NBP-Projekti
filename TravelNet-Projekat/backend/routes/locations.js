@@ -221,7 +221,6 @@ router.get("/:locationId/posts/:userId/:limit", async(req, res) => {
             "1",
             req.params.locationId,
         ]);
-        await redis.sendCommand(["EXPIRE", keyNameSortedSet, "172800"]);
 
         return res.send(response);
     } catch (ex) {
