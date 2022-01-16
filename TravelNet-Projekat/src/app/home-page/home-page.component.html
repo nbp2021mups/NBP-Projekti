@@ -13,7 +13,7 @@
         (click)="loadMore($event)" *ngIf = "this.hasMore"><mat-icon>keyboard_arrow_down</mat-icon></button>
     </div>
 
-    <div *ngIf="this.posts && this.posts.length == 0" class="text-center tekst col-12 col-sm-7 text-wrap">
+    <div *ngIf="this.posts && this.posts.length == 0" class="text-center tekst col-12 col-sm-6 text-wrap">
         Vasa pocetna strana je prazna, potrazite lokacije, ili prijatelje koje vas zanimaju na stranici
         <span class="link"><a routerLink="/explore">Explore</a></span>
     </div>
