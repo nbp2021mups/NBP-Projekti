@@ -255,6 +255,7 @@ export class ChatComponent implements OnInit, OnDestroy {
       await this.selectedConversation.loadMore();
     }
 
+    console.log(this.selectedConversation);
     if (this.selectedConversation.myUnread > 0) {
       this.socketService.readMessages({
         chatId: this.selectedConversation.id,
