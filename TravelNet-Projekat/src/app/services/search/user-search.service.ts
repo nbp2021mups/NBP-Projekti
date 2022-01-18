@@ -21,21 +21,24 @@ export class UserSearchService extends SearchService {
         `http://localhost:3000/search/explore/users/${this.loggedUser.id}/${this.pattern}/${this.start}/${this.count}`
       )
       .pipe(
-        map((data: Array<{ person: PersonBasic; status: any }>) =>
-          data.map((x) => ({
+        map((data: Array<{ person: PersonBasic; status: any }>) => {
+          console.log(data);
+          return data.map((x) => ({
             person: x.person,
             status:
               x.person.id == this.loggedUser.id
                 ? 'personal'
-                : x.status.friends
+                : !x.status.haveRelation
+                ? 'non_friend'
+                : x.status.relationType == 'IS_FRIEND'
                 ? 'friend'
-                : x.status.requested
-                ? 'rec_req'
-                : x.status.pending
+                : x.status.relationType == 'SENT_REQUEST' && x.status.fromMe
                 ? 'sent_req'
+                : x.status.relationType == 'SENT_REQUEST' && !x.status.fromMe
+                ? 'rec_req'
                 : 'non_friend',
-          }))
-        )
+          }));
+        })
       )
       .subscribe({
         next: (data) => {

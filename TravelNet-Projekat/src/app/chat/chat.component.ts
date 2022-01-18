@@ -11,13 +11,13 @@ import {
 } from '../services/socket/socket.service';
 
 export const DAYS = {
-  1: 'Pon',
-  2: 'Uto',
-  3: 'Sre',
-  4: 'Čet',
-  5: 'Pet',
-  6: 'Sub',
-  7: 'Ned',
+  0: 'Pon',
+  1: 'Uto',
+  2: 'Sre',
+  3: 'Čet',
+  4: 'Pet',
+  5: 'Sub',
+  6: 'Ned',
 };
 
 export const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;

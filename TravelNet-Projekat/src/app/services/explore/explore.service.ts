@@ -119,17 +119,23 @@ export class ExploreService {
   filterLocations(filter: string) {
     this.displayedLocations = this.locationPool.filter(
       (lP) =>
-        lP.loc.city.toLowerCase().match(filter) ||
-        lP.loc.country.toLowerCase().match(filter)
+        lP.loc.city.toLowerCase().includes(filter) ||
+        lP.loc.country.toLowerCase().includes(filter) ||
+        filter.includes(lP.loc.city.toLowerCase()) ||
+        filter.includes(lP.loc.country.toLowerCase())
     );
     if (this.displayedLocations.length > 0) this.noResult.locations = false;
   }
   filterUsers(filter: string) {
+    const lower = filter.toLowerCase();
     this.displayedUsers = this.userPool.filter(
       (uP) =>
-        uP.person.username.toLowerCase().match(filter) ||
-        uP.person.firstName.toLowerCase().match(filter) ||
-        uP.person.lastName.toLowerCase().match(filter)
+        uP.person.username.toLowerCase().includes(filter) ||
+        uP.person.firstName.toLowerCase().includes(filter) ||
+        uP.person.lastName.toLowerCase().includes(filter) ||
+        filter.includes(uP.person.username.toLowerCase()) ||
+        filter.includes(uP.person.firstName.toLowerCase()) ||
+        filter.includes(uP.person.lastName.toLowerCase())
     );
     if (this.displayedUsers.length > 0) this.noResult.users = false;
   }

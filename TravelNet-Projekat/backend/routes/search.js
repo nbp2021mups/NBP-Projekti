@@ -131,7 +131,7 @@ router.get("/users/:name/:userId/:startIndex/:count", async(req, res) => {
         const cypher = `WITH toLower($name) as lower
                         MATCH (u:User)
                         WHERE toLower(u.username) CONTAINS lower
-                        OR toLower(u.firstName) CONTAINS lower 
+                        OR toLower(u.firstName) CONTAINS lower
                         OR toLower(u.lastName) CONTAINS lower
                         CALL
                         {
@@ -180,7 +180,7 @@ router.get("/posts/:name/:userId/:startIndex/:count", async(req, res) => {
     try {
         const cypher = `WITH toLower($name) AS lower
                         MATCH (u:User)-[r:SHARED]->(p:Post)-[:LOCATED_AT]->(l:Location)
-                        WHERE (NOT id(u) = $userId) AND 
+                        WHERE (NOT id(u) = $userId) AND
                         (toLower(u.username) CONTAINS lower OR
                         toLower(l.city) CONTAINS lower OR
                         toLower(l.country) CONTAINS lower OR
@@ -193,9 +193,9 @@ router.get("/posts/:name/:userId/:startIndex/:count", async(req, res) => {
                             RETURN k IS NOT NULL AS LIKED
                         }
                         RETURN { id: id(p), userId: id(u), userFirstName: u.firstName, userLastName: u.lastName,
-                                userImage: u.image, userUsername: u.username, 
+                                userImage: u.image, userUsername: u.username,
                                 locationId: id(l), locationCountry: l.country, locationCity: l.city,
-                                image: p.image, description: p.description, 
+                                image: p.image, description: p.description,
                                 time: r.time, likesNo: p.likeNo, commentsNo: p.commentNo,
                                 liked: LIKED } as POST
                         ORDER BY r.time DESC
@@ -239,15 +239,16 @@ router.get(
             const cypher = `WITH toLower($pattern) as lower
                             MATCH (u:User)
                             WHERE toLower(u.username) CONTAINS lower
-                            OR toLower(u.firstName) CONTAINS lower 
+                            OR toLower(u.firstName) CONTAINS lower
                             OR toLower(u.lastName) CONTAINS lower
+                            OR lower CONTAINS toLower(u.username)
+                            OR lower CONTAINS toLower(u.firstName)
+                            OR lower CONTAINS toLower(u.lastName)
                             CALL
                             {
-                                WITH u
-                                OPTIONAL MATCH p=(u)-[:IS_FRIEND]->(u1) WHERE id(u1)=$userId
-                                OPTIONAL MATCH q=(u)-[:SENT_REQUEST]->(u1) WHERE id(u1)=$userId
-                                OPTIONAL MATCH r=(u)<-[:SENT_REQUEST]-(u1) WHERE id(u1)=$userId
-                                RETURN {friends: p IS NOT NULL, requested: q IS NOT NULL, pending: r IS NOT NULL} AS STATUS
+                              WITH u
+                              OPTIONAL MATCH p=(u)-[r:SENT_REQUEST | IS_FRIEND]-(u1:User) WHERE id(u1)=$userId
+                              RETURN { haveRelation: p IS NOT NULL, relationType: type(r), fromMe: id(startNode(r))=$userId } AS STATUS
                             }
                             RETURN {
                                 person: {
@@ -293,6 +294,8 @@ router.get(
                             MATCH (l:Location)
                             WHERE toLower(l.city) CONTAINS lower
                             OR toLower(l.country) CONTAINS lower
+                            OR lower CONTAINS toLower(l.city)
+                            OR lower CONTAINS toLower(l.country)
                             CALL
                             {
                                 WITH l
